@@ -10,20 +10,19 @@ en disco.
   SQLite garantiza la integridad del fichero, pero no garantiza la 
 correcta ejecución concurrente de tus operaciones.
 
+  Exacto 💡 — no es lo más recomendable usar JdbcTemplate con SQLite en un 
+escenario como el que describes (múltiples hilos, varias bases de datos, operaciones concurrentes).
 
-  git push ->  Empujo mis cambios al servidor. Sube tus cambios locales 
-              al repositorio remoto (GitHub)
+   JdbcTemplate es una clase de Spring que:
+      Abstrae el manejo de conexiones JDBC (abre, ejecuta, cierra).
+      Está pensada para bases de datos servidoras (MySQL, PostgreSQL, Oracle, etc.).
+      Asume que hay un pool de conexiones (HikariCP, por ejemplo) que gestiona concurrencia por ti.
 
-  git pull ->  Traigo los cambios del servidor. Descarga los cambios del 
-              repositorio remoto (GitHub) a tu proyecto local.
+   En otras palabras, JdbcTemplate está diseñada para entornos donde:
+      Varias conexiones independientes pueden coexistir sin interferirse.
 
-   ¿Qué soluciona 'git branch -M main'?
-        Con ese comando, básicamente estás diciendo:
-     “Quiero que mi rama principal local se llame 'main', igual que la 
-     del repositorio en GitHub.”
-   Así ambos coinciden, y luego el 'git push -u origin main' funciona 
-  perfectamente.
-  
-  Antes de hacer un push, siempre conviene hacer un:
-    git pull
-  Así evitas conflictos si alguien más modificó el repositorio.
+   El archivo 'schema.sql' define la estructura común para todas tus bases SQLite. Spring no lo 
+ejecutará automáticamente, pero tu clase DatabaseInitializer lo leerá y aplicará a cada base.
+
+   mvn clean
+   mvn spring-boot:run

@@ -1,0 +1,29 @@
+  git push ->  Empujo mis cambios al servidor. Sube tus cambios locales 
+              al repositorio remoto (GitHub)
+
+  git pull ->  Traigo los cambios del servidor. Descarga los cambios del 
+              repositorio remoto (GitHub) a tu proyecto local.
+
+   ¿Qué soluciona 'git branch -M main'?
+        Con ese comando, básicamente estás diciendo:
+     “Quiero que mi rama principal local se llame 'main', igual que la 
+     del repositorio en GitHub.”
+   Así ambos coinciden, y luego el 'git push -u origin main' funciona 
+  perfectamente.
+   
+   Si es la primera vez que haces push en este proyecto:
+    'git push -u origin main'
+         (-u solo se usa la primera vez para establecer el enlace 
+          entre tu rama local y la remota).
+     
+     Tu rama local (main) está sincronizada con la rama 
+    remota (origin/main, o sea la de GitHub).
+
+
+  git add .
+  git commit -m "Explico lo que hice"
+  git push
+
+  Antes de hacer un push, siempre conviene hacer un:
+    git pull
+  Así evitas conflictos si alguien más modificó el repositorio.
