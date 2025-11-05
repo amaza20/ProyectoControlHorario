@@ -26,3 +26,7 @@ ejecutará automáticamente, pero tu clase DatabaseInitializer lo leerá y aplic
 
    mvn clean
    mvn spring-boot:run
+
+
+   @CrossOrigin(origins = "http://localhost:4200")
+   Permite solicitudes CORS desde una app Angular que corre en localhost:4200.

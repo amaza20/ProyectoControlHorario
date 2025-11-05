@@ -5,6 +5,8 @@ import com.proyecto.controlhorario.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import java.time.format.DateTimeFormatter;
+import java.time.LocalDateTime;
 
 import java.nio.file.Paths;
 import java.sql.*;
@@ -164,8 +166,7 @@ public class Controlador {
         String dbPath = getDbPath(empresa);
 
         // Formato de fecha/hora: dd/MM/yyyy HH:mm:ss
-        String fechaHora = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")
-                .format(java.time.LocalDateTime.now());
+        String fechaHora = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss").format(LocalDateTime.now());
 
         try {
             DatabaseManager.withConnection(dbPath, conn -> {

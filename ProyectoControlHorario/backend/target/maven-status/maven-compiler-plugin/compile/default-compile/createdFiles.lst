@@ -1,6 +1,0 @@
-com\proyecto\controlhorario\db\DatabaseManager$DatabaseOperation.class
-com\proyecto\controlhorario\security\JwtUtil.class
-com\proyecto\controlhorario\controller\Controlador.class
-com\proyecto\controlhorario\ProyectoControlHorarioApplication.class
-com\proyecto\controlhorario\db\DatabaseInitializer.class
-com\proyecto\controlhorario\db\DatabaseManager.class
