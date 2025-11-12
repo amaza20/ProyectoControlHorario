@@ -4,32 +4,15 @@ import com.proyecto.controlhorario.dto.FichajeDto;
 import com.proyecto.controlhorario.security.JwtUtil;
 import com.proyecto.controlhorario.service.FichajesService;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-import java.nio.file.Paths;
 import java.util.*;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:4200")
 public class ControladorFichajes {
     
-    
-    private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
-    // Leemos la ruta base de las bases de datos desde application.properties
-    @Value("${app.db.folder}")
-    private String dbFolder;
     private final FichajesService servicio;
-
-    // Devuelve la ruta completa a la base de datos
-    private String getDbPath(String empresa) {
-        if (!empresa.endsWith(".db")) {
-            empresa = empresa + ".db";
-        }
-        // Usa Paths para evitar problemas con separadores de sistema
-        return Paths.get(dbFolder, empresa).toString();
-    }
 
      public ControladorFichajes(FichajesService servicio) {
         this.servicio = servicio;

@@ -1,0 +1,7 @@
+# Ignorar el Word y el script
+Apuntes.docx
+crear_proyecto_control_horario_sqlite_directo.sh
+
+# Ignorar los dos txt dentro de la carpeta
+ProyectoControlHorario/Notas.txt
+ProyectoControlHorario/NotasGit.txt
