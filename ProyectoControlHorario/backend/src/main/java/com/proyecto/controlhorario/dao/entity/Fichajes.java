@@ -11,7 +11,7 @@ public class Fichajes {
 
 
     public Fichajes() {
-}
+    }
 
     public Fichajes(String username, String instante, String tipo, String huella, Integer idEdicion) {
         this.username = username;
