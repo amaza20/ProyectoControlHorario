@@ -14,6 +14,13 @@ public class FichajeDto {
         this.departamento = departamento;
     }
 
+     public FichajeDto(String instante, String tipo, String huella) {
+        this.instante = instante;
+        this.tipo = tipo;
+        this.huella = huella;
+    }
+
+
     // Getters y Setters
 
     public String getUsername() {

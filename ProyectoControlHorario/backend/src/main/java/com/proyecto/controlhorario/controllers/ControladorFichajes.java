@@ -1,9 +1,12 @@
 package com.proyecto.controlhorario.controllers;
 
+import com.proyecto.controlhorario.controllers.dto.FichajeResponse;
 import com.proyecto.controlhorario.dto.FichajeDto;
 import com.proyecto.controlhorario.security.JwtUtil;
 import com.proyecto.controlhorario.service.FichajesService;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.*;
 
@@ -47,6 +50,39 @@ public class ControladorFichajes {
     }
 
  
+
+    // // =============================================================
+    // // ✅ ENDPOINT: LISTAR FICHAJES
+    // // =============================================================
+    @GetMapping("/listarFichajes")
+    public ResponseEntity<?> listarFichajes(@RequestHeader("Authorization") String authHeader) {
+       try {
+            // 1️⃣ Extraer el token (sin "Bearer ")
+            String token = authHeader.replace("Bearer ", "");
+
+            // 2️⃣ Validar token y obtener claims
+            Map<String, Object> claims = JwtUtil.validateToken(token);
+            String username = (String) claims.get("username");
+            String departamento = (String) claims.get("departamento");
+
+            FichajeDto fichaje = new FichajeDto(username, departamento);  
+
+            // 3️⃣ Listar todos fichajes del usuario correspondiente
+            List<FichajeDto> fichajes = servicio.listarFichajesUsuario(fichaje);
+            List<FichajeResponse> response = new ArrayList<>();
+            for (FichajeDto fich : fichajes) {
+                response.add(new FichajeResponse(fich.getInstante(), fich.getTipo(), fich.getHuella()));
+            }
+
+            // Devolver JSON con la lista
+            return ResponseEntity.ok(response);    // En este caso devolveré un  List<FichajeResponse>
+        } catch (Exception e) {
+            e.printStackTrace();      
+            // Devolver mensaje de error en caso de token inválido
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                             .body("❌ Token inválido o expirado");
+        }
+    }
 
 
 
@@ -94,37 +130,5 @@ public class ControladorFichajes {
     // }
 
 
-    //  // =============================================================
-    // // ✅ ENDPOINT: LISTAR FICHAJES
-    // // =============================================================
-    // @GetMapping("/fichajes/{empresa}")
-    // public List<Map<String, Object>> listar(@PathVariable String empresa) {
-    //     String dbPath = getDbPath(empresa);
-    //     List<Map<String, Object>> fichajes = new ArrayList<>();
-
-    //     try {
-    //         DatabaseManager.withConnection(dbPath, conn -> {
-    //             String sql = "SELECT * FROM fichajes ORDER BY id DESC";
-    //             try (PreparedStatement stmt = conn.prepareStatement(sql);
-    //                 ResultSet rs = stmt.executeQuery()) {
-
-    //                 while (rs.next()) {
-    //                     Map<String, Object> fila = new HashMap<>();
-    //                     fila.put("id", rs.getInt("id"));
-    //                     fila.put("usuario", rs.getString("usuario"));
-    //                     fila.put("tipo", rs.getString("tipo"));
-    //                     fila.put("fecha_hora", rs.getString("fecha_hora"));
-    //                     fila.put("huella", rs.getString("huella"));
-    //                     fila.put("id_edicion", rs.getObject("id_edicion"));
-    //                     fichajes.add(fila);
-    //                 }
-    //             }
-    //         });
-    //     } catch (SQLException e) {
-    //         e.printStackTrace();
-    //     }
-
-    //     return fichajes;
-    // }
 
 }

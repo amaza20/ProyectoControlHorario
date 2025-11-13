@@ -6,6 +6,9 @@ import java.security.NoSuchAlgorithmException;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Value;
 import com.proyecto.controlhorario.dao.entity.Fichajes;
 import com.proyecto.controlhorario.db.DatabaseManager;
@@ -106,4 +109,41 @@ public class FichajesDAO {
         }
     }
 
+
+
+
+
+
+    public List<FichajeDto> listarFichajes(FichajeDto fichajeDto) {
+        String dbPath = dbFolder+"departamento_"+fichajeDto.getDepartamento().toLowerCase()+".db";
+        List<FichajeDto> fichajesList = new ArrayList<>();
+
+        try {
+            DatabaseManager.withConnection(dbPath, conn -> {
+                // 1 - Listar todos los fichajes del usuario
+                String instante, tipo, huella;
+                String query = """ 
+                                    SELECT instante, tipo, huella
+                                    FROM fichajes
+                                    WHERE username = ?
+                                    ORDER BY instante DESC ; 
+                                """;
+                try (PreparedStatement st = conn.prepareStatement(query)) {
+                    st.setString(1, fichajeDto.getUsername());
+                    ResultSet rst = st.executeQuery();
+                    while (rst.next()) {
+                        instante = rst.getString("instante");
+                        tipo = rst.getString("tipo");
+                        huella = rst.getString("huella");
+
+                        fichajesList.add(new FichajeDto(instante, tipo, huella));
+                    }
+                }
+            });
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+      return fichajesList;
+    }
 }
