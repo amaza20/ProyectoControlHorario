@@ -68,8 +68,13 @@
                 // Mostrar nombre de usuario
                 document.getElementById('navUser').textContent = `Usuario: ${payload.username || 'Desconocido'}`;
                 
+                // Convertir a minúsculas para comparar sin importar mayúsculas
+                const rol = payload.rol ? payload.rol.toLowerCase().trim() : '';
+                
+                console.log('🔍 Rol detectado:', payload.rol);
+                console.log('🔍 Rol normalizado:', rol);
+                
                 // Ocultar la tarjeta de verificación si no es admin/supervisor
-                const rol = payload.rol;
                 if (rol !== 'administrador' && rol !== 'supervisor') {
                     const cardVerificar = document.getElementById('cardVerificar');
                     if (cardVerificar) {

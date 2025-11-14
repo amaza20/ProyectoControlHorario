@@ -25,7 +25,12 @@
             <form id="verificarForm" onsubmit="verificarIntegridad(event)">
                 <div class="form-group">
                     <label for="departamento">Departamento a verificar</label>
-                    <input type="text" id="departamento" placeholder="Ej: ventas, IT, RRHH" required>
+                    <select id="departamento" required>
+                        <option value="" disabled selected>Selecciona un departamento</option>
+                        <option value="IT">IT</option>
+                        <option value="RRHH">RRHH</option>
+                        <option value="Finanzas">Finanzas</option>
+                    </select>
                 </div>
                 
                 <button type="submit" class="btn btn-primary btn-block">
@@ -50,11 +55,18 @@
         if (token) {
             try {
                 const payload = JSON.parse(atob(token.split('.')[1]));
-                const rol = payload.rol;
+                
+                // Convertir a minúsculas para comparar sin importar mayúsculas
+                const rol = payload.rol ? payload.rol.toLowerCase().trim() : '';
+                
+                console.log('🔍 Rol detectado:', payload.rol);
+                console.log('🔍 Rol normalizado:', rol);
                 
                 if (rol !== 'administrador' && rol !== 'supervisor') {
                     alert('⚠️ No tienes permisos para acceder a esta funcionalidad');
                     window.location.href = 'dashboard.html';
+                } else {
+                    console.log('✅ Acceso permitido - Usuario es ' + rol);
                 }
             } catch (e) {
                 console.error('Error al verificar permisos:', e);

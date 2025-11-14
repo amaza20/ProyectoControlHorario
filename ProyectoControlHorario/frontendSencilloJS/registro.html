@@ -28,14 +28,21 @@
                 
                 <div class="form-group">
                     <label for="regDepartamento">Departamento</label>
-                    <input type="text" id="regDepartamento" placeholder="Ej: Ventas, IT, RRHH" required>
+                    <select id="regDepartamento" required>
+                        <option value="" disabled selected>Selecciona tu departamento</option>
+                        <option value="IT">IT</option>
+                        <option value="RRHH">RRHH</option>
+                        <option value="Finanzas">Finanzas</option>
+                    </select>
                 </div>
                 
                 <div class="form-group">
                     <label for="regRol">Rol</label>
                     <select id="regRol" required>
-                        <option value="empleado">Empleado</option>
-                        <option value="administrador">Administrador</option>
+                        <option value="" disabled selected>Selecciona tu rol</option>
+                        <option value="Empleado">Empleado</option>
+                        <option value="Administrador">Administrador</option>
+                        <option value="Supervisor">Supervisor</option>
                     </select>
                 </div>
                 
