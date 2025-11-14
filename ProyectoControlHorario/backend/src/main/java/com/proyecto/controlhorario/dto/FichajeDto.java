@@ -8,6 +8,10 @@ public class FichajeDto {
     private String huella;
     private Integer idEdicion;
     private String departamento;
+    private String rol;
+
+    public FichajeDto() {
+    }
 
     public FichajeDto(String username, String departamento) {
         this.username = username;
@@ -22,6 +26,14 @@ public class FichajeDto {
 
 
     // Getters y Setters
+    public String getRol(){
+        return rol;
+    }
+
+    public void setRol(String rol) {
+        this.rol = rol;
+    }
+
 
     public String getUsername() {
         return username;

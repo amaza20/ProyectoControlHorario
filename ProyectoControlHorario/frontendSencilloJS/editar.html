@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solicitar Edición - Control Horario</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">🕐 Control Horario</div>
+        <a href="dashboard.html" class="btn btn-secondary btn-sm">← Volver al Dashboard</a>
+    </nav>
+    
+    <div class="container">
+        <div class="form-container">
+            <h1>✏️ Solicitar Edición de Fichaje</h1>
+            
+            <form id="edicionForm" onsubmit="solicitarEdicion(event)">
+                <h3>Fichaje Original</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="edicionFecha">Fecha Actual</label>
+                        <input type="date" id="edicionFecha" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="edicionHora">Hora Actual</label>
+                        <input type="time" id="edicionHora" required>
+                    </div>
+                </div>
+                
+                <h3>Nuevo Fichaje</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="edicionNuevaFecha">Nueva Fecha</label>
+                        <input type="date" id="edicionNuevaFecha" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="edicionNuevaHora">Nueva Hora</label>
+                        <input type="time" id="edicionNuevaHora" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="edicionTipo">Tipo de Fichaje</label>
+                    <select id="edicionTipo" required>
+                        <option value="">Selecciona...</option>
+                        <option value="ENTRADA">Entrada</option>
+                        <option value="SALIDA">Salida</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="edicionUsoHorario">Motivo / Uso Horario</label>
+                    <input type="text" id="edicionUsoHorario" placeholder="Ej: trabajar, reunión, formación" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-block">Enviar Solicitud</button>
+            </form>
+            
+            <div id="edicionResponse" class="response"></div>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+    <script>
+        if (!verificarSesion()) {
+            window.location.href = 'login.html';
+        }
+    </script>
+</body>
+</html>

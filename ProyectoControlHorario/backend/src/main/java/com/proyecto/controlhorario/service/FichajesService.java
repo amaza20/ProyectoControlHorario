@@ -24,4 +24,9 @@ public class FichajesService {
         return fichajeDAO.listarFichajes(dto);
     }
 
+    // Nuevo método para verificar integridad de fichajes
+    public String comprobarIntegridadFichajes(FichajeDto dto) {
+        return fichajeDAO.verificarIntegridadFichajes(dto);
+    }
+
 }

@@ -89,44 +89,33 @@ public class ControladorFichajes {
     // // =============================================================
     // // ✅ ENDPOINT: VERIFICAR INTEGRIDAD DE FICHAJES
     // // =============================================================
-    // @GetMapping("/verificar")
-    // public String verificar(@RequestParam String departamento) {
-    //     final String[] toret = {"Integridad verificada correctamente"};
-    //     String dbPath = getDbPath(departamento);
-    //     try {
-    //         DatabaseManager.withConnection(dbPath, conn -> {
-    //             boolean stop=false;
-    //             String sql = "SELECT id, usuario, tipo, fecha_hora, huella FROM fichajes ORDER BY id ASC";
-    //             try (Statement st = conn.createStatement();
-    //                 ResultSet rs = st.executeQuery(sql)) {
+    @GetMapping("/verificarIntegridadFichajes")
+    public String verificarIntegridadFichajes(@RequestHeader("Authorization") String authHeader, @RequestParam String departamento) {
 
-    //                 String huellaAnterior = null;
-    //                 while (rs.next() && !stop) {
-    //                     String usuario = rs.getString("usuario");
-    //                     String tipo = rs.getString("tipo");
-    //                     String fechaHora = rs.getString("fecha_hora");
-    //                     String huellaGuardada = rs.getString("huella");
+        try {
+            // 1️⃣ Extraer el token (sin "Bearer ")
+            String token = authHeader.replace("Bearer ", "");
 
-    //                     String base = usuario + "|" + fechaHora + "|" + tipo + "|" + (huellaAnterior != null ? huellaAnterior : "GENESIS");
-    //                     String huellaCalculada = generarHash(base);
+            // 2️⃣ Validar token y obtener claims
+            Map<String, Object> claims = JwtUtil.validateToken(token);
+            String username = (String) claims.get("username");
 
-    //                     if (!huellaCalculada.equals(huellaGuardada)) {
-    //                         toret[0]="Integridad comprometida en el registro ID=" + rs.getInt("id");
-    //                         stop=true;
-    //                     } else {
-    //                         huellaAnterior = huellaGuardada;
-    //                     }                   
-    //                 }
-    //             }
-    //         });
+            //  Solo los roles de administrador y supervisor podran 
+            // comprobar la integridad en las tablas de los departamentos
+            String rol = (String) claims.get("rol");     
 
-    //         return toret[0];
+            FichajeDto fichaje = new FichajeDto();  
+            fichaje.setUsername(username);
+            fichaje.setDepartamento(departamento);
+            fichaje.setRol(rol);
 
-    //     } catch (SQLException e) {
-    //         e.printStackTrace();
-    //         return "⚠️ Error al verificar integridad: " + e.getMessage();
-    //     }
-    // }
+            return servicio.comprobarIntegridadFichajes(fichaje);
+        } catch (Exception e) {
+            e.printStackTrace();      
+            // Devolver mensaje de error en caso de token inválido
+            return ("❌ Token inválido o expirado");
+        } 
+    }
 
 
 

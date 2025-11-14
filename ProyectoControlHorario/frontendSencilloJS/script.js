@@ -1,26 +1,20 @@
-// URL base de tu API (ajusta el puerto si es necesario)
+// URL base de tu API
 const API_BASE_URL = 'http://localhost:8080';
 
-// Variable global para almacenar el token JWT
-let authToken = localStorage.getItem('authToken'); // ← Cargar desde localStorage al inicio
-
-// Al cargar la página, verificar si hay token guardado
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('🚀 Frontend de Control Horario cargado');
-    console.log('📡 API Base URL:', API_BASE_URL);
-    
-    // Si hay token guardado, mostrar que está autenticado
-    if (authToken) {
-        mostrarToken(authToken);
-        habilitarSeccionesProtegidas();
-        mostrarRespuesta('loginResponse', '✅ Sesión activa (token recuperado)', 'success');
-    }
-});
+// ============================================
+// FUNCIÓN: VERIFICAR SESIÓN
+// ============================================
+function verificarSesion() {
+    const token = localStorage.getItem('authToken');
+    return token !== null;
+}
 
 // ============================================
 // FUNCIÓN: REGISTRAR USUARIO
 // ============================================
-async function registrarUsuario() {
+async function registrarUsuario(event) {
+    if (event) event.preventDefault();
+    
     const username = document.getElementById('regUsername').value;
     const password = document.getElementById('regPassword').value;
     const departamento = document.getElementById('regDepartamento').value;
@@ -48,11 +42,10 @@ async function registrarUsuario() {
         const data = await response.text();
         
         if (response.ok) {
-            mostrarRespuesta('regResponse', data, 'success');
-            // Limpiar campos
-            document.getElementById('regUsername').value = '';
-            document.getElementById('regPassword').value = '';
-            document.getElementById('regDepartamento').value = '';
+            mostrarRespuesta('regResponse', data + ' Redirigiendo al login...', 'success');
+            setTimeout(() => {
+                window.location.href = 'login.html';
+            }, 2000);
         } else {
             mostrarRespuesta('regResponse', data, 'error');
         }
@@ -64,9 +57,11 @@ async function registrarUsuario() {
 // ============================================
 // FUNCIÓN: LOGIN USUARIO
 // ============================================
-async function loginUsuario() {
-    const username = document.getElementById('loginUsername').value;
-    const password = document.getElementById('loginPassword').value;
+async function loginUsuario(event) {
+    if (event) event.preventDefault();
+    
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
 
     if (!username || !password) {
         mostrarRespuesta('loginResponse', '⚠️ Por favor ingresa usuario y contraseña', 'error');
@@ -88,11 +83,11 @@ async function loginUsuario() {
         const data = await response.text();
         
         if (response.ok) {
-            authToken = data; // Guardar en variable
-            localStorage.setItem('authToken', data); // ← Guardar en localStorage
-            mostrarRespuesta('loginResponse', '✅ Login exitoso', 'success');
-            mostrarToken(data);
-            habilitarSeccionesProtegidas();
+            localStorage.setItem('authToken', data);
+            mostrarRespuesta('loginResponse', '✅ Login exitoso. Redirigiendo...', 'success');
+            setTimeout(() => {
+                window.location.href = 'dashboard.html';
+            }, 1500);
         } else {
             mostrarRespuesta('loginResponse', data, 'error');
         }
@@ -105,8 +100,11 @@ async function loginUsuario() {
 // FUNCIÓN: FICHAR
 // ============================================
 async function fichar() {
+    const authToken = localStorage.getItem('authToken');
+    
     if (!authToken) {
-        mostrarRespuesta('ficharResponse', '⚠️ Debes hacer login primero', 'error');
+        mostrarRespuesta('ficharResponse', '⚠️ No estás autenticado', 'error');
+        setTimeout(() => window.location.href = 'login.html', 2000);
         return;
     }
 
@@ -124,7 +122,6 @@ async function fichar() {
             mostrarRespuesta('ficharResponse', data, 'success');
         } else {
             mostrarRespuesta('ficharResponse', data, 'error');
-            // Si el token expiró, limpiar sesión
             if (data.includes('Token inválido o expirado')) {
                 cerrarSesion();
             }
@@ -138,8 +135,11 @@ async function fichar() {
 // FUNCIÓN: LISTAR FICHAJES
 // ============================================
 async function listarFichajes() {
+    const authToken = localStorage.getItem('authToken');
+    
     if (!authToken) {
-        mostrarRespuesta('listarResponse', '⚠️ Debes hacer login primero', 'error');
+        mostrarRespuesta('listarResponse', '⚠️ No estás autenticado', 'error');
+        setTimeout(() => window.location.href = 'login.html', 2000);
         return;
     }
 
@@ -158,7 +158,6 @@ async function listarFichajes() {
         } else {
             const data = await response.text();
             mostrarRespuesta('listarResponse', data, 'error');
-            // Si el token expiró, limpiar sesión
             if (data.includes('Token inválido o expirado')) {
                 cerrarSesion();
             }
@@ -171,9 +170,14 @@ async function listarFichajes() {
 // ============================================
 // FUNCIÓN: SOLICITAR EDICIÓN
 // ============================================
-async function solicitarEdicion() {
+async function solicitarEdicion(event) {
+    if (event) event.preventDefault();
+    
+    const authToken = localStorage.getItem('authToken');
+    
     if (!authToken) {
-        mostrarRespuesta('edicionResponse', '⚠️ Debes hacer login primero', 'error');
+        mostrarRespuesta('edicionResponse', '⚠️ No estás autenticado', 'error');
+        setTimeout(() => window.location.href = 'login.html', 2000);
         return;
     }
 
@@ -210,16 +214,9 @@ async function solicitarEdicion() {
         
         if (response.ok) {
             mostrarRespuesta('edicionResponse', data, 'success');
-            // Limpiar campos
-            document.getElementById('edicionFecha').value = '';
-            document.getElementById('edicionHora').value = '';
-            document.getElementById('edicionNuevaFecha').value = '';
-            document.getElementById('edicionNuevaHora').value = '';
-            document.getElementById('edicionTipo').value = '';
-            document.getElementById('edicionUsoHorario').value = '';
+            document.getElementById('edicionForm').reset();
         } else {
             mostrarRespuesta('edicionResponse', data, 'error');
-            // Si el token expiró, limpiar sesión
             if (data.includes('Token inválido o expirado')) {
                 cerrarSesion();
             }
@@ -233,19 +230,8 @@ async function solicitarEdicion() {
 // FUNCIÓN: CERRAR SESIÓN
 // ============================================
 function cerrarSesion() {
-    authToken = null;
-    localStorage.removeItem('authToken'); // ← Eliminar de localStorage
-    document.getElementById('tokenDisplay').classList.remove('show');
-    document.getElementById('tokenDisplay').innerHTML = '';
-    document.getElementById('loginUsername').value = '';
-    document.getElementById('loginPassword').value = '';
-    mostrarRespuesta('loginResponse', '✅ Sesión cerrada', 'success');
-    
-    // Limpiar respuestas de secciones protegidas
-    document.getElementById('ficharResponse').style.display = 'none';
-    document.getElementById('listarResponse').style.display = 'none';
-    document.getElementById('edicionResponse').style.display = 'none';
-    document.getElementById('fichajesTable').innerHTML = '';
+    localStorage.removeItem('authToken');
+    window.location.href = 'index.html';
 }
 
 // ============================================
@@ -254,28 +240,19 @@ function cerrarSesion() {
 
 function mostrarRespuesta(elementId, mensaje, tipo) {
     const element = document.getElementById(elementId);
-    element.textContent = mensaje;
-    element.className = `response ${tipo}`;
-}
-
-function mostrarToken(token) {
-    const tokenDisplay = document.getElementById('tokenDisplay');
-    tokenDisplay.innerHTML = `<strong>🔑 Token JWT (guardado en localStorage):</strong><br>${token}`;
-    tokenDisplay.classList.add('show');
-}
-
-function habilitarSeccionesProtegidas() {
-    const protectedSections = document.querySelectorAll('.section.protected');
-    protectedSections.forEach(section => {
-        section.style.opacity = '1';
-    });
+    if (element) {
+        element.textContent = mensaje;
+        element.className = `response ${tipo}`;
+    }
 }
 
 function mostrarTablaFichajes(fichajes) {
     const tableContainer = document.getElementById('fichajesTable');
     
+    if (!tableContainer) return;
+    
     if (fichajes.length === 0) {
-        tableContainer.innerHTML = '<p style="text-align: center; color: #666;">No hay fichajes registrados</p>';
+        tableContainer.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">No hay fichajes registrados</p>';
         return;
     }
 
@@ -295,8 +272,8 @@ function mostrarTablaFichajes(fichajes) {
         tableHTML += `
             <tr>
                 <td>${fichaje.instante}</td>
-                <td>${fichaje.tipo}</td>
-                <td style="font-size: 0.8em; word-break: break-all;">${fichaje.huella}</td>
+                <td><strong>${fichaje.tipo}</strong></td>
+                <td style="font-size: 0.8em; word-break: break-all;">${fichaje.huella.substring(0, 20)}...</td>
             </tr>
         `;
     });

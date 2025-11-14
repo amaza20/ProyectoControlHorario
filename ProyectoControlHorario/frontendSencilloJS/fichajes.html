@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Fichajes - Control Horario</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">🕐 Control Horario</div>
+        <a href="dashboard.html" class="btn btn-secondary btn-sm">← Volver al Dashboard</a>
+    </nav>
+    
+    <div class="container">
+        <h1>📋 Mis Fichajes</h1>
+        
+        <button onclick="listarFichajes()" class="btn btn-primary">🔄 Actualizar Lista</button>
+        
+        <div id="listarResponse" class="response"></div>
+        <div id="fichajesTable"></div>
+    </div>
+    
+    <script src="script.js"></script>
+    <script>
+        if (!verificarSesion()) {
+            window.location.href = 'login.html';
+        }
+        
+        // Cargar fichajes automáticamente al abrir la página
+        window.addEventListener('DOMContentLoaded', () => {
+            listarFichajes();
+        });
+    </script>
+</body>
+</html>

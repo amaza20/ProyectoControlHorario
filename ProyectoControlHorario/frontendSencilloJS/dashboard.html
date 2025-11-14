@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Control Horario</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">🕐 Control Horario</div>
+        <div class="nav-user" id="navUser">Cargando...</div>
+        <button class="btn btn-danger btn-sm" onclick="cerrarSesion()">Cerrar Sesión</button>
+    </nav>
+    
+    <div class="container dashboard">
+        <h1>Panel de Control</h1>
+        <p class="subtitle">Selecciona una acción</p>
+        
+        <div class="dashboard-grid">
+            <a href="fichar.html" class="dashboard-card">
+                <span class="card-icon">⏰</span>
+                <h3>Fichar</h3>
+                <p>Registra tu entrada o salida</p>
+            </a>
+            
+            <a href="fichajes.html" class="dashboard-card">
+                <span class="card-icon">📋</span>
+                <h3>Ver Fichajes</h3>
+                <p>Consulta tu historial</p>
+            </a>
+            
+            <a href="editar.html" class="dashboard-card">
+                <span class="card-icon">✏️</span>
+                <h3>Solicitar Edición</h3>
+                <p>Modifica un fichaje existente</p>
+            </a>
+            
+            <a href="index.html" class="dashboard-card secondary" onclick="cerrarSesion()">
+                <span class="card-icon">🚪</span>
+                <h3>Salir</h3>
+                <p>Cerrar sesión</p>
+            </a>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+    <script>
+        // Verificar que el usuario esté autenticado
+        if (!verificarSesion()) {
+            window.location.href = 'login.html';
+        }
+        
+        // Mostrar nombre de usuario
+        const token = localStorage.getItem('authToken');
+        if (token) {
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                document.getElementById('navUser').textContent = `Usuario: ${payload.username || 'Desconocido'}`;
+            } catch (e) {
+                document.getElementById('navUser').textContent = 'Usuario';
+            }
+        }
+    </script>
+</body>
+</html>

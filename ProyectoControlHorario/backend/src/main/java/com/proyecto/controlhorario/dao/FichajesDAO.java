@@ -14,6 +14,7 @@ import com.proyecto.controlhorario.dao.entity.Fichajes;
 import com.proyecto.controlhorario.db.DatabaseManager;
 import com.proyecto.controlhorario.dto.FichajeDto;
 import org.springframework.stereotype.Repository;
+
 import java.sql.*;
 
 @Repository
@@ -145,5 +146,45 @@ public class FichajesDAO {
             e.printStackTrace();
         }
       return fichajesList;
+    }
+
+
+
+    public String verificarIntegridadFichajes(FichajeDto fichajeDto) {
+        String dbPath = dbFolder+"departamento_"+fichajeDto.getDepartamento().toLowerCase()+".db";
+        final String[] toret = { "✅ Integridad verificada: todos los fichajes son válidos." };
+
+        try {
+            DatabaseManager.withConnection(dbPath, conn -> {
+                boolean stop=false;
+                String sql = "SELECT id, username, instante, tipo, huella FROM fichajes ORDER BY id ASC";
+                try (Statement st = conn.createStatement();
+                    ResultSet rs = st.executeQuery(sql)) {
+
+                    String huellaAnterior = null;
+                    while (rs.next() && !stop) {
+                        String usuario = rs.getString("username");
+                        String fechaHora = rs.getString("instante");
+                        String tipo = rs.getString("tipo");
+                        String huellaGuardada = rs.getString("huella");
+
+                        String base = usuario + "|" + fechaHora + "|" + tipo + "|" + (huellaAnterior != null ? huellaAnterior : "GENESIS");
+                        String huellaCalculada = generarHash(base);
+
+                        if (!huellaCalculada.equals(huellaGuardada)) {
+                            toret[0]="Integridad comprometida en el registro ID=" + rs.getInt("id");
+                            stop=true;
+                        } else {
+                            huellaAnterior = huellaGuardada;
+                        }                   
+                    }
+                }
+            });
+
+            return toret[0];
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return "⚠️ Error al verificar integridad: " + e.getMessage();
+        }
     }
 }

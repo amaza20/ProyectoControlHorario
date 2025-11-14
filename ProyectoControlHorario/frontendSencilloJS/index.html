@@ -3,82 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Control Horario - API Tester</title>
+    <title>Control Horario - Inicio</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
-        <h1>🕐 Sistema de Control Horario</h1>
-        <p class="subtitle">Prueba todos los endpoints de tu API</p>
-
-        <!-- Sección de Registro -->
-        <div class="section">
-            <h2>📝 Registro de Usuario</h2>
-            <div class="form-group">
-                <input type="text" id="regUsername" placeholder="Username" required>
-                <input type="password" id="regPassword" placeholder="Password" required>
-                <input type="text" id="regDepartamento" placeholder="Departamento" required>
-                <select id="regRol">
-                    <option value="empleado">Empleado</option>
-                    <option value="administrador">Administrador</option>
-                </select>
-                <button onclick="registrarUsuario()">Registrar</button>
+    <div class="container landing">
+        <div class="hero">
+            <h1>🕐 Sistema de Control Horario</h1>
+            <p class="hero-subtitle">Gestiona tus fichajes de forma segura y eficiente</p>
+            
+            <div class="landing-buttons">
+                <a href="login.html" class="btn btn-primary">Iniciar Sesión</a>
+                <a href="registro.html" class="btn btn-secondary">Registrarse</a>
             </div>
-            <div id="regResponse" class="response"></div>
-        </div>
-
-        <!-- Sección de Login -->
-        <div class="section">
-            <h2>🔐 Login</h2>
-            <div class="form-group">
-                <input type="text" id="loginUsername" placeholder="Username" required>
-                <input type="password" id="loginPassword" placeholder="Password" required>
-                <button onclick="loginUsuario()">Login</button>
+            
+            <div class="features">
+                <div class="feature-card">
+                    <span class="feature-icon">🔐</span>
+                    <h3>Seguro</h3>
+                    <p>Autenticación con JWT</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">⏰</span>
+                    <h3>Fichajes</h3>
+                    <p>Registra entradas y salidas</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">✏️</span>
+                    <h3>Ediciones</h3>
+                    <p>Solicita cambios en tus registros</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">📊</span>
+                    <h3>Historial</h3>
+                    <p>Consulta todos tus fichajes</p>
+                </div>
             </div>
-            <div id="loginResponse" class="response"></div>
-            <div id="tokenDisplay" class="token-display"></div>
-        </div>
-
-        <!-- Sección de Fichar (requiere token) -->
-        <div class="section protected">
-            <h2>⏰ Fichar Entrada/Salida</h2>
-            <div class="form-group">
-                <button onclick="fichar()" class="btn-primary">Registrar Fichaje</button>
-            </div>
-            <div id="ficharResponse" class="response"></div>
-        </div>
-
-        <!-- Sección de Listar Fichajes -->
-        <div class="section protected">
-            <h2>📋 Listar Mis Fichajes</h2>
-            <div class="form-group">
-                <button onclick="listarFichajes()" class="btn-secondary">Ver Fichajes</button>
-            </div>
-            <div id="listarResponse" class="response"></div>
-            <div id="fichajesTable"></div>
-        </div>
-
-        <!-- Sección de Solicitar Edición -->
-        <div class="section protected">
-            <h2>✏️ Solicitar Edición de Fichaje</h2>
-            <div class="form-group">
-                <input type="date" id="edicionFecha" placeholder="Fecha actual" required>
-                <input type="time" id="edicionHora" placeholder="Hora actual" required>
-                <input type="date" id="edicionNuevaFecha" placeholder="Nueva fecha" required>
-                <input type="time" id="edicionNuevaHora" placeholder="Nueva hora" required>
-                <input type="text" id="edicionTipo" placeholder="Tipo (ENTRADA/SALIDA)" required>
-                <input type="text" id="edicionUsoHorario" placeholder="Uso horario (ej: trabajar)" required>
-                <button onclick="solicitarEdicion()">Solicitar Edición</button>
-            </div>
-            <div id="edicionResponse" class="response"></div>
-        </div>
-
-        <!-- Botón para cerrar sesión -->
-        <div class="section">
-            <button onclick="cerrarSesion()" class="btn-danger">Cerrar Sesión</button>
         </div>
     </div>
-
-    <script src="script.js"></script>
 </body>
 </html>

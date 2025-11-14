@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fichar - Control Horario</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">🕐 Control Horario</div>
+        <a href="dashboard.html" class="btn btn-secondary btn-sm">← Volver al Dashboard</a>
+    </nav>
+    
+    <div class="container">
+        <div class="form-container">
+            <h1>⏰ Registrar Fichaje</h1>
+            <p class="subtitle">Haz clic para registrar tu entrada o salida</p>
+            
+            <div class="clock" id="clock"></div>
+            
+            <button onclick="fichar()" class="btn btn-primary btn-large">
+                📍 Fichar Ahora
+            </button>
+            
+            <div id="ficharResponse" class="response"></div>
+            
+            <div class="info-box">
+                <p><strong>ℹ️ Información:</strong></p>
+                <p>El sistema registrará automáticamente si es entrada o salida según tu último fichaje.</p>
+            </div>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+    <script>
+        if (!verificarSesion()) {
+            window.location.href = 'login.html';
+        }
+        
+        // Reloj en tiempo real
+        function actualizarReloj() {
+            const ahora = new Date();
+            const opciones = { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            };
+            document.getElementById('clock').textContent = ahora.toLocaleDateString('es-ES', opciones);
+        }
+        
+        actualizarReloj();
+        setInterval(actualizarReloj, 1000);
+    </script>
+</body>
+</html>
