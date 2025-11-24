@@ -122,29 +122,6 @@ public class FichajesDAO {
       return toret[0];
     }
 
-    // Método para obtener la huella del último fichaje del departamento al que pertenece el usuario
-    public String obtenerUltimaHuella(String departamento){
-        String dbPath = dbFolder+"departamento_"+departamento.toLowerCase()+".db";
-        final String[] toret = {null};
-
-        try {
-            DatabaseManager.withConnection(dbPath, conn -> {
-                //  Obtener la última huella registrada
-                //  Usamos 'id' en lugar de 'instante' para consistencia
-                String queryUltima = "SELECT huella FROM fichajes ORDER BY id DESC LIMIT 1";
-                try (Statement st = conn.createStatement();
-                    ResultSet rs = st.executeQuery(queryUltima)) {
-                    if (rs.next()) {
-                        toret[0] = rs.getString("huella");
-                    }
-                }
-            });
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-      return toret[0];
-    }
-
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     public List<ListarFichajeUsuarioResponse> listarFichajesUsuario(String username, String departamento) {
