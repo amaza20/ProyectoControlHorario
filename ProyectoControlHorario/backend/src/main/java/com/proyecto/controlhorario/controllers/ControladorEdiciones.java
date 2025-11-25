@@ -8,7 +8,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.proyecto.controlhorario.controllers.dto.AprobarSolicitudResponse;
-import com.proyecto.controlhorario.controllers.dto.ListarFichajeUsuarioResponse;
 import com.proyecto.controlhorario.controllers.dto.ListarSolicitudesResponse;
 import com.proyecto.controlhorario.controllers.dto.SolicitudEdicionRequest;
 import com.proyecto.controlhorario.controllers.dto.SolicitudEdicionResponse;

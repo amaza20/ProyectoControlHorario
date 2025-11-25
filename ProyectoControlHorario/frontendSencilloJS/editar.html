@@ -28,18 +28,23 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="edicionNuevaFecha">Nueva Fecha</label>
-                    <input type="date" id="edicionNuevaFecha" required>
+                    <label for="nuevoInstante">Nuevo Instante (Fecha y Hora)</label>
+                    <input type="datetime-local" id="nuevoInstante" required>
+                    <small style="color: #666; display: block; margin-top: 5px;">
+                        Formato: YYYY-MM-DD HH:mm
+                    </small>
                 </div>
                 
                 <div class="form-group">
-                    <label for="edicionNuevaHora">Nueva Hora</label>
-                    <input type="time" id="edicionNuevaHora" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="edicionMotivo">Motivo de la Edición</label>
-                    <textarea id="edicionMotivo" placeholder="Explica por qué necesitas editar este fichaje" rows="4" required></textarea>
+                    <label for="usoHorario">Uso Horario</label>
+                    <select id="usoHorario" required>
+                        <option value="">Selecciona un uso horario</option>
+                        <option value="UTC+0">UTC+0 (Hora de Greenwich)</option>
+                        <option value="UTC+1">UTC+1 (España - Invierno)</option>
+                        <option value="UTC+2">UTC+2 (España - Verano)</option>
+                        <option value="UTC-5">UTC-5 (Nueva York)</option>
+                        <option value="UTC-8">UTC-8 (Los Ángeles)</option>
+                    </select>
                 </div>
                 
                 <button type="submit" class="btn btn-primary">Solicitar Edición</button>

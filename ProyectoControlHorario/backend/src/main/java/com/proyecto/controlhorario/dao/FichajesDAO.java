@@ -131,20 +131,28 @@ public class FichajesDAO {
         try {
             DatabaseManager.withConnection(dbPath, conn -> {
                 // 1 - Listar todos los fichajes del usuario
-                String instante, tipo;
+                String instante, tipo, nuevoInstante, nuevoTipo;
                 String query = """ 
-                                    SELECT instante, tipo
-                                    FROM fichajes
+                                    SELECT 
+                                        f.instante,
+                                        f.tipo,
+                                        e.id AS edicion_id,
+                                        e.instante AS edicion_instante,
+                                        e.tipo AS edicion_tipo,
+                                    FROM fichajes f
+                                    LEFT JOIN ediciones e ON f.id_edicion = e.id
                                     WHERE username = ?
-                                    ORDER BY instante DESC ; 
+                                    ORDER BY f.instante DESC;
                                 """;
                 try (PreparedStatement st = conn.prepareStatement(query)) {
                     st.setString(1, username);
                     ResultSet rst = st.executeQuery();
                     while (rst.next()) {
-                        instante = rst.getString("instante");
-                        tipo = rst.getString("tipo");
-                        fichajesList.add(new ListarFichajeUsuarioResponse(instante, tipo));
+                        instante = rst.getString("f.instante");
+                        tipo = rst.getString("f.tipo");
+                        nuevoInstante = rst.getString("e.edicion_instante");
+                        nuevoTipo = rst.getString("e.edicion_tipo");
+                        fichajesList.add(new ListarFichajeUsuarioResponse(instante, tipo, nuevoInstante, nuevoTipo));
                     }
                 }
             });

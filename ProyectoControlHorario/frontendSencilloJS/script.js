@@ -269,7 +269,7 @@ async function listarFichajes() {
 }
 
 // ============================================
-// FUNCIÓN: SOLICITAR EDICIÓN
+// FUNCIÓN: SOLICITAR EDICIÓN (ACTUALIZADA)
 // ============================================
 async function solicitarEdicion(event) {
     if (event) event.preventDefault();
@@ -283,14 +283,22 @@ async function solicitarEdicion(event) {
     }
 
     const fichajeId = document.getElementById('fichajeId').value;
-    const nuevaFecha = document.getElementById('edicionNuevaFecha').value;
-    const nuevaHora = document.getElementById('edicionNuevaHora').value;
-    const motivo = document.getElementById('edicionMotivo').value;
+    const nuevoInstanteInput = document.getElementById('nuevoInstante').value;
+    const usoHorario = document.getElementById('usoHorario').value;
 
-    if (!fichajeId || !nuevaFecha || !nuevaHora || !motivo) {
+    if (!fichajeId || !nuevoInstanteInput || !usoHorario) {
         mostrarRespuesta('edicionResponse', '⚠️ Por favor completa todos los campos', 'error');
         return;
     }
+
+    // Convertir el formato datetime-local (YYYY-MM-DDTHH:mm) a formato backend (YYYY-MM-DD HH:mm:ss)
+    const nuevoInstante = nuevoInstanteInput.replace('T', ' ') + ':00';
+
+    console.log('📤 Enviando solicitud de edición:', {
+        id_fichaje: parseInt(fichajeId),
+        nuevoInstante: nuevoInstante,
+        usoHorario: usoHorario
+    });
 
     try {
         const response = await fetch(`${API_BASE_URL}/solicitarEdicion`, {
@@ -300,10 +308,9 @@ async function solicitarEdicion(event) {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                fichajeId: parseInt(fichajeId),
-                nuevaFecha,
-                nuevaHora,
-                motivo
+                id_fichaje: parseInt(fichajeId),
+                nuevoInstante: nuevoInstante,
+                usoHorario: usoHorario
             })
         });
 
@@ -319,6 +326,7 @@ async function solicitarEdicion(event) {
             }
         }
     } catch (error) {
+        console.error('Error al solicitar edición:', error);
         mostrarRespuesta('edicionResponse', '❌ Error de conexión: ' + error.message, 'error');
     }
 }
@@ -555,7 +563,7 @@ function mostrarTablaFichajes(fichajes) {
 }
 
 // ============================================
-// FUNCIÓN: MOSTRAR TABLA DE SOLICITUDES (ACTUALIZADA PARA TU DTO)
+// FUNCIÓN: MOSTRAR TABLA DE SOLICITUDES (CORREGIDA PARA TU BACKEND)
 // ============================================
 function mostrarTablaSolicitudes(solicitudes) {
     const tableContainer = document.getElementById('solicitudesTable');
@@ -585,18 +593,39 @@ function mostrarTablaSolicitudes(solicitudes) {
         const id = sol.id || '-';
         const nuevoInstante = sol.nuevo_instante || 'N/A';
         const tipo = sol.tipo || 'N/A';
-        const aprobado = sol.aprobado || 'NO';
+        const aprobado = sol.aprobado;
         
-        // Solo mostrar botón de aprobar si aún no está aprobado
-        const estaAprobado = aprobado === 'SI' || aprobado === 'si' || aprobado === 'YES' || aprobado === 'yes' || aprobado === 'true' || aprobado === true;
+        // Verificar si está aprobado
+        // Tu backend devuelve "VERDADERO" o "FALSO"
+        let estaAprobado = false;
+        
+        if (typeof aprobado === 'boolean') {
+            estaAprobado = aprobado === true;
+        } else if (typeof aprobado === 'string') {
+            const aprobadoUpper = aprobado.toUpperCase().trim();
+            estaAprobado = aprobadoUpper === 'VERDADERO' || 
+                          aprobadoUpper === 'TRUE' || 
+                          aprobadoUpper === 'SI' || 
+                          aprobadoUpper === 'YES' ||
+                          aprobadoUpper === '1';
+        } else if (typeof aprobado === 'number') {
+            estaAprobado = aprobado === 1;
+        }
+        
+        // Determinar qué mostrar en la columna de acción
         const botonAprobar = !estaAprobado
             ? `<button class="btn btn-success btn-sm" onclick="aprobarSolicitud(${id})">✓ Aprobar</button>`
-            : `<span class="badge badge-success">✅ Aprobada</span>`;
+            : `<span style="color: #28a745; font-weight: bold;">✅ Aprobada</span>`;
         
-        const estadoTexto = !estaAprobado ? '⏳ Pendiente' : '✅ Aprobada';
+        const estadoTexto = !estaAprobado 
+            ? '<span style="color: #ffc107;">⏳ Pendiente</span>' 
+            : '<span style="color: #28a745;">✅ Aprobada</span>';
+        
+        // Estilo diferente para solicitudes aprobadas
+        const estiloFila = estaAprobado ? 'style="opacity: 0.6; background-color: #f0f0f0;"' : '';
         
         tableHTML += `
-            <tr>
+            <tr ${estiloFila}>
                 <td>${id}</td>
                 <td>${nuevoInstante}</td>
                 <td><strong>${tipo}</strong></td>
