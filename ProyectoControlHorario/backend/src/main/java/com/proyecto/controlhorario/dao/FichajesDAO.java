@@ -132,7 +132,6 @@ public class FichajesDAO {
             DatabaseManager.withConnection(dbPath, conn -> {
                 // 1 - Listar todos los fichajes del usuario
                 String instante, tipo;
-   ;
                 String query = """ 
                                     SELECT instante, tipo
                                     FROM fichajes

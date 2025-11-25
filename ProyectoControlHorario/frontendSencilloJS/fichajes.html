@@ -9,28 +9,43 @@
 <body>
     <nav class="navbar">
         <div class="nav-brand">🕐 Control Horario</div>
-        <a href="dashboard.html" class="btn btn-secondary btn-sm">← Volver al Dashboard</a>
+        <div class="nav-user" id="navUser">Cargando...</div>
+        <a href="dashboard.html" class="btn btn-secondary btn-sm">← Volver</a>
     </nav>
     
     <div class="container">
-        <h1>📋 Mis Fichajes</h1>
-        
-        <button onclick="listarFichajes()" class="btn btn-primary">🔄 Actualizar Lista</button>
-        
-        <div id="listarResponse" class="response"></div>
-        <div id="fichajesTable"></div>
+        <div class="card">
+            <h1>📋 Mis Fichajes</h1>
+            <p class="subtitle">Consulta tu historial de fichajes</p>
+            
+            <button class="btn btn-primary" onclick="listarFichajes()">🔄 Actualizar Lista</button>
+            
+            <div id="listarResponse" class="response"></div>
+            
+            <div id="fichajesTable"></div>
+        </div>
     </div>
     
     <script src="script.js"></script>
     <script>
+        // Verificar que el usuario esté autenticado
         if (!verificarSesion()) {
             window.location.href = 'login.html';
+        } else {
+            // Verificar que sea empleado o supervisor
+            const verificado = verificarRol(['empleado', 'supervisor']);
+            
+            // Mostrar nombre de usuario
+            const datos = obtenerDatosToken();
+            if (datos) {
+                document.getElementById('navUser').textContent = `${datos.username} (${datos.rol})`;
+            }
+            
+            // Cargar fichajes automáticamente al entrar
+            if (verificado) {
+                listarFichajes();
+            }
         }
-        
-        // Cargar fichajes automáticamente al abrir la página
-        window.addEventListener('DOMContentLoaded', () => {
-            listarFichajes();
-        });
     </script>
 </body>
 </html>

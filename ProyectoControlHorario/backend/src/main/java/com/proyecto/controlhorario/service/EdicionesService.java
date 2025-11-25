@@ -1,8 +1,12 @@
 package com.proyecto.controlhorario.service;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import com.proyecto.controlhorario.controllers.dto.AprobarSolicitudResponse;
+import com.proyecto.controlhorario.controllers.dto.ListarFichajeUsuarioResponse;
+import com.proyecto.controlhorario.controllers.dto.ListarSolicitudesResponse;
 import com.proyecto.controlhorario.controllers.dto.SolicitudEdicionRequest;
 import com.proyecto.controlhorario.controllers.dto.SolicitudEdicionResponse;
 import com.proyecto.controlhorario.dao.EdicionesDAO;
@@ -58,4 +62,19 @@ public class EdicionesService {
         
         return response;
     }
+
+    // Nuevo método para listar solicitudes
+    public List<ListarSolicitudesResponse> listarSolicitudes(String departamento, String rol) {
+
+        // Solo el rol 'supervisor' podra listar las solicitudes de edicion de fichaje, ya que es el unico que puede aprobarlas
+        // El supervisor es un empleado que pertenece al mismo departamento que el fichaje
+
+        if (!rol.equals("Supervisor")) {
+            throw new ForbiddenException("Solo el rol de SUPERVISOR puede listar las solicitudes de edicion de fichaje");
+        }
+
+        List<ListarSolicitudesResponse> response = solicitudEdicionDAO.listarSolicitudes(departamento);
+        return response;
+    }
+
 }

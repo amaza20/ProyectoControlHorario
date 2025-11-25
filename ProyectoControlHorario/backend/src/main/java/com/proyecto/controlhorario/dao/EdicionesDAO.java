@@ -1,14 +1,16 @@
 package com.proyecto.controlhorario.dao;
-
-import java.beans.Statement;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
 import com.proyecto.controlhorario.controllers.dto.AprobarSolicitudResponse;
+import com.proyecto.controlhorario.controllers.dto.ListarFichajeUsuarioResponse;
+import com.proyecto.controlhorario.controllers.dto.ListarSolicitudesResponse;
 import com.proyecto.controlhorario.controllers.dto.SolicitudEdicionResponse;
 import com.proyecto.controlhorario.dao.entity.Edicion;
 import com.proyecto.controlhorario.dao.entity.SolicitudEdicion;
@@ -197,4 +199,37 @@ public class EdicionesDAO {
         return edicion;
     }
 
+
+    // Metodo para listar todas las solicitudes de edicion de un departamento
+    public List<ListarSolicitudesResponse> listarSolicitudes(String departamento) {
+        String dbPath = dbFolder+"departamento_"+departamento.toLowerCase()+".db";
+        List<ListarSolicitudesResponse> solicitudesList = new ArrayList<>();
+
+        try {
+            DatabaseManager.withConnection(dbPath, conn -> {
+                // 1 - Listar todos las solicitudes de edicion
+                String query = """ 
+                                    SELECT id, fichaje_id, nuevo_instante, tipo, aprobado
+                                    FROM solicitud_edicion
+                                    ORDER BY id DESC ; 
+                                """;
+                try (PreparedStatement st = conn.prepareStatement(query)) {
+                    ResultSet rst = st.executeQuery();
+                    while (rst.next()) {
+                        solicitudesList.add(new ListarSolicitudesResponse(
+                            rst.getInt("id"),
+                            rst.getString("nuevo_instante"),
+                            rst.getString("tipo"),
+                            rst.getString("aprobado")
+                        ));
+                    }
+                }
+            });
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return solicitudesList;
+    }
+
 }
+

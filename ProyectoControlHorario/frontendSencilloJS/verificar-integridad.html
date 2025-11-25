@@ -9,67 +9,55 @@
 <body>
     <nav class="navbar">
         <div class="nav-brand">🕐 Control Horario</div>
-        <a href="dashboard.html" class="btn btn-secondary btn-sm">← Volver al Dashboard</a>
+        <div class="nav-user" id="navUser">Cargando...</div>
+        <a href="dashboard.html" class="btn btn-secondary btn-sm">← Volver</a>
     </nav>
     
     <div class="container">
-        <div class="form-container" style="max-width: 700px;">
+        <div class="card">
             <h1>🔐 Verificar Integridad de Fichajes</h1>
-            <p class="subtitle">Comprueba que no se han modificado registros de forma fraudulenta</p>
+            <p class="subtitle">Comprueba la autenticidad de los registros mediante blockchain</p>
             
-            <div class="info-box" style="margin-bottom: 20px;">
-                <p><strong>ℹ️ Sistema Blockchain:</strong></p>
-                <p>Cada fichaje tiene un hash único que depende del fichaje anterior, formando una cadena. Si alguien modifica un registro, toda la cadena se invalida.</p>
-            </div>
-            
-            <form id="verificarForm" onsubmit="verificarIntegridad(event)">
+            <form onsubmit="verificarIntegridad(event)">
                 <div class="form-group">
-                    <label for="departamento">Departamento a verificar</label>
-                    <select id="departamento" required>
-                        <option value="" disabled selected>Selecciona un departamento</option>
-                        <option value="IT">IT</option>
-                        <option value="RRHH">RRHH</option>
-                        <option value="Finanzas">Finanzas</option>
-                    </select>
+                    <label for="departamento">Departamento a Verificar</label>
+                    <input type="text" id="departamento" placeholder="Ingresa el nombre del departamento" required>
                 </div>
                 
-                <button type="submit" class="btn btn-primary btn-block">
-                    🔍 Verificar Integridad
-                </button>
+                <button type="submit" class="btn btn-primary">🔍 Verificar Integridad</button>
             </form>
             
             <div id="verificarResponse" class="response"></div>
             
-            <div id="detallesVerificacion" class="detalles-verificacion"></div>
+            <div id="detallesVerificacion" style="margin-top: 30px;"></div>
+            
+            <div style="margin-top: 30px; padding: 15px; background-color: #f0f0f0; border-radius: 8px;">
+                <strong>ℹ️ ¿Qué es la verificación de integridad?</strong>
+                <p style="margin-top: 10px;">
+                    El sistema utiliza una cadena de hashes (blockchain) para garantizar que ningún 
+                    fichaje haya sido modificado de forma fraudulenta. Cada fichaje contiene un hash 
+                    que depende del fichaje anterior, creando una cadena inmutable.
+                </p>
+                <ul style="margin-top: 10px; padding-left: 20px;">
+                    <li>✅ <strong>Integridad OK:</strong> Todos los registros son auténticos</li>
+                    <li>⚠️ <strong>Integridad Comprometida:</strong> Se detectaron modificaciones no autorizadas</li>
+                </ul>
+            </div>
         </div>
     </div>
     
     <script src="script.js"></script>
     <script>
+        // Verificar que el usuario sea administrador o auditor
         if (!verificarSesion()) {
             window.location.href = 'login.html';
-        }
-        
-        // Verificar que el usuario tenga permisos de administrador
-        const token = localStorage.getItem('authToken');
-        if (token) {
-            try {
-                const payload = JSON.parse(atob(token.split('.')[1]));
-                
-                // Convertir a minúsculas para comparar sin importar mayúsculas
-                const rol = payload.rol ? payload.rol.toLowerCase().trim() : '';
-                
-                console.log('🔍 Rol detectado:', payload.rol);
-                console.log('🔍 Rol normalizado:', rol);
-                
-                if (rol !== 'administrador' && rol !== 'supervisor') {
-                    alert('⚠️ No tienes permisos para acceder a esta funcionalidad');
-                    window.location.href = 'dashboard.html';
-                } else {
-                    console.log('✅ Acceso permitido - Usuario es ' + rol);
-                }
-            } catch (e) {
-                console.error('Error al verificar permisos:', e);
+        } else {
+            const verificado = verificarRol(['administrador', 'auditor']);
+            
+            // Mostrar nombre de usuario
+            const datos = obtenerDatosToken();
+            if (datos) {
+                document.getElementById('navUser').textContent = `${datos.username} (${datos.rol})`;
             }
         }
     </script>

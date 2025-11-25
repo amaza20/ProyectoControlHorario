@@ -9,65 +9,69 @@
 <body>
     <nav class="navbar">
         <div class="nav-brand">🕐 Control Horario</div>
-        <a href="dashboard.html" class="btn btn-secondary btn-sm">← Volver al Dashboard</a>
+        <div class="nav-user" id="navUser">Cargando...</div>
+        <a href="dashboard.html" class="btn btn-secondary btn-sm">← Volver</a>
     </nav>
     
     <div class="container">
-        <div class="form-container">
+        <div class="card">
             <h1>✏️ Solicitar Edición de Fichaje</h1>
+            <p class="subtitle">Solicita modificar un fichaje existente</p>
             
             <form id="edicionForm" onsubmit="solicitarEdicion(event)">
-                <h3>Fichaje Original</h3>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="edicionFecha">Fecha Actual</label>
-                        <input type="date" id="edicionFecha" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="edicionHora">Hora Actual</label>
-                        <input type="time" id="edicionHora" required>
-                    </div>
-                </div>
-                
-                <h3>Nuevo Fichaje</h3>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="edicionNuevaFecha">Nueva Fecha</label>
-                        <input type="date" id="edicionNuevaFecha" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="edicionNuevaHora">Nueva Hora</label>
-                        <input type="time" id="edicionNuevaHora" required>
-                    </div>
+                <div class="form-group">
+                    <label for="fichajeId">ID del Fichaje a Editar</label>
+                    <input type="number" id="fichajeId" placeholder="Ingresa el ID del fichaje" required>
+                    <small style="color: #666; display: block; margin-top: 5px;">
+                        Consulta el ID en "Ver Fichajes"
+                    </small>
                 </div>
                 
                 <div class="form-group">
-                    <label for="edicionTipo">Tipo de Fichaje</label>
-                    <select id="edicionTipo" required>
-                        <option value="">Selecciona...</option>
-                        <option value="ENTRADA">Entrada</option>
-                        <option value="SALIDA">Salida</option>
-                    </select>
+                    <label for="edicionNuevaFecha">Nueva Fecha</label>
+                    <input type="date" id="edicionNuevaFecha" required>
                 </div>
                 
                 <div class="form-group">
-                    <label for="edicionUsoHorario">Motivo / Uso Horario</label>
-                    <input type="text" id="edicionUsoHorario" placeholder="Ej: trabajar, reunión, formación" required>
+                    <label for="edicionNuevaHora">Nueva Hora</label>
+                    <input type="time" id="edicionNuevaHora" required>
                 </div>
                 
-                <button type="submit" class="btn btn-primary btn-block">Enviar Solicitud</button>
+                <div class="form-group">
+                    <label for="edicionMotivo">Motivo de la Edición</label>
+                    <textarea id="edicionMotivo" placeholder="Explica por qué necesitas editar este fichaje" rows="4" required></textarea>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Solicitar Edición</button>
             </form>
             
             <div id="edicionResponse" class="response"></div>
+            
+            <div style="margin-top: 30px; padding: 15px; background-color: #fff3cd; border-radius: 8px; border-left: 4px solid #ffc107;">
+                <strong>ℹ️ Información:</strong>
+                <ul style="margin-top: 10px; padding-left: 20px;">
+                    <li>Tu solicitud será enviada a un supervisor para su aprobación</li>
+                    <li>El supervisor debe pertenecer al mismo departamento</li>
+                    <li>Una vez aprobada, el fichaje se actualizará automáticamente</li>
+                </ul>
+            </div>
         </div>
     </div>
     
     <script src="script.js"></script>
     <script>
+        // Verificar que el usuario esté autenticado
         if (!verificarSesion()) {
             window.location.href = 'login.html';
+        } else {
+            // Verificar que sea empleado o supervisor
+            const verificado = verificarRol(['empleado', 'supervisor']);
+            
+            // Mostrar nombre de usuario
+            const datos = obtenerDatosToken();
+            if (datos) {
+                document.getElementById('navUser').textContent = `${datos.username} (${datos.rol})`;
+            }
         }
     </script>
 </body>

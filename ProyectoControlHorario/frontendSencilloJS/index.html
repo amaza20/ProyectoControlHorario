@@ -10,36 +10,91 @@
     <div class="container landing">
         <div class="hero">
             <h1>🕐 Sistema de Control Horario</h1>
-            <p class="hero-subtitle">Gestiona tus fichajes de forma segura y eficiente</p>
+            <p class="hero-subtitle">Gestiona tus fichajes de forma segura y eficiente con tecnología blockchain</p>
             
             <div class="landing-buttons">
-                <a href="login.html" class="btn btn-primary">Iniciar Sesión</a>
-                <a href="registro.html" class="btn btn-secondary">Registrarse</a>
+                <a href="login.html" class="btn btn-primary btn-large">Iniciar Sesión</a>
             </div>
             
             <div class="features">
                 <div class="feature-card">
                     <span class="feature-icon">🔐</span>
                     <h3>Seguro</h3>
-                    <p>Autenticación con JWT</p>
+                    <p>Autenticación con JWT y encriptación BCrypt</p>
                 </div>
                 <div class="feature-card">
                     <span class="feature-icon">⏰</span>
                     <h3>Fichajes</h3>
-                    <p>Registra entradas y salidas</p>
+                    <p>Registra entradas y salidas en tiempo real</p>
                 </div>
                 <div class="feature-card">
                     <span class="feature-icon">✏️</span>
                     <h3>Ediciones</h3>
-                    <p>Solicita cambios en tus registros</p>
+                    <p>Solicita cambios con aprobación de supervisor</p>
                 </div>
                 <div class="feature-card">
                     <span class="feature-icon">📊</span>
                     <h3>Historial</h3>
-                    <p>Consulta todos tus fichajes</p>
+                    <p>Consulta todos tus fichajes registrados</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">🔗</span>
+                    <h3>Blockchain</h3>
+                    <p>Integridad garantizada con cadena de hashes</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">👥</span>
+                    <h3>Roles</h3>
+                    <p>Sistema de permisos por departamentos</p>
+                </div>
+            </div>
+            
+            <div style="margin-top: 60px; padding: 30px; background: rgba(255, 255, 255, 0.95); border-radius: 15px; box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);">
+                <h2 style="color: #667eea; margin-bottom: 20px;">🎯 Sistema de Roles</h2>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; text-align: left;">
+                    <div>
+                        <h4 style="color: #333; margin-bottom: 10px;">👔 Administrador</h4>
+                        <ul style="color: #666; font-size: 0.9em; padding-left: 20px;">
+                            <li>Crear usuarios</li>
+                            <li>Verificar integridad</li>
+                            <li>Gestión completa</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 style="color: #333; margin-bottom: 10px;">🔍 Auditor</h4>
+                        <ul style="color: #666; font-size: 0.9em; padding-left: 20px;">
+                            <li>Verificar integridad</li>
+                            <li>Auditoría de blockchain</li>
+                            <li>Revisión de registros</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 style="color: #333; margin-bottom: 10px;">👨‍💼 Supervisor</h4>
+                        <ul style="color: #666; font-size: 0.9em; padding-left: 20px;">
+                            <li>Aprobar solicitudes</li>
+                            <li>Fichar y editar</li>
+                            <li>Ver su departamento</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 style="color: #333; margin-bottom: 10px;">👤 Empleado</h4>
+                        <ul style="color: #666; font-size: 0.9em; padding-left: 20px;">
+                            <li>Fichar entrada/salida</li>
+                            <li>Ver sus fichajes</li>
+                            <li>Solicitar ediciones</li>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+    
+    <script src="script.js"></script>
+    <script>
+        // Si el usuario ya está autenticado, redirigir al dashboard
+        if (verificarSesion()) {
+            window.location.href = 'dashboard.html';
+        }
+    </script>
 </body>
 </html>

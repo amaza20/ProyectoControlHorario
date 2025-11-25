@@ -9,52 +9,80 @@
 <body>
     <nav class="navbar">
         <div class="nav-brand">🕐 Control Horario</div>
-        <a href="dashboard.html" class="btn btn-secondary btn-sm">← Volver al Dashboard</a>
+        <div class="nav-user" id="navUser">Cargando...</div>
+        <a href="dashboard.html" class="btn btn-secondary btn-sm">← Volver</a>
     </nav>
     
     <div class="container">
-        <div class="form-container">
-            <h1>⏰ Registrar Fichaje</h1>
-            <p class="subtitle">Haz clic para registrar tu entrada o salida</p>
+        <div class="card text-center">
+            <h1>⏰ Fichar</h1>
+            <p class="subtitle">Registra tu entrada o salida</p>
             
-            <div class="clock" id="clock"></div>
+            <div style="margin: 40px 0;">
+                <div id="relojActual" style="font-size: 3em; font-weight: bold; color: #2196F3; margin-bottom: 20px;">
+                    --:--:--
+                </div>
+                <div id="fechaActual" style="font-size: 1.2em; color: #666; margin-bottom: 40px;">
+                    -- de ------ de ----
+                </div>
+            </div>
             
-            <button onclick="fichar()" class="btn btn-primary btn-large">
-                📍 Fichar Ahora
+            <button class="btn btn-primary btn-large" onclick="fichar()" style="font-size: 1.5em; padding: 20px 40px;">
+                ✓ Fichar Ahora
             </button>
             
-            <div id="ficharResponse" class="response"></div>
+            <div id="ficharResponse" class="response" style="margin-top: 30px;"></div>
             
-            <div class="info-box">
-                <p><strong>ℹ️ Información:</strong></p>
-                <p>El sistema registrará automáticamente si es entrada o salida según tu último fichaje.</p>
+            <div style="margin-top: 40px; padding: 15px; background-color: #f0f0f0; border-radius: 8px; text-align: left;">
+                <strong>ℹ️ Información:</strong>
+                <ul style="margin-top: 10px; padding-left: 20px;">
+                    <li>El sistema detectará automáticamente si es entrada o salida</li>
+                    <li>Cada fichaje queda registrado en la blockchain</li>
+                    <li>Si necesitas corregir un fichaje, solicita una edición desde el dashboard</li>
+                </ul>
             </div>
         </div>
     </div>
     
     <script src="script.js"></script>
     <script>
+        // Verificar que el usuario esté autenticado
         if (!verificarSesion()) {
             window.location.href = 'login.html';
+        } else {
+            // Verificar que sea empleado o supervisor
+            const verificado = verificarRol(['empleado', 'supervisor']);
+            
+            // Mostrar nombre de usuario
+            const datos = obtenerDatosToken();
+            if (datos) {
+                document.getElementById('navUser').textContent = `${datos.username} (${datos.rol})`;
+            }
         }
         
-        // Reloj en tiempo real
+        // Actualizar reloj en tiempo real
         function actualizarReloj() {
             const ahora = new Date();
-            const opciones = { 
-                weekday: 'long', 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit'
-            };
-            document.getElementById('clock').textContent = ahora.toLocaleDateString('es-ES', opciones);
+            
+            const horas = String(ahora.getHours()).padStart(2, '0');
+            const minutos = String(ahora.getMinutes()).padStart(2, '0');
+            const segundos = String(ahora.getSeconds()).padStart(2, '0');
+            
+            const dias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+            const meses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+            
+            const diaSemana = dias[ahora.getDay()];
+            const dia = ahora.getDate();
+            const mes = meses[ahora.getMonth()];
+            const año = ahora.getFullYear();
+            
+            document.getElementById('relojActual').textContent = `${horas}:${minutos}:${segundos}`;
+            document.getElementById('fechaActual').textContent = `${diaSemana}, ${dia} de ${mes} de ${año}`;
         }
         
-        actualizarReloj();
+        // Actualizar cada segundo
         setInterval(actualizarReloj, 1000);
+        actualizarReloj(); // Llamar inmediatamente
     </script>
 </body>
 </html>

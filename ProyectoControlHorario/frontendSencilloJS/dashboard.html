@@ -15,32 +15,49 @@
     
     <div class="container dashboard">
         <h1>Panel de Control</h1>
-        <p class="subtitle">Selecciona una acción</p>
+        <p class="subtitle" id="rolSubtitle">Selecciona una acción</p>
         
         <div class="dashboard-grid">
-            <a href="fichar.html" class="dashboard-card">
+            <!-- FICHAR - Todos excepto Administrador y Auditor -->
+            <a href="fichar.html" class="dashboard-card" id="cardFichar">
                 <span class="card-icon">⏰</span>
                 <h3>Fichar</h3>
                 <p>Registra tu entrada o salida</p>
             </a>
             
-            <a href="fichajes.html" class="dashboard-card">
+            <!-- VER FICHAJES - Todos excepto Administrador y Auditor -->
+            <a href="fichajes.html" class="dashboard-card" id="cardFichajes">
                 <span class="card-icon">📋</span>
                 <h3>Ver Fichajes</h3>
                 <p>Consulta tu historial</p>
             </a>
             
-            <a href="editar.html" class="dashboard-card">
+            <!-- SOLICITAR EDICIÓN - Empleado y Supervisor -->
+            <a href="editar.html" class="dashboard-card" id="cardEditar">
                 <span class="card-icon">✏️</span>
                 <h3>Solicitar Edición</h3>
                 <p>Modifica un fichaje existente</p>
             </a>
             
-            <!-- Solo visible para admin/supervisor -->
-            <a href="verificar-integridad.html" class="dashboard-card" id="cardVerificar">
+            <!-- APROBAR SOLICITUDES - Solo Supervisor -->
+            <a href="aprobar-solicitudes.html" class="dashboard-card" id="cardAprobar" style="display: none;">
+                <span class="card-icon">✅</span>
+                <h3>Aprobar Solicitudes</h3>
+                <p>Revisar ediciones pendientes</p>
+            </a>
+            
+            <!-- VERIFICAR INTEGRIDAD - Solo Administrador y Auditor -->
+            <a href="verificar-integridad.html" class="dashboard-card" id="cardVerificar" style="display: none;">
                 <span class="card-icon">🔐</span>
                 <h3>Verificar Integridad</h3>
                 <p>Comprobar cadena blockchain</p>
+            </a>
+            
+            <!-- REGISTRAR USUARIOS - Solo Administrador -->
+            <a href="registro.html" class="dashboard-card" id="cardRegistro" style="display: none;">
+                <span class="card-icon">👤</span>
+                <h3>Registrar Usuario</h3>
+                <p>Crear nuevos usuarios</p>
             </a>
             
             <a href="index.html" class="dashboard-card secondary" onclick="cerrarSesion()">
@@ -58,34 +75,69 @@
             window.location.href = 'login.html';
         }
         
-        // Obtener el token una sola vez
-        const token = localStorage.getItem('authToken');
+        // Obtener datos del token
+        const datos = obtenerDatosToken();
         
-        if (token) {
-            try {
-                const payload = JSON.parse(atob(token.split('.')[1]));
-                
-                // Mostrar nombre de usuario
-                document.getElementById('navUser').textContent = `Usuario: ${payload.username || 'Desconocido'}`;
-                
-                // Convertir a minúsculas para comparar sin importar mayúsculas
-                const rol = payload.rol ? payload.rol.toLowerCase().trim() : '';
-                
-                console.log('🔍 Rol detectado:', payload.rol);
-                console.log('🔍 Rol normalizado:', rol);
-                
-                // Ocultar la tarjeta de verificación si no es admin/supervisor
-                if (rol !== 'administrador' && rol !== 'supervisor') {
-                    const cardVerificar = document.getElementById('cardVerificar');
-                    if (cardVerificar) {
-                        cardVerificar.style.display = 'none';
-                    }
-                }
-                
-            } catch (e) {
-                console.error('Error al procesar token:', e);
-                document.getElementById('navUser').textContent = 'Usuario';
+        if (datos) {
+            // Mostrar nombre de usuario y rol
+            document.getElementById('navUser').textContent = `${datos.username} (${datos.rol})`;
+            document.getElementById('rolSubtitle').textContent = `Rol: ${datos.rol} ${datos.departamento ? '- Departamento: ' + datos.departamento : ''}`;
+            
+            const rol = datos.rol.toLowerCase().trim();
+            
+            console.log('🔍 Rol detectado:', datos.rol);
+            console.log('🔍 Rol normalizado:', rol);
+            
+            // Ocultar/Mostrar tarjetas según el rol
+            const cardFichar = document.getElementById('cardFichar');
+            const cardFichajes = document.getElementById('cardFichajes');
+            const cardEditar = document.getElementById('cardEditar');
+            const cardAprobar = document.getElementById('cardAprobar');
+            const cardVerificar = document.getElementById('cardVerificar');
+            const cardRegistro = document.getElementById('cardRegistro');
+            
+            // Por defecto, ocultar todas las tarjetas específicas
+            cardFichar.style.display = 'none';
+            cardFichajes.style.display = 'none';
+            cardEditar.style.display = 'none';
+            cardAprobar.style.display = 'none';
+            cardVerificar.style.display = 'none';
+            cardRegistro.style.display = 'none';
+            
+            // Mostrar según el rol
+            switch(rol) {
+                case 'administrador':
+                    // El administrador solo puede registrar usuarios y verificar integridad
+                    cardVerificar.style.display = 'block';
+                    cardRegistro.style.display = 'block';
+                    break;
+                    
+                case 'auditor':
+                    // El auditor solo puede verificar integridad
+                    cardVerificar.style.display = 'block';
+                    break;
+                    
+                case 'supervisor':
+                    // El supervisor puede hacer todo excepto registrar usuarios
+                    cardFichar.style.display = 'block';
+                    cardFichajes.style.display = 'block';
+                    cardEditar.style.display = 'block';
+                    cardAprobar.style.display = 'block';
+                    break;
+                    
+                case 'empleado':
+                    // El empleado puede fichar, ver fichajes y solicitar ediciones
+                    cardFichar.style.display = 'block';
+                    cardFichajes.style.display = 'block';
+                    cardEditar.style.display = 'block';
+                    break;
+                    
+                default:
+                    console.warn('⚠️ Rol no reconocido:', rol);
             }
+        } else {
+            document.getElementById('navUser').textContent = 'Usuario';
+            cerrarSesion();
         }
     </script>
 </body>

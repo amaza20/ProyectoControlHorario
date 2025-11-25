@@ -1,5 +1,6 @@
 package com.proyecto.controlhorario.controllers;
 
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.HttpStatus;
@@ -7,6 +8,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.proyecto.controlhorario.controllers.dto.AprobarSolicitudResponse;
+import com.proyecto.controlhorario.controllers.dto.ListarFichajeUsuarioResponse;
+import com.proyecto.controlhorario.controllers.dto.ListarSolicitudesResponse;
 import com.proyecto.controlhorario.controllers.dto.SolicitudEdicionRequest;
 import com.proyecto.controlhorario.controllers.dto.SolicitudEdicionResponse;
 import com.proyecto.controlhorario.exceptions.ForbiddenException;
@@ -106,5 +109,46 @@ public class ControladorEdiciones {
                     .body(new AprobarSolicitudResponse("Error interno: " + e.getMessage()));
         }
     }
+
+
+
+    @GetMapping("/listarSolicitudes")
+    public ResponseEntity<?> listarSolicitudes(@RequestHeader("Authorization") String authHeader) {
+       try {
+            // 1️⃣ Extraer el token (sin "Bearer ")
+            String token = authHeader.replace("Bearer ", "");
+
+            // 2️⃣ Validar token y obtener claims
+            Map<String, Object> claims = JwtUtil.validateToken(token);
+            String departamento = (String) claims.get("departamento");
+            String rol = (String) claims.get("rol");
+
+
+            // 3️⃣ Listar toda las solicitudes del departamento correspondiente
+            List<ListarSolicitudesResponse> response = servicio.listarSolicitudes(departamento, rol);  
+
+            // En Spring Boot, la conversión a JSON es automática gracias a Jackson
+            return ResponseEntity
+                    .status(HttpStatus.OK)                                                                         
+                    .body(response);
+        } catch (JwtException e) {
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body("Error: " + e.getMessage());
+        }catch (ForbiddenException e) {
+            return ResponseEntity
+                    .status(HttpStatus.FORBIDDEN)
+                    .body("Error: " + e.getMessage());
+        }catch (IllegalArgumentException e) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body("Error: " + e.getMessage());
+        }catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error interno: " + e.getMessage());
+        }
+    }
+
     
 }

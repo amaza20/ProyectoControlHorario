@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aprobar Solicitudes - Control Horario</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">🕐 Control Horario</div>
+        <div class="nav-user" id="navUser">Cargando...</div>
+        <a href="dashboard.html" class="btn btn-secondary btn-sm">← Volver</a>
+    </nav>
+    
+    <div class="container">
+        <div class="card">
+            <h1>✅ Aprobar Solicitudes de Edición</h1>
+            <p class="subtitle">Revisa y aprueba las solicitudes pendientes de tu departamento</p>
+            
+            <button class="btn btn-primary" onclick="listarSolicitudesPendientes()" style="margin-bottom: 20px;">
+                🔄 Actualizar Lista
+            </button>
+            
+            <div id="solicitudesResponse" class="response"></div>
+            
+            <div id="solicitudesTable"></div>
+            
+            <div style="margin-top: 30px; padding: 15px; background-color: #e3f2fd; border-radius: 8px; border-left: 4px solid #2196F3;">
+                <strong>ℹ️ Información para Supervisores:</strong>
+                <ul style="margin-top: 10px; padding-left: 20px;">
+                    <li>Solo puedes aprobar solicitudes de tu mismo departamento</li>
+                    <li>Al aprobar, el fichaje se actualizará automáticamente</li>
+                    <li>La cadena de hashes se recalculará para mantener la integridad</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+    <script>
+        // Verificar que el usuario sea supervisor
+        if (!verificarSesion()) {
+            window.location.href = 'login.html';
+        } else {
+            const verificado = verificarRol(['supervisor']);
+            
+            // Mostrar nombre de usuario
+            const datos = obtenerDatosToken();
+            if (datos) {
+                document.getElementById('navUser').textContent = `${datos.username} (${datos.rol})`;
+            }
+            
+            // Cargar solicitudes automáticamente al entrar
+            if (verificado) {
+                listarSolicitudesPendientes();
+            }
+        }
+    </script>
+</body>
+</html>
