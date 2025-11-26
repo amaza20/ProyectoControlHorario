@@ -32,12 +32,12 @@ public class ListarFichajeUsuarioResponse {
     }
 
 
-    public int getIdFichaje() {
+public int getId_fichaje() {  // ← CORREGIDO
         return id_fichaje;
     }
 
-    public void setIdFichaje(int idFichaje) {
-        this.id_fichaje = idFichaje;
+    public void setId_fichaje(int id_fichaje) {  // ← CORREGIDO
+        this.id_fichaje = id_fichaje;
     }
 
     public String getNuevoInstante() {
