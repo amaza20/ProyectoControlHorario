@@ -327,9 +327,9 @@ async function aprobarSolicitud(solicitudId) {
 
 
 // ============================================
-// FUNCIÓN: SOLICITAR EDICIÓN SIMPLE (sin select)
+// FUNCIÓN: SOLICITAR EDICIÓN (ACTUALIZADA - USA ID CORRECTO)
 // ============================================
-async function solicitarEdicionSimple(event) {
+async function solicitarEdicion(event) {
     if (event) event.preventDefault();
     
     const authToken = localStorage.getItem('authToken');
@@ -340,13 +340,13 @@ async function solicitarEdicionSimple(event) {
         return;
     }
 
-    // Obtener el ID del fichaje del campo oculto
-    const fichajeId = document.getElementById('fichajeIdHidden').value;
+    // Obtener el ID del fichaje desde el campo oculto
+    const fichajeId = document.getElementById('fichajeIdHidden')?.value;
     const nuevoInstanteInput = document.getElementById('nuevoInstante'). value;
     const usoHorario = document.getElementById('usoHorario').value;
 
     if (!fichajeId) {
-        mostrarRespuesta('edicionResponse', '⚠️ Error: No se encontró el ID del fichaje.  Por favor, vuelve a "Mis Fichajes" y selecciona un fichaje.', 'error');
+        mostrarRespuesta('edicionResponse', '⚠️ No se ha seleccionado un fichaje válido', 'error');
         return;
     }
 
@@ -380,25 +380,26 @@ async function solicitarEdicionSimple(event) {
 
         const data = await response.json();
         
+        console.log('📥 Respuesta del servidor:', data);
+        
         if (response.ok) {
-            mostrarRespuesta('edicionResponse', data.msg || '✅ Solicitud de edición registrada correctamente.  Redirigiendo a Mis Fichajes... ', 'success');
+            mostrarRespuesta('edicionResponse', data.msg || '✅ Solicitud de edición registrada correctamente.  Redirigiendo a tus fichajes... ', 'success');
             
-            // Redirigir a fichajes.html después de 2 segundos
+            // Redirigir a fichajes después de 2 segundos
             setTimeout(() => {
                 window. location.href = 'fichajes.html';
             }, 2000);
         } else {
-            mostrarRespuesta('edicionResponse', data.msg || 'Error al solicitar edición', 'error');
+            mostrarRespuesta('edicionResponse', data.msg || data.mensaje || 'Error al solicitar edición', 'error');
             if (response.status === 401) {
                 cerrarSesion();
             }
         }
     } catch (error) {
-        console.error('Error al solicitar edición:', error);
+        console.error('💥 Error al solicitar edición:', error);
         mostrarRespuesta('edicionResponse', '❌ Error de conexión: ' + error.message, 'error');
     }
 }
-
 
 
 // ============================================
@@ -880,15 +881,13 @@ function mostrarTablaSolicitudes(solicitudes) {
 
 
 
-// AÑADIR estas funciones al final del archivo script.js
-
 // ============================================
-// FUNCIÓN: MOSTRAR TABLA DE FICHAJES DEL USUARIO (CON BOTÓN EDITAR)
+// FUNCIÓN: MOSTRAR TABLA DE FICHAJES DEL USUARIO (CON BOTÓN EDITAR Y ESTADOS)
 // ============================================
 function mostrarTablaFichajesConEditar(fichajes) {
     const tableContainer = document.getElementById('fichajesTable');
     
-    if (! tableContainer) return;
+    if (!tableContainer) return;
     
     if (! fichajes || fichajes.length === 0) {
         tableContainer.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">No hay fichajes registrados</p>';
@@ -914,16 +913,34 @@ function mostrarTablaFichajesConEditar(fichajes) {
         const nuevoInstante = fichaje.nuevoInstante;
         const nuevoTipo = fichaje.nuevoTipo;
         const idFichaje = fichaje.id_fichaje || fichaje.id;
+        const aprobadoEdicion = fichaje.aprobadoEdicion;
         
-        // Verificar si el fichaje fue editado
-        const fueEditado = nuevoInstante && nuevoInstante !== null && nuevoInstante !== '';
+        // Determinar el estado basado en aprobadoEdicion
+        let estadoAprobacion = null; // null, 'pendiente', 'aprobado'
+        
+        if (aprobadoEdicion === null || aprobadoEdicion === undefined) {
+            estadoAprobacion = null; // Nunca se solicitó edición
+        } else if (typeof aprobadoEdicion === 'boolean') {
+            estadoAprobacion = aprobadoEdicion ? 'aprobado' : 'pendiente';
+        } else if (typeof aprobadoEdicion === 'string') {
+            const aprobadoUpper = aprobadoEdicion. toUpperCase(). trim();
+            if (aprobadoUpper === 'VERDADERO' || aprobadoUpper === 'TRUE') {
+                estadoAprobacion = 'aprobado';
+            } else if (aprobadoUpper === 'FALSO' || aprobadoUpper === 'FALSE') {
+                estadoAprobacion = 'pendiente';
+            }
+        }
+        
+        // Verificar si el fichaje fue editado Y aprobado
+        const fueEditado = nuevoInstante && nuevoInstante !== null && nuevoInstante !== '' && estadoAprobacion === 'aprobado';
         
         let celdaFechaHora = '';
         let celdaTipo = '';
         let celdaEstado = '';
+        let botonEditar = '';
         
-        if (fueEditado) {
-            // Fichaje editado: mostrar valor original tachado y nuevo valor
+        if (estadoAprobacion === 'aprobado') {
+            // ✅ EDICIÓN APROBADA: Mostrar valor original tachado y nuevo valor
             celdaFechaHora = `
                 <div>
                     <div style="color: #dc3545; text-decoration: line-through; font-size: 0.85em;">
@@ -946,24 +963,63 @@ function mostrarTablaFichajesConEditar(fichajes) {
                 </div>
             `;
             
-            celdaEstado = '<span style="background: #fff3cd; padding: 4px 8px; border-radius: 4px; color: #856404; font-size: 0.85em; font-weight: bold;">✏️ Editado</span>';
+            celdaEstado = '<span style="background: #d4edda; padding: 6px 10px; border-radius: 4px; color: #155724; font-size: 0.85em; font-weight: bold; display: inline-block;">✏️ Editado</span>';
+            
+            // Permitir nueva solicitud de edición
+            const instanteEscapado = nuevoInstante.replace(/'/g, "\\'");
+            const tipoEscapado = nuevoTipo.replace(/'/g, "\\'");
+            botonEditar = `<button class="btn btn-secondary btn-sm" onclick="abrirFormularioEdicion('${idFichaje}', '${instanteEscapado}', '${tipoEscapado}')" style="font-size: 0.85em; white-space: nowrap;">✏️ Editar</button>`;
+            
+        } else if (estadoAprobacion === 'pendiente') {
+            // ⏳ PENDIENTE DE APROBACIÓN: No mostrar cambios aún
+            celdaFechaHora = `
+                <div>
+                    <div>${instanteAnterior}</div>
+                    <small style="color: #856404; font-style: italic; display: block; margin-top: 5px;">
+                        → ${nuevoInstante}
+                    </small>
+                </div>
+            `;
+            
+            celdaTipo = `
+                <div>
+                    <div><strong>${tipoAnterior}</strong></div>
+                    <small style="color: #856404; font-style: italic; display: block; margin-top: 5px;">
+                        → ${nuevoTipo}
+                    </small>
+                </div>
+            `;
+            
+            celdaEstado = '<span style="background: #fff3cd; padding: 6px 10px; border-radius: 4px; color: #856404; font-size: 0.85em; font-weight: bold; display: inline-block;">⏳ Pendiente</span>';
+            
+            // Deshabilitar botón mientras está pendiente
+            botonEditar = `<button class="btn btn-secondary btn-sm" disabled style="font-size: 0. 85em; opacity: 0.5; cursor: not-allowed; white-space: nowrap;">⏳ En trámite</button>`;
+            
         } else {
-            // Fichaje normal: sin ediciones (solo mostrar valores originales)
+            // 📋 ORIGINAL: Sin ediciones
             celdaFechaHora = instanteAnterior;
             celdaTipo = `<strong>${tipoAnterior}</strong>`;
-            celdaEstado = '<span style="color: #6c757d; font-size: 0.85em;">📋 Original</span>';
+            celdaEstado = '<span style="color: #6c757d; font-size: 0.85em; display: inline-block;">📋 Original</span>';
+            
+            // Botón normal para solicitar edición
+            const instanteEscapado = instanteAnterior.replace(/'/g, "\\'");
+            const tipoEscapado = tipoAnterior.replace(/'/g, "\\'");
+            botonEditar = `<button class="btn btn-secondary btn-sm" onclick="abrirFormularioEdicion('${idFichaje}', '${instanteEscapado}', '${tipoEscapado}')" style="font-size: 0. 85em; white-space: nowrap;">✏️ Editar</button>`;
         }
         
-        // Botón para solicitar edición (escapar comillas en los datos)
-        const instanteEscapado = instanteAnterior.replace(/'/g, "\\'");
-        const tipoEscapado = tipoAnterior.replace(/'/g, "\\'");
-        const botonEditar = `<button class="btn btn-secondary btn-sm" onclick="abrirFormularioEdicion('${idFichaje}', '${instanteEscapado}', '${tipoEscapado}')" style="font-size: 0.85em; white-space: nowrap;">✏️ Editar</button>`;
+        // Estilo de fila según el estado
+        let estiloFila = '';
+        if (estadoAprobacion === 'aprobado') {
+            estiloFila = 'background-color: #f0fff4; border-left: 3px solid #28a745;'; // Verde para aprobado
+        } else if (estadoAprobacion === 'pendiente') {
+            estiloFila = 'background-color: #fffbf0; border-left: 3px solid #ffc107;'; // Amarillo para pendiente
+        }
         
         tableHTML += `
-            <tr style="${fueEditado ? 'background-color: #fffbf0; border-left: 3px solid #ffc107;' : ''}">
+            <tr style="${estiloFila}">
                 <td>${celdaFechaHora}</td>
                 <td>${celdaTipo}</td>
-                <td>${celdaEstado}</td>
+                <td style="text-align: center;">${celdaEstado}</td>
                 <td style="text-align: center;">${botonEditar}</td>
             </tr>
         `;

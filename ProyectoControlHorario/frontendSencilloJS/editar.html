@@ -10,7 +10,7 @@
     <nav class="navbar">
         <div class="nav-brand">🕐 Control Horario</div>
         <div class="nav-user" id="navUser">Cargando...</div>
-        <a href="fichajes.html" class="btn btn-secondary btn-sm">← Volver a Mis Fichajes</a>
+        <a href="fichajes.html" class="btn btn-secondary btn-sm">← Volver a Fichajes</a>
     </nav>
     
     <div class="container">
@@ -18,20 +18,20 @@
             <h1>✏️ Solicitar Edición de Fichaje</h1>
             <p class="subtitle">Solicita modificar un fichaje existente</p>
             
-            <!-- Tarjeta informativa del fichaje seleccionado -->
-            <div id="fichajeSeleccionadoInfo" style="display: none; margin-bottom: 30px; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            <!-- Mostrar el fichaje seleccionado -->
+            <div id="fichajeSeleccionadoInfo" style="display: none; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; margin-bottom: 20px; color: white;">
                 <div style="display: flex; align-items: center; gap: 15px;">
                     <div style="font-size: 3em;">📋</div>
-                    <div style="flex: 1;">
-                        <div style="font-size: 0.9em; opacity: 0.9; margin-bottom: 5px;">Fichaje seleccionado:</div>
-                        <div id="fichajeSeleccionadoTexto" style="font-size: 1.3em; font-weight: bold;"></div>
+                    <div>
+                        <div style="font-size: 0.9em; opacity: 0.9;">Fichaje seleccionado:</div>
+                        <div id="fichajeSeleccionadoTexto" style="font-size: 1.3em; font-weight: bold; margin-top: 5px;"></div>
                     </div>
                 </div>
             </div>
             
-            <form id="edicionForm" onsubmit="solicitarEdicionSimple(event)">
+            <form id="edicionForm" onsubmit="solicitarEdicion(event)">
                 <!-- Campo oculto para guardar el ID del fichaje -->
-                <input type="hidden" id="fichajeIdHidden">
+                <input type="hidden" id="fichajeIdHidden" value="">
                 
                 <div class="form-group">
                     <label for="nuevoInstante">Nuevo Instante (Fecha y Hora) *</label>
@@ -53,7 +53,7 @@
                     </select>
                 </div>
                 
-                <button type="submit" class="btn btn-primary" style="width: 100%; font-size: 1.1em;">📤 Enviar Solicitud</button>
+                <button type="submit" class="btn btn-primary">📤 Enviar Solicitud</button>
             </form>
             
             <div id="edicionResponse" class="response"></div>
@@ -73,7 +73,7 @@
     <script>
         // Verificar que el usuario esté autenticado
         if (!verificarSesion()) {
-            window.location.href = 'login.html';
+            window. location.href = 'login. html';
         } else {
             // Verificar que sea empleado o supervisor
             const verificado = verificarRol(['Empleado', 'Supervisor']);
@@ -84,37 +84,42 @@
                 document.getElementById('navUser').textContent = `${datos.username} (${datos.rol})`;
             }
             
-            // Verificar si hay un fichaje pre-seleccionado desde "Mis Fichajes"
-            const fichajeParaEditar = localStorage.getItem('fichajeParaEditar');
-            
-            if (fichajeParaEditar) {
-                try {
-                    const fichaje = JSON.parse(fichajeParaEditar);
-                    
-                    // Guardar el ID en el campo oculto
-                    document.getElementById('fichajeIdHidden').value = fichaje. id;
-                    
-                    // Mostrar la tarjeta informativa
-                    const infoDiv = document.getElementById('fichajeSeleccionadoInfo');
-                    const textoDiv = document.getElementById('fichajeSeleccionadoTexto');
-                    
-                    if (infoDiv && textoDiv) {
-                        textoDiv.textContent = `${fichaje.instante} (${fichaje.tipo})`;
-                        infoDiv.style.display = 'block';
+            if (verificado) {
+                // Verificar si hay un fichaje pre-seleccionado desde "Mis Fichajes"
+                const fichajeParaEditar = localStorage.getItem('fichajeParaEditar');
+                
+                if (fichajeParaEditar) {
+                    try {
+                        const fichaje = JSON.parse(fichajeParaEditar);
+                        
+                        console.log('📋 Fichaje recibido para editar:', fichaje);
+                        
+                        // Guardar el ID en el campo oculto
+                        document.getElementById('fichajeIdHidden').value = fichaje. id;
+                        
+                        // Mostrar información del fichaje seleccionado
+                        const infoDiv = document.getElementById('fichajeSeleccionadoInfo');
+                        const textoDiv = document.getElementById('fichajeSeleccionadoTexto');
+                        
+                        if (infoDiv && textoDiv) {
+                            textoDiv.textContent = `${fichaje.instante} (${fichaje.tipo})`;
+                            infoDiv. style.display = 'block';
+                        }
+                        
+                        // Limpiar el localStorage
+                        localStorage.removeItem('fichajeParaEditar');
+                        
+                    } catch (e) {
+                        console.error('Error al cargar fichaje pre-seleccionado:', e);
+                        mostrarRespuesta('edicionResponse', '⚠️ Error al cargar el fichaje.  Por favor, vuelve a "Ver Fichajes" y selecciónalo de nuevo. ', 'error');
                     }
-                    
-                    // Limpiar el localStorage
-                    localStorage.removeItem('fichajeParaEditar');
-                } catch (e) {
-                    console.error('Error al cargar fichaje pre-seleccionado:', e);
-                    mostrarRespuesta('edicionResponse', '⚠️ Error: No se pudo cargar el fichaje seleccionado.  Por favor, vuelve a "Mis Fichajes" y selecciona un fichaje. ', 'error');
+                } else {
+                    // Si no hay fichaje seleccionado, redirigir a la página de fichajes
+                    mostrarRespuesta('edicionResponse', '⚠️ No has seleccionado ningún fichaje. Redirigiendo... ', 'error');
+                    setTimeout(() => {
+                        window.location.href = 'fichajes.html';
+                    }, 2000);
                 }
-            } else {
-                // Si no hay fichaje seleccionado, redirigir a fichajes.html
-                mostrarRespuesta('edicionResponse', '⚠️ No has seleccionado ningún fichaje. Redirigiendo... ', 'error');
-                setTimeout(() => {
-                    window. location.href = 'fichajes.html';
-                }, 2000);
             }
         }
     </script>
