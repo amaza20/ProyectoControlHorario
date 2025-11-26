@@ -5,7 +5,6 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.proyecto.controlhorario.controllers.dto.AprobarSolicitudResponse;
-import com.proyecto.controlhorario.controllers.dto.ListarFichajeUsuarioResponse;
 import com.proyecto.controlhorario.controllers.dto.ListarSolicitudesResponse;
 import com.proyecto.controlhorario.controllers.dto.SolicitudEdicionRequest;
 import com.proyecto.controlhorario.controllers.dto.SolicitudEdicionResponse;

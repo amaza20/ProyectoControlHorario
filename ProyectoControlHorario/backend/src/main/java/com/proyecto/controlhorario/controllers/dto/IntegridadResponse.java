@@ -2,6 +2,7 @@ package com.proyecto.controlhorario.controllers.dto;
 
 public class IntegridadResponse {
 
+    private int id;
     private String username;
     private String instante;
     private String tipo;
@@ -10,13 +11,21 @@ public class IntegridadResponse {
 
     public IntegridadResponse() {}
 
-    public IntegridadResponse(String username, String instante, String tipo, String huella, String mensaje) {
+    public IntegridadResponse(int id, String username, String instante, String tipo, String huella) {
+        this.id = id;
         this.username = username;
         this.instante = instante;
         this.tipo = tipo;
         this.huella = huella;
-        this.mensaje = mensaje;
     }
+    
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }   
 
     public IntegridadResponse(String mensaje) {
         this.mensaje = mensaje;

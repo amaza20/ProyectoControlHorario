@@ -41,7 +41,7 @@ public class FichajesService {
     }
 
 
-    // Nuevo método para listar fichajes
+    // Nuevo método para listar fichajes de un usuario en concreto
     public List<ListarFichajeUsuarioResponse> listarFichajesUsuario(String username, String departamento) {
         List<ListarFichajeUsuarioResponse> response = fichajeDAO.listarFichajesUsuario(username, departamento);
         return response;
@@ -51,7 +51,7 @@ public class FichajesService {
 
     // Nuevo método para verificar integridad de fichajes
     // Cadena de hashes (similar a blockchain) para detectar manipulaciones no autorizadas en los registros de fichajes
-    public IntegridadResponse comprobarIntegridadFichajes(String departamentoConsultado, String rolUsuarioActual) {
+    public List<IntegridadResponse> comprobarIntegridadFichajes(String departamentoConsultado, String rolUsuarioActual) {
 
         // Administrador -->   es el unico rol que puede crear nuevos usuarios, solo estara en la base de datos general, 
         //                   puede comprobar integridad (departamento null).

@@ -166,14 +166,13 @@ public class FichajesDAO {
 
     // La cadena de hashes se construye en orden ASC (del más antiguo al más reciente)
     // Cuando inserto un fichaje, cada huella depende de la anterior cronológicamente.
-    public IntegridadResponse verificarIntegridadFichajes(String departamentoConsultado) {
+    public List<IntegridadResponse> verificarIntegridadFichajes(String departamentoConsultado) {
         String dbPath = dbFolder+"departamento_"+departamentoConsultado.toLowerCase()+".db";
-        IntegridadResponse toret = new IntegridadResponse("✅ Integridad verificada: todos los fichajes son válidos.");
+        List<IntegridadResponse> toret = new ArrayList<>();
         
 
         try {
             DatabaseManager.withConnection(dbPath, conn -> {
-                boolean stop=false;
                 String sql = "SELECT id, username, instante, tipo, huella FROM fichajes ORDER BY id ASC";  // Del más antiguo al más reciente
                                                                      // Si dos fichajes tienen el mismo instante (milisegundo igual), el 
                                                                      // orden por instante podría ser inconsistente. El id autoincremental 
@@ -182,7 +181,8 @@ public class FichajesDAO {
                     ResultSet rs = st.executeQuery(sql)) {
 
                     String huellaAnterior = null;
-                    while (rs.next() && !stop ) {  
+                    while (rs.next() ) {  
+                        int id = rs.getInt("id");
                         String usuario = rs.getString("username");
                         String fechaHora = rs.getString("instante");
                         String tipo = rs.getString("tipo");
@@ -191,14 +191,12 @@ public class FichajesDAO {
                         String base = usuario + "|" + fechaHora + "|" + tipo + "|" + (huellaAnterior != null ? huellaAnterior : "GENESIS");
                         String huellaCalculada = generarHash(base);
 
+                        toret.add(new IntegridadResponse(id, usuario, fechaHora, tipo, huellaCalculada)); 
+
                         if (!huellaCalculada.equals(huellaGuardada)) {
-                            toret.setMensaje("Integridad comprometida en el registro ID = " + rs.getInt("id"));
-                            toret.setUsername(usuario);
-                            toret.setInstante(fechaHora);
-                            toret.setTipo(tipo);
-                            toret.setHuella(huellaGuardada);
-                            stop=true;
+                            toret.get(toret.size()-1).setMensaje("INCONSISTENCIA DETECTADA");
                         } else {
+                            toret.get(toret.size()-1).setMensaje("Huella válida");
                             huellaAnterior = huellaGuardada;
                         }                   
                     }
