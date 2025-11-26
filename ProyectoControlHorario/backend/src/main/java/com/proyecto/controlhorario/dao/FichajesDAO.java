@@ -143,7 +143,7 @@ public class FichajesDAO {
                                 FROM fichajes f
                                 LEFT JOIN ediciones e ON f.id_edicion = e.id
                                 WHERE f.username = ?
-                                ORDER BY instante_original DESC;
+                                ORDER BY id_fichaje DESC;
                                 """;
                 try (PreparedStatement st = conn.prepareStatement(query)) {
                     st.setString(1, username);
@@ -161,9 +161,11 @@ public class FichajesDAO {
                         // Quiero saber si el id_fichaje aparece en la tabla solicitudes_edicion.
                         // Me quedare con el id_fichaje mas alto(mas reciente) y vere si tiene el campo 'aprobado' en VERDADERO o FALSO
                         String aprobado = null;
+                        String solicitudInstante = null;
+                        String solicitudTipo = null;
                         String query2 = """ 
                                     SELECT 
-                                     aprobado
+                                     aprobado,nuevo_instante,tipo
                                     FROM solicitud_edicion 
                                     WHERE fichaje_id = ?
                                     ORDER BY id DESC;
@@ -172,11 +174,15 @@ public class FichajesDAO {
                             st2.setInt(1, idFichaje);
                             ResultSet rst2 = st2.executeQuery();
                             if (rst2.next()) {
-                                aprobado = rst2.getString("aprobado");    
-                                // Aqui aprobado puede ser "VERDADERO", "FALSO" o null (si no existe solicitud de edicion)                           
+                                aprobado = rst2.getString("aprobado");
+                                solicitudInstante = rst2.getString("nuevo_instante");
+                                solicitudTipo = rst2.getString("tipo");
+                                // Aqui aprobado puede ser "VERDADERO", "FALSO" o null (si no existe solicitud de edicion)  
+                                fichajesList.get(fichajesList.size()-1).setAprobadoEdicion(aprobado); 
+                                fichajesList.get(fichajesList.size()-1).setSolicitudInstante(solicitudInstante);
+                                fichajesList.get(fichajesList.size()-1).setSolicitudTipo(solicitudTipo);                         
                             }                           
-                        }  
-                       fichajesList.get(fichajesList.size()-1).setAprobadoEdicion(aprobado);                      
+                        }                  
                     }
                 }     
             });
