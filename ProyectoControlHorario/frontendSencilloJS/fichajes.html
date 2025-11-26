@@ -23,6 +23,18 @@
             <div id="listarResponse" class="response"></div>
             
             <div id="fichajesTable"></div>
+            
+            <!-- ⬇️⬇️⬇️ ESTE ES EL BLOQUE QUE CAMBIA ⬇️⬇️⬇️ -->
+            <div style="margin-top: 20px; padding: 15px; background-color: #e7f3ff; border-radius: 8px; border-left: 4px solid #2196F3;">
+                <strong>ℹ️ Información:</strong>
+                <ul style="margin-top: 10px; padding-left: 20px;">
+                    <li><strong>✏️ Editar:</strong> Haz clic en el botón para solicitar la modificación de un fichaje</li>
+                    <li>Tu solicitud será enviada a un supervisor para su aprobación</li>
+                    <li>Los fichajes editados se muestran con el valor original tachado y el nuevo en verde</li>
+                </ul>
+            </div>
+            <!-- ⬆️⬆️⬆️ HASTA AQUÍ ⬆️⬆️⬆️ -->
+            
         </div>
     </div>
     
@@ -30,7 +42,7 @@
     <script>
         // Verificar que el usuario esté autenticado
         if (!verificarSesion()) {
-            window.location.href = 'login.html';
+            window.location. href = 'login.html';
         } else {
             // Verificar que sea empleado o supervisor
             const verificado = verificarRol(['Empleado', 'Supervisor']);

@@ -10,6 +10,7 @@ public class ListarFichajeUsuarioResponse {
 
     private String nuevoInstante;
     private String nuevoTipo;
+    private String aprobadoEdicion;
 
 
     public ListarFichajeUsuarioResponse() {}
@@ -21,6 +22,15 @@ public class ListarFichajeUsuarioResponse {
         this.nuevoInstante = nuevoInstante;
         this.nuevoTipo = nuevoTipo;
     }
+
+    public String getAprobadoEdicion() {
+        return aprobadoEdicion;
+    }
+    
+    public void setAprobadoEdicion(String aprobadoEdicion) {
+        this.aprobadoEdicion = aprobadoEdicion;
+    }
+
 
     public int getIdFichaje() {
         return idFichaje;

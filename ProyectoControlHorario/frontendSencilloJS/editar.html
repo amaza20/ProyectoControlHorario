@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<! DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -10,7 +10,7 @@
     <nav class="navbar">
         <div class="nav-brand">🕐 Control Horario</div>
         <div class="nav-user" id="navUser">Cargando...</div>
-        <a href="dashboard.html" class="btn btn-secondary btn-sm">← Volver</a>
+        <a href="fichajes.html" class="btn btn-secondary btn-sm">← Volver a Mis Fichajes</a>
     </nav>
     
     <div class="container">
@@ -18,46 +18,52 @@
             <h1>✏️ Solicitar Edición de Fichaje</h1>
             <p class="subtitle">Solicita modificar un fichaje existente</p>
             
-            <form id="edicionForm" onsubmit="solicitarEdicion(event)">
-                <div class="form-group">
-                    <label for="fichajeId">ID del Fichaje a Editar</label>
-                    <input type="number" id="fichajeId" placeholder="Ingresa el ID del fichaje" required>
-                    <small style="color: #666; display: block; margin-top: 5px;">
-                        Consulta el ID en "Ver Fichajes"
-                    </small>
+            <!-- Tarjeta informativa del fichaje seleccionado -->
+            <div id="fichajeSeleccionadoInfo" style="display: none; margin-bottom: 30px; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div style="font-size: 3em;">📋</div>
+                    <div style="flex: 1;">
+                        <div style="font-size: 0.9em; opacity: 0.9; margin-bottom: 5px;">Fichaje seleccionado:</div>
+                        <div id="fichajeSeleccionadoTexto" style="font-size: 1.3em; font-weight: bold;"></div>
+                    </div>
                 </div>
+            </div>
+            
+            <form id="edicionForm" onsubmit="solicitarEdicionSimple(event)">
+                <!-- Campo oculto para guardar el ID del fichaje -->
+                <input type="hidden" id="fichajeIdHidden">
                 
                 <div class="form-group">
-                    <label for="nuevoInstante">Nuevo Instante (Fecha y Hora)</label>
+                    <label for="nuevoInstante">Nuevo Instante (Fecha y Hora) *</label>
                     <input type="datetime-local" id="nuevoInstante" required>
                     <small style="color: #666; display: block; margin-top: 5px;">
-                        Formato: YYYY-MM-DD HH:mm
+                        Ingresa la nueva fecha y hora correcta para este fichaje
                     </small>
                 </div>
                 
                 <div class="form-group">
-                    <label for="usoHorario">Uso Horario</label>
+                    <label for="usoHorario">Uso Horario *</label>
                     <select id="usoHorario" required>
                         <option value="">Selecciona un uso horario</option>
-                        <option value="UTC+0">UTC+0 (Hora de Greenwich)</option>
-                        <option value="UTC+1">UTC+1 (España - Invierno)</option>
-                        <option value="UTC+2">UTC+2 (España - Verano)</option>
-                        <option value="UTC-5">UTC-5 (Nueva York)</option>
-                        <option value="UTC-8">UTC-8 (Los Ángeles)</option>
+                        <option value="UTC +0">UTC +0 (Hora de Greenwich)</option>
+                        <option value="UTC +1" selected>UTC +1 (España - Invierno)</option>
+                        <option value="UTC +2">UTC +2 (España - Verano)</option>
+                        <option value="UTC -5">UTC -5 (Nueva York)</option>
+                        <option value="UTC -8">UTC -8 (Los Ángeles)</option>
                     </select>
                 </div>
                 
-                <button type="submit" class="btn btn-primary">Solicitar Edición</button>
+                <button type="submit" class="btn btn-primary" style="width: 100%; font-size: 1.1em;">📤 Enviar Solicitud</button>
             </form>
             
             <div id="edicionResponse" class="response"></div>
             
             <div style="margin-top: 30px; padding: 15px; background-color: #fff3cd; border-radius: 8px; border-left: 4px solid #ffc107;">
-                <strong>ℹ️ Información:</strong>
+                <strong>⚠️ Importante:</strong>
                 <ul style="margin-top: 10px; padding-left: 20px;">
-                    <li>Tu solicitud será enviada a un supervisor para su aprobación</li>
-                    <li>El supervisor debe pertenecer al mismo departamento</li>
-                    <li>Una vez aprobada, el fichaje se actualizará automáticamente</li>
+                    <li>Tu solicitud será enviada a un supervisor de tu departamento</li>
+                    <li>El supervisor debe aprobar la modificación antes de que se aplique</li>
+                    <li>Puedes verificar el estado en "Ver Fichajes" (En trámite / Aprobada)</li>
                 </ul>
             </div>
         </div>
@@ -76,6 +82,39 @@
             const datos = obtenerDatosToken();
             if (datos) {
                 document.getElementById('navUser').textContent = `${datos.username} (${datos.rol})`;
+            }
+            
+            // Verificar si hay un fichaje pre-seleccionado desde "Mis Fichajes"
+            const fichajeParaEditar = localStorage.getItem('fichajeParaEditar');
+            
+            if (fichajeParaEditar) {
+                try {
+                    const fichaje = JSON.parse(fichajeParaEditar);
+                    
+                    // Guardar el ID en el campo oculto
+                    document.getElementById('fichajeIdHidden').value = fichaje. id;
+                    
+                    // Mostrar la tarjeta informativa
+                    const infoDiv = document.getElementById('fichajeSeleccionadoInfo');
+                    const textoDiv = document.getElementById('fichajeSeleccionadoTexto');
+                    
+                    if (infoDiv && textoDiv) {
+                        textoDiv.textContent = `${fichaje.instante} (${fichaje.tipo})`;
+                        infoDiv.style.display = 'block';
+                    }
+                    
+                    // Limpiar el localStorage
+                    localStorage.removeItem('fichajeParaEditar');
+                } catch (e) {
+                    console.error('Error al cargar fichaje pre-seleccionado:', e);
+                    mostrarRespuesta('edicionResponse', '⚠️ Error: No se pudo cargar el fichaje seleccionado.  Por favor, vuelve a "Mis Fichajes" y selecciona un fichaje. ', 'error');
+                }
+            } else {
+                // Si no hay fichaje seleccionado, redirigir a fichajes.html
+                mostrarRespuesta('edicionResponse', '⚠️ No has seleccionado ningún fichaje. Redirigiendo... ', 'error');
+                setTimeout(() => {
+                    window. location.href = 'fichajes.html';
+                }, 2000);
             }
         }
     </script>

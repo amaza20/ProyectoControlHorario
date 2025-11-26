@@ -157,8 +157,27 @@ public class FichajesDAO {
                         nuevoInstante = rst.getString("edicion_instante");
                         nuevoTipo = rst.getString("edicion_tipo");
                         fichajesList.add(new ListarFichajeUsuarioResponse(idFichaje, instante, tipo, nuevoInstante, nuevoTipo));
+
+                        // Quiero saber si el id_fichaje aparece en la tabla solicitudes_edicion.
+                        // Me quedare con el id_fichaje mas alto(mas reciente) y vere si tiene el campo 'aprobado' en VERDADERO o FALSO
+                        String aprobado = null;
+                        String query2 = """ 
+                                    SELECT 
+                                     aprobado
+                                    FROM solicitud_edicion 
+                                    WHERE fichaje_id = ?
+                                    ORDER BY id DESC;
+                                """;
+                        try (PreparedStatement st2 = conn.prepareStatement(query2)) {
+                            st2.setInt(1, idFichaje);
+                            ResultSet rst2 = st2.executeQuery();
+                            if (rst2.next()) {
+                                aprobado = rst2.getString("aprobado");                               
+                            }                           
+                        }  
+                       fichajesList.get(fichajesList.size()-1).setAprobadoEdicion(aprobado);                      
                     }
-                }
+                }     
             });
         } catch (SQLException e) {
             e.printStackTrace();

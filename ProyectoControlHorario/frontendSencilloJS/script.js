@@ -246,6 +246,8 @@ async function fichar() {
     }
 }
 
+// REEMPLAZAR esta función en script.js
+
 // ============================================
 // FUNCIÓN: LISTAR FICHAJES DEL USUARIO
 // ============================================
@@ -266,10 +268,11 @@ async function listarFichajes() {
             }
         });
 
-        if (response.ok) {
+        if (response. ok) {
             const fichajes = await response.json();
             mostrarRespuesta('listarResponse', `✅ Se encontraron ${fichajes.length} fichajes`, 'success');
-            mostrarTablaFichajes(fichajes);
+            // Usar la función con botón editar
+            mostrarTablaFichajesConEditar(fichajes);
         } else {
             const data = await response.json();
             mostrarRespuesta('listarResponse', data.mensaje || 'Error al listar fichajes', 'error');
@@ -279,69 +282,6 @@ async function listarFichajes() {
         }
     } catch (error) {
         mostrarRespuesta('listarResponse', '❌ Error de conexión: ' + error.message, 'error');
-    }
-}
-
-// ============================================
-// FUNCIÓN: SOLICITAR EDICIÓN (ACTUALIZADA)
-// ============================================
-async function solicitarEdicion(event) {
-    if (event) event.preventDefault();
-    
-    const authToken = localStorage.getItem('authToken');
-    
-    if (!authToken) {
-        mostrarRespuesta('edicionResponse', '⚠️ No estás autenticado', 'error');
-        setTimeout(() => window.location.href = 'login.html', 2000);
-        return;
-    }
-
-    const fichajeId = document.getElementById('fichajeId').value;
-    const nuevoInstanteInput = document.getElementById('nuevoInstante').value;
-    const usoHorario = document.getElementById('usoHorario').value;
-
-    if (!fichajeId || !nuevoInstanteInput || !usoHorario) {
-        mostrarRespuesta('edicionResponse', '⚠️ Por favor completa todos los campos', 'error');
-        return;
-    }
-
-    // Convertir el formato datetime-local (YYYY-MM-DDTHH:mm) a formato backend (YYYY-MM-DD HH:mm:ss)
-    const nuevoInstante = nuevoInstanteInput.replace('T', ' ') + ':00';
-
-    console.log('📤 Enviando solicitud de edición:', {
-        id_fichaje: parseInt(fichajeId),
-        nuevoInstante: nuevoInstante,
-        usoHorario: usoHorario
-    });
-
-    try {
-        const response = await fetch(`${API_BASE_URL}/solicitarEdicion`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${authToken}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                id_fichaje: parseInt(fichajeId),
-                nuevoInstante: nuevoInstante,
-                usoHorario: usoHorario
-            })
-        });
-
-        const data = await response.json();
-        
-        if (response.ok) {
-            mostrarRespuesta('edicionResponse', data.msg || '✅ Solicitud de edición registrada correctamente', 'success');
-            document.getElementById('edicionForm').reset();
-        } else {
-            mostrarRespuesta('edicionResponse', data.msg || 'Error al solicitar edición', 'error');
-            if (response.status === 401) {
-                cerrarSesion();
-            }
-        }
-    } catch (error) {
-        console.error('Error al solicitar edición:', error);
-        mostrarRespuesta('edicionResponse', '❌ Error de conexión: ' + error.message, 'error');
     }
 }
 
@@ -384,6 +324,82 @@ async function aprobarSolicitud(solicitudId) {
         alert('❌ Error de conexión: ' + error.message);
     }
 }
+
+
+// ============================================
+// FUNCIÓN: SOLICITAR EDICIÓN SIMPLE (sin select)
+// ============================================
+async function solicitarEdicionSimple(event) {
+    if (event) event.preventDefault();
+    
+    const authToken = localStorage.getItem('authToken');
+    
+    if (!authToken) {
+        mostrarRespuesta('edicionResponse', '⚠️ No estás autenticado', 'error');
+        setTimeout(() => window.location.href = 'login.html', 2000);
+        return;
+    }
+
+    // Obtener el ID del fichaje del campo oculto
+    const fichajeId = document.getElementById('fichajeIdHidden').value;
+    const nuevoInstanteInput = document.getElementById('nuevoInstante'). value;
+    const usoHorario = document.getElementById('usoHorario').value;
+
+    if (!fichajeId) {
+        mostrarRespuesta('edicionResponse', '⚠️ Error: No se encontró el ID del fichaje.  Por favor, vuelve a "Mis Fichajes" y selecciona un fichaje.', 'error');
+        return;
+    }
+
+    if (!nuevoInstanteInput || !usoHorario) {
+        mostrarRespuesta('edicionResponse', '⚠️ Por favor completa todos los campos', 'error');
+        return;
+    }
+
+    // Convertir el formato datetime-local (YYYY-MM-DDTHH:mm) a formato backend (YYYY-MM-DD HH:mm:ss)
+    const nuevoInstante = nuevoInstanteInput.replace('T', ' ') + ':00';
+
+    console.log('📤 Enviando solicitud de edición:', {
+        id_fichaje: parseInt(fichajeId),
+        nuevoInstante: nuevoInstante,
+        usoHorario: usoHorario
+    });
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/solicitarEdicion`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${authToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                id_fichaje: parseInt(fichajeId),
+                nuevoInstante: nuevoInstante,
+                usoHorario: usoHorario
+            })
+        });
+
+        const data = await response.json();
+        
+        if (response.ok) {
+            mostrarRespuesta('edicionResponse', data.msg || '✅ Solicitud de edición registrada correctamente.  Redirigiendo a Mis Fichajes... ', 'success');
+            
+            // Redirigir a fichajes.html después de 2 segundos
+            setTimeout(() => {
+                window. location.href = 'fichajes.html';
+            }, 2000);
+        } else {
+            mostrarRespuesta('edicionResponse', data.msg || 'Error al solicitar edición', 'error');
+            if (response.status === 401) {
+                cerrarSesion();
+            }
+        }
+    } catch (error) {
+        console.error('Error al solicitar edición:', error);
+        mostrarRespuesta('edicionResponse', '❌ Error de conexión: ' + error.message, 'error');
+    }
+}
+
+
 
 // ============================================
 // FUNCIÓN: LISTAR SOLICITUDES PENDIENTES (SIN LÍNEA VERDE)
@@ -859,4 +875,205 @@ function mostrarTablaSolicitudes(solicitudes) {
     `;
 
     tableContainer.innerHTML = tableHTML;
+}
+
+
+
+
+// AÑADIR estas funciones al final del archivo script.js
+
+// ============================================
+// FUNCIÓN: MOSTRAR TABLA DE FICHAJES DEL USUARIO (CON BOTÓN EDITAR)
+// ============================================
+function mostrarTablaFichajesConEditar(fichajes) {
+    const tableContainer = document.getElementById('fichajesTable');
+    
+    if (! tableContainer) return;
+    
+    if (! fichajes || fichajes.length === 0) {
+        tableContainer.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">No hay fichajes registrados</p>';
+        return;
+    }
+
+    let tableHTML = `
+        <table>
+            <thead>
+                <tr>
+                    <th>Fecha y Hora</th>
+                    <th>Tipo</th>
+                    <th>Estado</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+
+    fichajes.forEach(fichaje => {
+        const instanteAnterior = fichaje.instanteAnterior || 'N/A';
+        const tipoAnterior = fichaje.tipoAnterior || 'N/A';
+        const nuevoInstante = fichaje.nuevoInstante;
+        const nuevoTipo = fichaje.nuevoTipo;
+        const idFichaje = fichaje.id_fichaje || fichaje.id;
+        
+        // Verificar si el fichaje fue editado
+        const fueEditado = nuevoInstante && nuevoInstante !== null && nuevoInstante !== '';
+        
+        let celdaFechaHora = '';
+        let celdaTipo = '';
+        let celdaEstado = '';
+        
+        if (fueEditado) {
+            // Fichaje editado: mostrar valor original tachado y nuevo valor
+            celdaFechaHora = `
+                <div>
+                    <div style="color: #dc3545; text-decoration: line-through; font-size: 0.85em;">
+                        ${instanteAnterior}
+                    </div>
+                    <div style="color: #28a745; font-weight: bold;">
+                        ${nuevoInstante}
+                    </div>
+                </div>
+            `;
+            
+            celdaTipo = `
+                <div>
+                    <div style="color: #dc3545; text-decoration: line-through; font-size: 0.85em;">
+                        ${tipoAnterior}
+                    </div>
+                    <div style="color: #28a745; font-weight: bold;">
+                        ${nuevoTipo}
+                    </div>
+                </div>
+            `;
+            
+            celdaEstado = '<span style="background: #fff3cd; padding: 4px 8px; border-radius: 4px; color: #856404; font-size: 0.85em; font-weight: bold;">✏️ Editado</span>';
+        } else {
+            // Fichaje normal: sin ediciones (solo mostrar valores originales)
+            celdaFechaHora = instanteAnterior;
+            celdaTipo = `<strong>${tipoAnterior}</strong>`;
+            celdaEstado = '<span style="color: #6c757d; font-size: 0.85em;">📋 Original</span>';
+        }
+        
+        // Botón para solicitar edición (escapar comillas en los datos)
+        const instanteEscapado = instanteAnterior.replace(/'/g, "\\'");
+        const tipoEscapado = tipoAnterior.replace(/'/g, "\\'");
+        const botonEditar = `<button class="btn btn-secondary btn-sm" onclick="abrirFormularioEdicion('${idFichaje}', '${instanteEscapado}', '${tipoEscapado}')" style="font-size: 0.85em; white-space: nowrap;">✏️ Editar</button>`;
+        
+        tableHTML += `
+            <tr style="${fueEditado ? 'background-color: #fffbf0; border-left: 3px solid #ffc107;' : ''}">
+                <td>${celdaFechaHora}</td>
+                <td>${celdaTipo}</td>
+                <td>${celdaEstado}</td>
+                <td style="text-align: center;">${botonEditar}</td>
+            </tr>
+        `;
+    });
+
+    tableHTML += `
+            </tbody>
+        </table>
+    `;
+
+    tableContainer.innerHTML = tableHTML;
+}
+
+// ============================================
+// FUNCIÓN: ABRIR FORMULARIO DE EDICIÓN
+// ============================================
+function abrirFormularioEdicion(idFichaje, instante, tipo) {
+    // Guardar los datos del fichaje en localStorage para usarlos en la página de edición
+    localStorage.setItem('fichajeParaEditar', JSON.stringify({
+        id: idFichaje,
+        instante: instante,
+        tipo: tipo
+    }));
+    
+    // Redirigir a la página de edición
+    window.location.href = 'editar.html';
+}
+
+// ============================================
+// FUNCIÓN: CARGAR FICHAJES PARA EDITAR
+// ============================================
+async function cargarFichajesParaEditar() {
+    const authToken = localStorage.getItem('authToken');
+    
+    if (! authToken) {
+        mostrarRespuesta('edicionResponse', '⚠️ No estás autenticado', 'error');
+        setTimeout(() => window.location.href = 'login.html', 2000);
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/listarFichajesUsuario`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+
+        if (response.ok) {
+            const fichajes = await response.json();
+            poblarSelectFichajes(fichajes);
+        } else {
+            const data = await response.json();
+            const select = document.getElementById('fichajeSelect');
+            if (select) {
+                select.innerHTML = '<option value="">Error al cargar fichajes</option>';
+            }
+            mostrarRespuesta('edicionResponse', 'Error al cargar fichajes: ' + (data.mensaje || 'Error desconocido'), 'error');
+            if (response.status === 401) {
+                cerrarSesion();
+            }
+        }
+    } catch (error) {
+        console.error('Error al cargar fichajes:', error);
+        const select = document.getElementById('fichajeSelect');
+        if (select) {
+            select.innerHTML = '<option value="">Error de conexión</option>';
+        }
+        mostrarRespuesta('edicionResponse', '❌ Error de conexión: ' + error.message, 'error');
+    }
+}
+
+// ============================================
+// FUNCIÓN: POBLAR SELECT DE FICHAJES
+// ============================================
+function poblarSelectFichajes(fichajes) {
+    const select = document.getElementById('fichajeSelect');
+    
+    if (!select) return;
+    
+    if (! fichajes || fichajes.length === 0) {
+        select. innerHTML = '<option value="">No tienes fichajes para editar</option>';
+        return;
+    }
+    
+    // Ordenar fichajes por instante descendente (más reciente primero)
+    const fichajesOrdenados = [... fichajes].sort((a, b) => {
+        const fechaA = new Date(a. instanteAnterior || a.instante || 0);
+        const fechaB = new Date(b.instanteAnterior || b.instante || 0);
+        return fechaB - fechaA;
+    });
+    
+    // Construir las opciones del select
+    let optionsHTML = '<option value="">Selecciona un fichaje</option>';
+    
+    fichajesOrdenados.forEach(fichaje => {
+        // Usar el id_fichaje que viene del backend (el ID real de la BD)
+        const idFichaje = fichaje. id_fichaje || fichaje. id;
+        
+        // Mostrar el instante y tipo del fichaje (SIN mostrar el ID)
+        const instante = fichaje.instanteAnterior || fichaje.instante || 'N/A';
+        const tipo = fichaje.tipoAnterior || fichaje.tipo || 'N/A';
+        
+        // Verificar si fue editado
+        const fueEditado = fichaje.nuevoInstante && fichaje.nuevoInstante !== null && fichaje.nuevoInstante !== '';
+        const badge = fueEditado ? ' ✏️ [Editado]' : '';
+        
+        // Crear la opción con el id_fichaje real como value (el usuario NO lo ve)
+        optionsHTML += `<option value="${idFichaje}">${instante} - ${tipo}${badge}</option>`;
+    });
+    
+    select.innerHTML = optionsHTML;
 }
