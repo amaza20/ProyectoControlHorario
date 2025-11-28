@@ -42,6 +42,12 @@
             <version>3.45.1.0</version>
         </dependency>
 
+        <dependency>     <!-- Si usas Spring Boot, JUnit 5 ya está incluido -->
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
         <!-- ✅ Dependencia necesaria para BCrypt -->
         <dependency>
             <groupId>org.springframework.security</groupId>
