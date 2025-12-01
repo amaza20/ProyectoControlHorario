@@ -46,3 +46,4 @@ export class App {
 }
 
 bootstrapApplication(App);
+
