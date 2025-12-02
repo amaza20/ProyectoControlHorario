@@ -2,8 +2,9 @@
 Apuntes.docx
 crear_proyecto_control_horario_sqlite_directo.sh
 
-# Ignorar los dos txt dentro de la carpeta
-ProyectoControlHorario/Notas.txt
-ProyectoControlHorario/NotasGit.txt
+# Ignorar los dos txt
+Notas.txt
+NotasGit.txt
 
 .vscode
+Modelo de Datos.xlsx
