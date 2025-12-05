@@ -70,62 +70,47 @@ function mostrarRespuesta(elementId, mensaje, tipo) {
 // ============================================
 // FUNCIÓN: REGISTRAR USUARIO (MEJORADA)
 // ============================================
+// ============================================
+// FUNCIÓN: REGISTRAR USUARIO
+// ============================================
 async function registrarUsuario(event) {
     if (event) event.preventDefault();
     
     const authToken = localStorage.getItem('authToken');
     
-    if (!authToken) {
-        mostrarRespuesta('regResponse', '⚠️ No estás autenticado', 'error');
+    if (! authToken) {
+        alert('⚠️ No estás autenticado. Redirigiendo al login...');
         setTimeout(() => window.location.href = 'login.html', 2000);
         return;
     }
     
     const username = document.getElementById('regUsername').value;
-    const password = document.getElementById('regPassword').value;
+    const password = document.getElementById('regPassword'). value;
     const departamento = document.getElementById('regDepartamento').value;
     const rol = document.getElementById('regRol').value;
 
-    // Validaciones... 
+    // Validaciones
     if (!username || !password || !rol) {
-        mostrarRespuesta('regResponse', '⚠️ Por favor completa todos los campos obligatorios', 'error');
+        alert('⚠️ Por favor completa todos los campos obligatorios');
         return;
     }
 
     if (username.length < 3) {
-        mostrarRespuesta('regResponse', '⚠️ El nombre de usuario debe tener al menos 3 caracteres', 'error');
+        alert('⚠️ El nombre de usuario debe tener al menos 3 caracteres');
         return;
     }
 
     if (password.length < 8) {
-        mostrarRespuesta('regResponse', '⚠️ La contraseña debe tener al menos 8 caracteres', 'error');
+        alert('⚠️ La contraseña debe tener al menos 8 caracteres');
         return;
     }
 
     const departamentoFinal = (rol === 'Administrador' || rol === 'Auditor') ? '' : departamento;
 
     if ((rol === 'Empleado' || rol === 'Supervisor') && !departamentoFinal) {
-        mostrarRespuesta('regResponse', '⚠️ Los empleados y supervisores deben tener un departamento', 'error');
+        alert('⚠️ Los empleados y supervisores deben tener un departamento');
         return;
     }
-
-    // ✅ Deshabilitar botón de submit
-    const submitBtn = document.querySelector('#registroForm button[type="submit"]');
-    if (submitBtn) {
-        submitBtn.disabled = true;
-        submitBtn.classList.add('loading');
-        submitBtn.textContent = 'Creando usuario...';
-    }
-
-    // ✅ Mostrar mensaje de carga
-    mostrarRespuesta('regResponse', '🔄 Creando usuario, por favor espera...', 'success');
-
-    console.log('📤 Enviando registro:', {
-        username,
-        password: '***',
-        departamento: departamentoFinal,
-        rol
-    });
 
     try {
         const response = await fetch(`${API_BASE_URL}/general/registro`, {
@@ -145,39 +130,34 @@ async function registrarUsuario(event) {
         const data = await response.json();
         
         if (response.ok) {
-            // ✅ Mostrar modal de éxito
-            mostrarModalExito(
-                `✅ Usuario "${username}" creado exitosamente`,
-                `Rol: ${rol}${departamentoFinal ? ' - Departamento: ' + departamentoFinal : ''}`
-            );
+            // Mostrar diálogo con los datos del usuario creado
+            const datosUsuario = {
+                'Usuario': username,
+                'Rol': rol
+            };
             
-            // ✅ Mensaje en el área de respuesta
+            if (departamentoFinal) {
+                datosUsuario['Departamento'] = departamentoFinal;
+            }
+            
+            mostrarDialogoExito('👤 USUARIO CREADO EXITOSAMENTE', datosUsuario);
+            
+            // Limpiar formulario
+            document.getElementById('registroForm').reset();
+            const deptGroup = document.getElementById('departamentoGroup');
+            if (deptGroup) deptGroup.style.display = 'none';
+            
             mostrarRespuesta('regResponse', data.msg || '✅ Usuario registrado correctamente', 'success');
-            
-            // ✅ Limpiar formulario después de un delay
-            setTimeout(() => {
-                document.getElementById('registroForm').reset();
-                // Ocultar el grupo de departamento
-                const deptGroup = document.getElementById('departamentoGroup');
-                if (deptGroup) deptGroup.style.display = 'none';
-            }, 2000);
         } else {
+            alert('❌ ERROR AL CREAR USUARIO\n\n' + (data.msg || 'Error desconocido'));
             mostrarRespuesta('regResponse', data.msg || 'Error al registrar usuario', 'error');
-            if (response. status === 401) {
+            if (response.status === 401) {
                 cerrarSesion();
             }
         }
     } catch (error) {
+        alert('❌ ERROR DE CONEXIÓN\n\n' + error.message);
         mostrarRespuesta('regResponse', '❌ Error de conexión: ' + error.message, 'error');
-    } finally {
-        // ✅ Rehabilitar botón
-        setTimeout(() => {
-            if (submitBtn) {
-                submitBtn.disabled = false;
-                submitBtn.classList.remove('loading');
-                submitBtn.textContent = 'Registrar Usuario';
-            }
-        }, 2000);
     }
 }
 
@@ -321,21 +301,10 @@ async function fichar() {
     const authToken = localStorage.getItem('authToken');
     
     if (!authToken) {
-        mostrarRespuesta('ficharResponse', '⚠️ No estás autenticado', 'error');
+        alert('⚠️ No estás autenticado. Redirigiendo al login...');
         setTimeout(() => window.location.href = 'login.html', 2000);
         return;
     }
-
-    // ✅ Obtener el botón y deshabilitarlo
-    const botonFichar = document.querySelector('button[onclick="fichar()"]');
-    if (botonFichar) {
-        botonFichar.disabled = true;
-        botonFichar. classList.add('loading');
-        botonFichar.textContent = 'Procesando...';
-    }
-
-    // ✅ Mostrar mensaje de carga
-    mostrarRespuesta('ficharResponse', '🔄 Registrando fichaje...', 'success');
 
     try {
         const response = await fetch(`${API_BASE_URL}/fichar`, {
@@ -348,28 +317,33 @@ async function fichar() {
         const data = await response.json();
         
         if (response.ok) {
-            // ✅ Mostrar modal de éxito animado
-            mostrarModalExito('✅ Fichaje registrado correctamente', data.mensaje || 'Tu fichaje ha sido guardado');
+            // Obtener datos del usuario del token
+            const usuario = obtenerDatosToken();
+            const ahora = new Date();
+            const fecha = ahora.toLocaleDateString('es-ES');
+            const hora = ahora.toLocaleTimeString('es-ES');
             
-            // ✅ También mostrar en el área de respuesta
-            mostrarRespuesta('ficharResponse', data.mensaje || '✅ Fichaje registrado correctamente', 'success');
+            // Mostrar diálogo con los datos del fichaje
+            mostrarDialogoExito('🎉 FICHAJE REGISTRADO', {
+                'Usuario': usuario.username,
+                'Departamento': usuario.departamento || 'N/A',
+                'Fecha': fecha,
+                'Hora': hora,
+                'Tipo': data.tipo || 'Entrada/Salida',
+                'Estado': 'Guardado en blockchain'
+            });
+            
+            mostrarRespuesta('ficharResponse', data. mensaje || '✅ Fichaje registrado correctamente', 'success');
         } else {
-            mostrarRespuesta('ficharResponse', data. mensaje || 'Error al fichar', 'error');
+            alert('❌ ERROR AL FICHAR\n\n' + (data.mensaje || 'Error desconocido'));
+            mostrarRespuesta('ficharResponse', data.mensaje || 'Error al fichar', 'error');
             if (response.status === 401) {
                 cerrarSesion();
             }
         }
     } catch (error) {
+        alert('❌ ERROR DE CONEXIÓN\n\n' + error.message);
         mostrarRespuesta('ficharResponse', '❌ Error de conexión: ' + error.message, 'error');
-    } finally {
-        // ✅ Rehabilitar el botón después de 2 segundos
-        setTimeout(() => {
-            if (botonFichar) {
-                botonFichar. disabled = false;
-                botonFichar.classList.remove('loading');
-                botonFichar.textContent = '✓ Fichar Ahora';
-            }
-        }, 2000);
     }
 }
 
@@ -1322,43 +1296,32 @@ async function cargarRoles() {
 // ============================================
 // FUNCIÓN: CREAR DEPARTAMENTO (MEJORADA CON FEEDBACK)
 // ============================================
+// ============================================
+// FUNCIÓN: CREAR DEPARTAMENTO
+// ============================================
 async function crearDepartamento(event) {
     if (event) event.preventDefault();
     
     const authToken = localStorage.getItem('authToken');
     
     if (!authToken) {
-        mostrarRespuesta('crearDeptResponse', '⚠️ No estás autenticado', 'error');
+        alert('⚠️ No estás autenticado. Redirigiendo al login...');
         setTimeout(() => window.location.href = 'login.html', 2000);
         return;
     }
     
     const nombreDepartamento = document.getElementById('nombreDepartamento').value. trim();
 
-    // ✅ VALIDACIÓN: Campo obligatorio
+    // Validaciones
     if (!nombreDepartamento) {
-        mostrarRespuesta('crearDeptResponse', '⚠️ Por favor ingresa el nombre del departamento', 'error');
+        alert('⚠️ Por favor ingresa el nombre del departamento');
         return;
     }
 
-    // ✅ VALIDACIÓN: Longitud mínima
     if (nombreDepartamento.length < 2) {
-        mostrarRespuesta('crearDeptResponse', '⚠️ El nombre debe tener al menos 2 caracteres', 'error');
+        alert('⚠️ El nombre debe tener al menos 2 caracteres');
         return;
     }
-
-    // ✅ Obtener el botón y deshabilitarlo
-    const submitBtn = document.querySelector('#crearDepartamentoForm button[type="submit"]');
-    if (submitBtn) {
-        submitBtn.disabled = true;
-        submitBtn. classList.add('loading');
-        submitBtn.textContent = 'Creando departamento...';
-    }
-
-    // ✅ Mostrar mensaje de carga
-    mostrarRespuesta('crearDeptResponse', '🔄 Creando departamento y su base de datos, por favor espera...', 'success');
-
-    console.log('📤 Enviando creación de departamento:', nombreDepartamento);
 
     try {
         const response = await fetch(`${API_BASE_URL}/general/crearDepartamento? nombreDepartamento=${encodeURIComponent(nombreDepartamento)}`, {
@@ -1371,43 +1334,32 @@ async function crearDepartamento(event) {
         const data = await response.json();
         
         if (response. ok) {
-            // ✅ Mostrar modal de éxito animado
-            mostrarModalExito(
-                `✅ Departamento "${nombreDepartamento}" creado exitosamente`,
-                'La base de datos del departamento ha sido generada correctamente'
-            );
+            // Mostrar diálogo con los datos del departamento creado
+            mostrarDialogoExito('🏢 DEPARTAMENTO CREADO EXITOSAMENTE', {
+                'Nombre': nombreDepartamento,
+                'Base de datos': `departamento_${nombreDepartamento. toLowerCase()}. db`,
+                'Estado': 'Activo y disponible para asignar usuarios'
+            });
             
-            // ✅ Mensaje en el área de respuesta
-            mostrarRespuesta('crearDeptResponse', data.msg || `✅ Departamento "${nombreDepartamento}" creado correctamente`, 'success');
+            // Limpiar formulario
+            document.getElementById('crearDepartamentoForm').reset();
             
-            // ✅ Limpiar formulario después de un delay
-            setTimeout(() => {
-                document.getElementById('crearDepartamentoForm').reset();
-            }, 2000);
-            
-            // ✅ Actualizar la lista de departamentos después de 1 segundo
+            // Actualizar lista de departamentos
             setTimeout(() => {
                 cargarDepartamentosExistentes();
-            }, 1000);
+            }, 500);
+            
+            mostrarRespuesta('crearDeptResponse', data.msg || '✅ Departamento creado correctamente', 'success');
         } else {
+            alert('❌ ERROR AL CREAR DEPARTAMENTO\n\n' + (data.msg || 'Error desconocido'));
             mostrarRespuesta('crearDeptResponse', data.msg || 'Error al crear departamento', 'error');
-            if (response.status === 401) {
+            if (response. status === 401) {
                 cerrarSesion();
-            } else if (response.status === 403) {
-                mostrarRespuesta('crearDeptResponse', '⚠️ No tienes permisos para crear departamentos', 'error');
             }
         }
     } catch (error) {
+        alert('❌ ERROR DE CONEXIÓN\n\n' + error. message);
         mostrarRespuesta('crearDeptResponse', '❌ Error de conexión: ' + error.message, 'error');
-    } finally {
-        // ✅ Rehabilitar el botón después de 2 segundos
-        setTimeout(() => {
-            if (submitBtn) {
-                submitBtn.disabled = false;
-                submitBtn.classList.remove('loading');
-                submitBtn. textContent = '🏢 Crear Departamento';
-            }
-        }, 2000);
     }
 }
 
@@ -1457,4 +1409,23 @@ async function cargarDepartamentosExistentes() {
         console.error('Error al cargar departamentos:', error);
         container. innerHTML = '<p style="color: #e74c3c; text-align: center;">❌ Error de conexión</p>';
     }
+}
+
+
+// ============================================
+// FUNCIÓN: MOSTRAR DIÁLOGO DE ÉXITO
+// ============================================
+function mostrarDialogoExito(titulo, datos) {
+    let mensaje = titulo + '\n\n';
+    
+    // Agregar cada dato en una línea
+    for (const [clave, valor] of Object.entries(datos)) {
+        if (valor !== null && valor !== undefined && valor !== '') {
+            mensaje += `${clave}: ${valor}\n`;
+        }
+    }
+    
+    mensaje += '\n✅ Operación completada exitosamente';
+    
+    alert(mensaje);
 }
