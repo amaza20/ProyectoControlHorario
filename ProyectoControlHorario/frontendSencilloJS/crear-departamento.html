@@ -1,0 +1,85 @@
+<! DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear Departamento - Control Horario</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">🕐 Control Horario</div>
+        <div class="nav-user" id="navUser">Cargando...</div>
+        <a href="dashboard.html" class="btn btn-secondary btn-sm">← Volver</a>
+    </nav>
+    
+    <div class="container">
+        <div class="card">
+            <h1>🏢 Crear Nuevo Departamento</h1>
+            <p class="subtitle">Solo administradores pueden crear departamentos</p>
+            
+            <form id="crearDepartamentoForm" onsubmit="crearDepartamento(event)">
+                <div class="form-group">
+                    <label for="nombreDepartamento">Nombre del Departamento *</label>
+                    <input 
+                        type="text" 
+                        id="nombreDepartamento" 
+                        placeholder="Ej: Marketing, Ventas, Producción" 
+                        required 
+                        minlength="2"
+                        maxlength="50"
+                        pattern="[A-Za-zÀ-ÿ0-9\s]+"
+                        title="Solo letras, números y espacios">
+                    <small style="color: #666; display: block; margin-top: 5px;">
+                        El nombre debe tener entre 2 y 50 caracteres
+                    </small>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">🏢 Crear Departamento</button>
+            </form>
+            
+            <div id="crearDeptResponse" class="response"></div>
+            
+            <div style="margin-top: 30px; padding: 15px; background-color: #e7f3ff; border-radius: 8px; border-left: 4px solid #2196F3;">
+                <strong>ℹ️ Información:</strong>
+                <ul style="margin-top: 10px; padding-left: 20px;">
+                    <li>Al crear un departamento se generará automáticamente su base de datos</li>
+                    <li>Los empleados y supervisores solo pueden pertenecer a departamentos existentes</li>
+                    <li>No se pueden crear departamentos duplicados</li>
+                    <li>Una vez creado, el departamento estará disponible en el formulario de registro de usuarios</li>
+                </ul>
+            </div>
+
+            <!-- Sección para mostrar departamentos existentes -->
+            <div style="margin-top: 30px;">
+                <h3>📋 Departamentos Existentes</h3>
+                <button class="btn btn-secondary" onclick="cargarDepartamentosExistentes()" style="margin-bottom: 15px;">
+                    🔄 Actualizar Lista
+                </button>
+                <div id="listaDepartamentos" style="padding: 15px; background-color: #f9f9f9; border-radius: 8px; min-height: 100px;">
+                    <p style="color: #666; text-align: center;">Cargando departamentos...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+    <script>
+        // Verificar que el usuario esté autenticado y sea administrador
+        if (!verificarSesion()) {
+            window.location.href = 'login.html';
+        } else {
+            verificarRol(['Administrador']);
+            
+            // Mostrar nombre de usuario
+            const datos = obtenerDatosToken();
+            if (datos) {
+                document.getElementById('navUser'). textContent = `${datos.username} (${datos.rol})`;
+            }
+            
+            // Cargar lista de departamentos existentes
+            cargarDepartamentosExistentes();
+        }
+    </script>
+</body>
+</html>

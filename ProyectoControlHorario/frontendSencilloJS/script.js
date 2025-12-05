@@ -1189,3 +1189,110 @@ async function cargarRoles() {
     }
 }
 
+
+// ============================================
+// FUNCIÓN: CREAR DEPARTAMENTO
+// ============================================
+async function crearDepartamento(event) {
+    if (event) event.preventDefault();
+    
+    const authToken = localStorage.getItem('authToken');
+    
+    if (!authToken) {
+        mostrarRespuesta('crearDeptResponse', '⚠️ No estás autenticado', 'error');
+        setTimeout(() => window.location.href = 'login.html', 2000);
+        return;
+    }
+    
+    const nombreDepartamento = document.getElementById('nombreDepartamento').value. trim();
+
+    // ✅ VALIDACIÓN: Campo obligatorio
+    if (!nombreDepartamento) {
+        mostrarRespuesta('crearDeptResponse', '⚠️ Por favor ingresa el nombre del departamento', 'error');
+        return;
+    }
+
+    // ✅ VALIDACIÓN: Longitud mínima
+    if (nombreDepartamento.length < 2) {
+        mostrarRespuesta('crearDeptResponse', '⚠️ El nombre debe tener al menos 2 caracteres', 'error');
+        return;
+    }
+
+    console.log('📤 Enviando creación de departamento:', nombreDepartamento);
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/general/crearDepartamento?nombreDepartamento=${encodeURIComponent(nombreDepartamento)}`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+
+        const data = await response.json();
+        
+        if (response.ok) {
+            mostrarRespuesta('crearDeptResponse', data.msg || `✅ Departamento "${nombreDepartamento}" creado correctamente`, 'success');
+            document.getElementById('crearDepartamentoForm').reset();
+            
+            // Actualizar la lista de departamentos
+            setTimeout(() => {
+                cargarDepartamentosExistentes();
+            }, 1000);
+        } else {
+            mostrarRespuesta('crearDeptResponse', data. msg || 'Error al crear departamento', 'error');
+            if (response.status === 401) {
+                cerrarSesion();
+            }
+        }
+    } catch (error) {
+        mostrarRespuesta('crearDeptResponse', '❌ Error de conexión: ' + error.message, 'error');
+    }
+}
+
+// ============================================
+// FUNCIÓN: CARGAR DEPARTAMENTOS EXISTENTES
+// ============================================
+async function cargarDepartamentosExistentes() {
+    const container = document.getElementById('listaDepartamentos');
+    
+    if (! container) return;
+    
+    container.innerHTML = '<p style="color: #666; text-align: center;">🔄 Cargando departamentos...</p>';
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/general/listarDepartamentos`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (response.ok) {
+            const departamentos = await response.json();
+            
+            if (departamentos && departamentos.length > 0) {
+                let html = '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px;">';
+                
+                departamentos. forEach(dept => {
+                    html += `
+                        <div style="padding: 15px; background: white; border-radius: 8px; border-left: 4px solid #667eea; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                            <div style="font-weight: bold; color: #333;">🏢 ${dept}</div>
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+                html += `<p style="margin-top: 15px; color: #666; font-size: 0.9em; text-align: center;">Total: ${departamentos.length} departamento(s)</p>`;
+                
+                container.innerHTML = html;
+            } else {
+                container.innerHTML = '<p style="color: #666; text-align: center;">No hay departamentos registrados aún</p>';
+            }
+        } else {
+            container.innerHTML = '<p style="color: #e74c3c; text-align: center;">❌ Error al cargar departamentos</p>';
+        }
+    } catch (error) {
+        console.error('Error al cargar departamentos:', error);
+        container. innerHTML = '<p style="color: #e74c3c; text-align: center;">❌ Error de conexión</p>';
+    }
+}

@@ -92,17 +92,23 @@
             // Opciones para Administrador
             if (rol === 'Administrador') {
                 opciones += `
-                    <div class="dashboard-card" onclick="window.location.href='registro.html'">
+                   <div class="dashboard-card" onclick="window.location.href='registro.html'">
                         <div class="icon">👤</div>
                         <h3>Registrar Usuario</h3>
                         <p>Crear nuevos usuarios</p>
                     </div>
-                    
-                    <div class="dashboard-card" onclick="window.location. href='verificar-integridad.html'">
+        
+                    <div class="dashboard-card" onclick="window.location.href='crear-departamento.html'">
+                        <div class="icon">🏢</div>
+                        <h3>Crear Departamento</h3>
+                        <p>Agregar nuevos departamentos</p>
+                    </div>
+        
+                    <div class="dashboard-card" onclick="window.location.href='verificar-integridad.html'">
                         <div class="icon">🔐</div>
                         <h3>Verificar Integridad</h3>
                         <p>Comprobar autenticidad de fichajes</p>
-                    </div>
+        </div>
                 `;
             }
             

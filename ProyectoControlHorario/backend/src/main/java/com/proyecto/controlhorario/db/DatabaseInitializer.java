@@ -122,7 +122,7 @@ public class DatabaseInitializer {
                         VALUES ('Administrador'), ('Auditor'), ('Supervisor'), ('Empleado');
                     """);
 
-                    String passw = "theBigBoss";
+                    String passw = "admin";
                     String hashedPassw = encoder.encode(passw);
 
                     stmt.executeUpdate(  // Insertando un administrador, porque sino no podre dar de alta a otros usuarios
