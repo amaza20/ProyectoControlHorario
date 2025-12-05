@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: com.proyecto.controlhorario.service.EdicionesServiceTest
--------------------------------------------------------------------------------
-Tests run: 2, Failures: 0, Errors: 0, Skipped: 1, Time elapsed: 0.213 s -- in com.proyecto.controlhorario.service.EdicionesServiceTest

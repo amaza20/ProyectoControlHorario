@@ -1,5 +1,5 @@
 -- ===========================================================
--- 🧱 TABLA: FICHAJES
+--  TABLA: FICHAJES
 -- ===========================================================
 CREATE TABLE IF NOT EXISTS fichajes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS fichajes (
 
 
 -- ===========================================================
--- 🧱 TABLA: EDICIONES
+--  TABLA: EDICIONES
 -- ===========================================================
 CREATE TABLE IF NOT EXISTS ediciones (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS ediciones (
 
 
 -- ===========================================================
--- 🧱 TABLA: SOLICITUD_EDICION
+--  TABLA: SOLICITUD_EDICION
 -- ===========================================================
 CREATE TABLE IF NOT EXISTS solicitud_edicion (
     id INTEGER PRIMARY KEY AUTOINCREMENT,

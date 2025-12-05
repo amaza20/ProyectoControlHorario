@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: com.proyecto.controlhorario.dao.FichajesDAOTest
--------------------------------------------------------------------------------
-Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.041 s -- in com.proyecto.controlhorario.dao.FichajesDAOTest

@@ -1,5 +1,6 @@
 package com.proyecto.controlhorario.controllers;
 
+import com.proyecto.controlhorario.controllers.dto.CrearDepartamentoResponse;
 import com.proyecto.controlhorario.controllers.dto.LoginRequest;
 import com.proyecto.controlhorario.controllers.dto.LoginResponse;
 import com.proyecto.controlhorario.controllers.dto.RegistroRequest;
@@ -101,6 +102,48 @@ public class ControladorUsuario {
             return ResponseEntity
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new LoginResponse("Error interno: " + e.getMessage()));
+        }
+    }
+
+    
+    // ================================
+    // ✅ REGISTRAR NUEVO DEPARTAMENTO    // solo los administradores pueden crear departamentos
+    // ================================
+    @PostMapping("/crearDepartamento")
+    public ResponseEntity<CrearDepartamentoResponse> registrarDepartamento(@Valid @RequestParam String nombreDepartamento, @RequestHeader("Authorization") String authHeader) {
+
+        try {
+
+            //  Extraer el token (sin "Bearer ")
+            String token = authHeader.replace("Bearer ", "");
+
+            //  Validar token y obtener claims
+            Map<String, Object> claims = JwtUtil.validateToken(token);
+            String rolUsuarioActual = (String) claims.get("rol");
+
+            //  Llamar al servicio
+            CrearDepartamentoResponse response = servicio.crearDepartamento(nombreDepartamento,rolUsuarioActual);
+
+            // En Spring Boot, la conversión a JSON es automática gracias a Jackson
+            return ResponseEntity
+                    .status(HttpStatus.OK)
+                    .body(response);
+        }catch (JwtException e) {
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body(new CrearDepartamentoResponse("Error: " + e.getMessage()));
+        }catch (ForbiddenException e) {
+            return ResponseEntity
+                    .status(HttpStatus.FORBIDDEN)
+                    .body(new CrearDepartamentoResponse("Error: " + e.getMessage()));
+        }catch (IllegalArgumentException e) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(new CrearDepartamentoResponse("Error: " + e.getMessage()));      
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new CrearDepartamentoResponse("Error interno: " + e.getMessage()));
         }
     }
 

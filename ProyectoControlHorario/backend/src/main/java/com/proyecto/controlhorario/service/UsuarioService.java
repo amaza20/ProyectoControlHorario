@@ -1,5 +1,6 @@
 package com.proyecto.controlhorario.service;
 
+import com.proyecto.controlhorario.controllers.dto.CrearDepartamentoResponse;
 import com.proyecto.controlhorario.controllers.dto.LoginRequest;
 import com.proyecto.controlhorario.controllers.dto.LoginResponse;
 import com.proyecto.controlhorario.controllers.dto.RegistroRequest;
@@ -25,7 +26,7 @@ public class UsuarioService {
 
     public RegistroResponse guardarRegistro(RegistroRequest dto, String rolUsuarioActual) {
 
-        // Administrador -->   es el unico rol que puede crear nuevos usuarios, solo estara en la base de datos general, 
+        // Administrador -->   es el unico rol que puede crear nuevos usuarios y nuevos departamentos, solo estara en la base de datos general, 
         //                   puede comprobar integridad (departamento null).
         //       Auditor -->  solo estara en la base de datos general, puede comprobar integridad (departamento null).
         //    Supervisor -->  es el que da el OK de la edicion del fichaje.
@@ -99,5 +100,28 @@ public class UsuarioService {
         return response;  
     }
 
+
+    public CrearDepartamentoResponse crearDepartamento(String nombreDepartamento, String rolUsuarioActual) {
+
+        // ✅ VALIDAR QUE EL USUARIO ACTUAL SEA ADMINISTRADOR
+        if (!"Administrador".equals(rolUsuarioActual)) {
+            throw new ForbiddenException("Solo los administradores pueden crear departamentos");
+        }
+
+        // Comprobar si el nombre de ese departamento ya existe
+        if (usuarioDAO.existsDepartamento(nombreDepartamento)) {
+            throw new IllegalArgumentException("El departamento '" + nombreDepartamento + "' ya existe.");
+        }  
+        
+        // Comprobar si nombreDepartamento es null o vacio
+        if (nombreDepartamento == null || nombreDepartamento.isEmpty()) {
+            throw new IllegalArgumentException("No se pudo crear el departamento. Verifique la solicitud.");
+        }
+
+        // Llamar al DAO para crear el departamento
+        CrearDepartamentoResponse nombreDepartamentoCreado = usuarioDAO.crearDepartamento(nombreDepartamento);
+
+        return nombreDepartamentoCreado;
+    }
 }
     

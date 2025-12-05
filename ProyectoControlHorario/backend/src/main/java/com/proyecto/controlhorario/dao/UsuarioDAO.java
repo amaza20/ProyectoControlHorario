@@ -3,10 +3,19 @@ package com.proyecto.controlhorario.dao;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Repository;
+
+import com.proyecto.controlhorario.controllers.dto.CrearDepartamentoResponse;
 import com.proyecto.controlhorario.dao.entity.Usuario;
 import com.proyecto.controlhorario.db.DatabaseManager;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.sql.*;
+import java.util.stream.Collectors;
 
 @Repository
 public class UsuarioDAO {
@@ -157,6 +166,71 @@ public class UsuarioDAO {
 
         return toret;
     }
+
+
+    // // ================================
+    // // ✅ REGISTRAR NUEVO DEPARTAMENTO    // solo los administradores pueden crear departamentos
+    // // ================================
+   public CrearDepartamentoResponse crearDepartamento(String nombreDepartamento) {
+    String dbPath = dbFolder + "departamento_" + nombreDepartamento.toLowerCase() + ".db";
+    String schemaFile = "schema_departamento.sql"; 
+    
+    try {   
+        DatabaseManager.withConnection(dbPath, conn -> {
+            try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(schemaFile);
+                 BufferedReader br = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
+                 Statement stmt = conn.createStatement()) {
+
+                if (inputStream == null) {
+                    throw new IllegalArgumentException("Archivo no encontrado: " + schemaFile);
+                }
+
+                // Desactivar FOREIGN KEYs
+                stmt.execute("PRAGMA foreign_keys = OFF;");
+
+                // Leer todo el contenido
+                String fullContent = br.lines().collect(Collectors.joining("\n"));
+                
+                // Dividir por ; y ejecutar
+                String[] statements = fullContent.split(";");
+                
+                for (String statement : statements) {
+                    // Remover comentarios y espacios
+                    String cleaned = statement.replaceAll("--[^\n]*", "").trim();
+                    
+                    if (! cleaned.isEmpty()) {
+                        stmt.execute(cleaned);
+                        System.out.println("✓ Ejecutado: " + 
+                            cleaned.replaceAll("\\s+", " ")
+                                   .substring(0, Math.min(60, cleaned.length())) + "...");
+                    }
+                }
+                
+                // Reactivar FOREIGN KEYs
+                stmt.execute("PRAGMA foreign_keys = ON;");
+
+
+            } catch (IOException e) {
+                throw new SQLException("Error al leer el fichero SQL: " + schemaFile, e);
+            }
+        });
+
+        DatabaseManager.withConnection(dbFolder+"control_general.db", conn -> {
+            String sqlInsert = "INSERT INTO departamentos (nombre) VALUES (?)";
+            try (PreparedStatement stmt = conn.prepareStatement(sqlInsert)) {
+                stmt.setString(1, nombreDepartamento);
+                stmt.executeUpdate();
+            }
+        });
+
+        System.out.println("✅ Departamento '" + nombreDepartamento + "' registrado correctamente.");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return new CrearDepartamentoResponse(nombreDepartamento, "Departamento creado correctamente.");
+    }
+
 
 
 }

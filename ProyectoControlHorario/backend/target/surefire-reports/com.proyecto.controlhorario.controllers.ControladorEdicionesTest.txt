@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: com.proyecto.controlhorario.controllers.ControladorEdicionesTest
--------------------------------------------------------------------------------
-Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 7.431 s -- in com.proyecto.controlhorario.controllers.ControladorEdicionesTest
