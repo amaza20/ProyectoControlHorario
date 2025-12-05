@@ -1296,9 +1296,6 @@ async function cargarRoles() {
 // ============================================
 // FUNCIÓN: CREAR DEPARTAMENTO (MEJORADA CON FEEDBACK)
 // ============================================
-// ============================================
-// FUNCIÓN: CREAR DEPARTAMENTO
-// ============================================
 async function crearDepartamento(event) {
     if (event) event.preventDefault();
     
@@ -1324,7 +1321,7 @@ async function crearDepartamento(event) {
     }
 
     try {
-        const response = await fetch(`${API_BASE_URL}/general/crearDepartamento? nombreDepartamento=${encodeURIComponent(nombreDepartamento)}`, {
+        const response = await fetch(`${API_BASE_URL}/general/crearDepartamento?nombreDepartamento=${encodeURIComponent(nombreDepartamento)}`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${authToken}`
