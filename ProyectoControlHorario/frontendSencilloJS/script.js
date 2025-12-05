@@ -91,9 +91,9 @@ async function registrarUsuario(event) {
         return;
     }
 
-    const departamentoFinal = (rol === 'administrador' || rol === 'auditor') ? '' : departamento;
+    const departamentoFinal = (rol === 'Administrador' || rol === 'Auditor') ? '' : departamento;
 
-    if ((rol === 'empleado' || rol === 'supervisor') && !departamentoFinal) {
+    if ((rol === 'Empleado' || rol === 'Supervisor') && !departamentoFinal) {
         mostrarRespuesta('regResponse', '⚠️ Los empleados y supervisores deben tener un departamento', 'error');
         return;
     }
