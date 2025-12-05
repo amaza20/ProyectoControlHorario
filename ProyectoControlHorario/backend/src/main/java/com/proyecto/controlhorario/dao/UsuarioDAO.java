@@ -176,7 +176,7 @@ public class UsuarioDAO {
     String schemaFile = "schema_departamento.sql"; 
     
     try {   
-        DatabaseManager.withConnection(dbPath, conn -> {
+        DatabaseManager.withTransaction(dbPath, conn -> {
             try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(schemaFile);
                  BufferedReader br = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
                  Statement stmt = conn.createStatement()) {
