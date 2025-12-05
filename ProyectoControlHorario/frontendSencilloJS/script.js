@@ -68,7 +68,7 @@ function mostrarRespuesta(elementId, mensaje, tipo) {
 }
 
 // ============================================
-// FUNCIÓN: REGISTRAR USUARIO
+// FUNCIÓN: REGISTRAR USUARIO (MEJORADA)
 // ============================================
 async function registrarUsuario(event) {
     if (event) event.preventDefault();
@@ -82,12 +82,23 @@ async function registrarUsuario(event) {
     }
     
     const username = document.getElementById('regUsername').value;
-    const password = document.getElementById('regPassword'). value;
+    const password = document.getElementById('regPassword').value;
     const departamento = document.getElementById('regDepartamento').value;
-    const rol = document.getElementById('regRol'). value;
+    const rol = document.getElementById('regRol').value;
 
+    // Validaciones... 
     if (!username || !password || !rol) {
         mostrarRespuesta('regResponse', '⚠️ Por favor completa todos los campos obligatorios', 'error');
+        return;
+    }
+
+    if (username.length < 3) {
+        mostrarRespuesta('regResponse', '⚠️ El nombre de usuario debe tener al menos 3 caracteres', 'error');
+        return;
+    }
+
+    if (password.length < 8) {
+        mostrarRespuesta('regResponse', '⚠️ La contraseña debe tener al menos 8 caracteres', 'error');
         return;
     }
 
@@ -97,6 +108,17 @@ async function registrarUsuario(event) {
         mostrarRespuesta('regResponse', '⚠️ Los empleados y supervisores deben tener un departamento', 'error');
         return;
     }
+
+    // ✅ Deshabilitar botón de submit
+    const submitBtn = document.querySelector('#registroForm button[type="submit"]');
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.classList.add('loading');
+        submitBtn.textContent = 'Creando usuario...';
+    }
+
+    // ✅ Mostrar mensaje de carga
+    mostrarRespuesta('regResponse', '🔄 Creando usuario, por favor espera...', 'success');
 
     console.log('📤 Enviando registro:', {
         username,
@@ -123,16 +145,99 @@ async function registrarUsuario(event) {
         const data = await response.json();
         
         if (response.ok) {
+            // ✅ Mostrar modal de éxito
+            mostrarModalExito(
+                `✅ Usuario "${username}" creado exitosamente`,
+                `Rol: ${rol}${departamentoFinal ? ' - Departamento: ' + departamentoFinal : ''}`
+            );
+            
+            // ✅ Mensaje en el área de respuesta
             mostrarRespuesta('regResponse', data.msg || '✅ Usuario registrado correctamente', 'success');
-            document.getElementById('registroForm').reset();
+            
+            // ✅ Limpiar formulario después de un delay
+            setTimeout(() => {
+                document.getElementById('registroForm').reset();
+                // Ocultar el grupo de departamento
+                const deptGroup = document.getElementById('departamentoGroup');
+                if (deptGroup) deptGroup.style.display = 'none';
+            }, 2000);
         } else {
-            mostrarRespuesta('regResponse', data. msg || 'Error al registrar usuario', 'error');
-            if (response.status === 401) {
+            mostrarRespuesta('regResponse', data.msg || 'Error al registrar usuario', 'error');
+            if (response. status === 401) {
                 cerrarSesion();
             }
         }
     } catch (error) {
         mostrarRespuesta('regResponse', '❌ Error de conexión: ' + error.message, 'error');
+    } finally {
+        // ✅ Rehabilitar botón
+        setTimeout(() => {
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('loading');
+                submitBtn.textContent = 'Registrar Usuario';
+            }
+        }, 2000);
+    }
+}
+
+// ============================================
+// FUNCIÓN: MOSTRAR MODAL DE ÉXITO
+// ============================================
+function mostrarModalExito(titulo, mensaje) {
+    // Crear overlay
+    const overlay = document.createElement('div');
+    overlay.className = 'success-overlay';
+    
+    // Crear modal
+    const modal = document.createElement('div');
+    modal.className = 'success-modal';
+    modal.innerHTML = `
+        <div class="success-icon">✅</div>
+        <h2 style="color: #28a745; margin: 20px 0 10px;">${titulo}</h2>
+        <p style="color: #666; font-size: 1.1em;">${mensaje}</p>
+        <p style="color: #999; font-size: 0. 9em; margin-top: 20px;">Este mensaje se cerrará automáticamente</p>
+    `;
+    
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+    
+    // Reproducir sonido (opcional)
+    reproducirSonidoExito();
+    
+    // Remover después de 2. 5 segundos
+    setTimeout(() => {
+        overlay.style.animation = 'fadeOut 0.3s ease-out';
+        setTimeout(() => {
+            document.body.removeChild(overlay);
+        }, 300);
+    }, 2500);
+}
+
+// ============================================
+// FUNCIÓN: REPRODUCIR SONIDO DE ÉXITO (OPCIONAL)
+// ============================================
+function reproducirSonidoExito() {
+    // Crear un sonido simple usando Web Audio API
+    try {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode. connect(audioContext.destination);
+        
+        oscillator.frequency. value = 800;
+        oscillator.type = 'sine';
+        
+        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+        
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext. currentTime + 0.5);
+    } catch (e) {
+        // Si falla, no hacer nada (navegador no soporta Web Audio API)
+        console.log('Audio no disponible');
     }
 }
 
@@ -210,7 +315,7 @@ async function loginUsuario(event) {
 }
 
 // ============================================
-// FUNCIÓN: FICHAR
+// FUNCIÓN: FICHAR (MEJORADA CON FEEDBACK)
 // ============================================
 async function fichar() {
     const authToken = localStorage.getItem('authToken');
@@ -221,6 +326,17 @@ async function fichar() {
         return;
     }
 
+    // ✅ Obtener el botón y deshabilitarlo
+    const botonFichar = document.querySelector('button[onclick="fichar()"]');
+    if (botonFichar) {
+        botonFichar.disabled = true;
+        botonFichar. classList.add('loading');
+        botonFichar.textContent = 'Procesando...';
+    }
+
+    // ✅ Mostrar mensaje de carga
+    mostrarRespuesta('ficharResponse', '🔄 Registrando fichaje...', 'success');
+
     try {
         const response = await fetch(`${API_BASE_URL}/fichar`, {
             method: 'POST',
@@ -229,18 +345,31 @@ async function fichar() {
             }
         });
 
-        const data = await response. json();
+        const data = await response.json();
         
         if (response.ok) {
+            // ✅ Mostrar modal de éxito animado
+            mostrarModalExito('✅ Fichaje registrado correctamente', data.mensaje || 'Tu fichaje ha sido guardado');
+            
+            // ✅ También mostrar en el área de respuesta
             mostrarRespuesta('ficharResponse', data.mensaje || '✅ Fichaje registrado correctamente', 'success');
         } else {
-            mostrarRespuesta('ficharResponse', data.mensaje || 'Error al fichar', 'error');
+            mostrarRespuesta('ficharResponse', data. mensaje || 'Error al fichar', 'error');
             if (response.status === 401) {
                 cerrarSesion();
             }
         }
     } catch (error) {
         mostrarRespuesta('ficharResponse', '❌ Error de conexión: ' + error.message, 'error');
+    } finally {
+        // ✅ Rehabilitar el botón después de 2 segundos
+        setTimeout(() => {
+            if (botonFichar) {
+                botonFichar. disabled = false;
+                botonFichar.classList.remove('loading');
+                botonFichar.textContent = '✓ Fichar Ahora';
+            }
+        }, 2000);
     }
 }
 
@@ -1191,7 +1320,7 @@ async function cargarRoles() {
 
 
 // ============================================
-// FUNCIÓN: CREAR DEPARTAMENTO
+// FUNCIÓN: CREAR DEPARTAMENTO (MEJORADA CON FEEDBACK)
 // ============================================
 async function crearDepartamento(event) {
     if (event) event.preventDefault();
@@ -1218,10 +1347,21 @@ async function crearDepartamento(event) {
         return;
     }
 
+    // ✅ Obtener el botón y deshabilitarlo
+    const submitBtn = document.querySelector('#crearDepartamentoForm button[type="submit"]');
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn. classList.add('loading');
+        submitBtn.textContent = 'Creando departamento...';
+    }
+
+    // ✅ Mostrar mensaje de carga
+    mostrarRespuesta('crearDeptResponse', '🔄 Creando departamento y su base de datos, por favor espera...', 'success');
+
     console.log('📤 Enviando creación de departamento:', nombreDepartamento);
 
     try {
-        const response = await fetch(`${API_BASE_URL}/general/crearDepartamento?nombreDepartamento=${encodeURIComponent(nombreDepartamento)}`, {
+        const response = await fetch(`${API_BASE_URL}/general/crearDepartamento? nombreDepartamento=${encodeURIComponent(nombreDepartamento)}`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${authToken}`
@@ -1230,22 +1370,44 @@ async function crearDepartamento(event) {
 
         const data = await response.json();
         
-        if (response.ok) {
-            mostrarRespuesta('crearDeptResponse', data.msg || `✅ Departamento "${nombreDepartamento}" creado correctamente`, 'success');
-            document.getElementById('crearDepartamentoForm').reset();
+        if (response. ok) {
+            // ✅ Mostrar modal de éxito animado
+            mostrarModalExito(
+                `✅ Departamento "${nombreDepartamento}" creado exitosamente`,
+                'La base de datos del departamento ha sido generada correctamente'
+            );
             
-            // Actualizar la lista de departamentos
+            // ✅ Mensaje en el área de respuesta
+            mostrarRespuesta('crearDeptResponse', data.msg || `✅ Departamento "${nombreDepartamento}" creado correctamente`, 'success');
+            
+            // ✅ Limpiar formulario después de un delay
+            setTimeout(() => {
+                document.getElementById('crearDepartamentoForm').reset();
+            }, 2000);
+            
+            // ✅ Actualizar la lista de departamentos después de 1 segundo
             setTimeout(() => {
                 cargarDepartamentosExistentes();
             }, 1000);
         } else {
-            mostrarRespuesta('crearDeptResponse', data. msg || 'Error al crear departamento', 'error');
+            mostrarRespuesta('crearDeptResponse', data.msg || 'Error al crear departamento', 'error');
             if (response.status === 401) {
                 cerrarSesion();
+            } else if (response.status === 403) {
+                mostrarRespuesta('crearDeptResponse', '⚠️ No tienes permisos para crear departamentos', 'error');
             }
         }
     } catch (error) {
         mostrarRespuesta('crearDeptResponse', '❌ Error de conexión: ' + error.message, 'error');
+    } finally {
+        // ✅ Rehabilitar el botón después de 2 segundos
+        setTimeout(() => {
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('loading');
+                submitBtn. textContent = '🏢 Crear Departamento';
+            }
+        }, 2000);
     }
 }
 

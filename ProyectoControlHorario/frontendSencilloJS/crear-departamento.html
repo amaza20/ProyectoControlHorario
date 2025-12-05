@@ -1,4 +1,4 @@
-<! DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -29,7 +29,8 @@
                         minlength="2"
                         maxlength="50"
                         pattern="[A-Za-zÀ-ÿ0-9\s]+"
-                        title="Solo letras, números y espacios">
+                        title="Solo letras, números y espacios"
+                        autocomplete="off">
                     <small style="color: #666; display: block; margin-top: 5px;">
                         El nombre debe tener entre 2 y 50 caracteres
                     </small>
@@ -47,6 +48,7 @@
                     <li>Los empleados y supervisores solo pueden pertenecer a departamentos existentes</li>
                     <li>No se pueden crear departamentos duplicados</li>
                     <li>Una vez creado, el departamento estará disponible en el formulario de registro de usuarios</li>
+                    <li><strong>⏱️ El proceso puede tardar unos segundos</strong></li>
                 </ul>
             </div>
 
@@ -67,14 +69,14 @@
     <script>
         // Verificar que el usuario esté autenticado y sea administrador
         if (!verificarSesion()) {
-            window.location.href = 'login.html';
+            window. location.href = 'login. html';
         } else {
             verificarRol(['Administrador']);
             
             // Mostrar nombre de usuario
             const datos = obtenerDatosToken();
             if (datos) {
-                document.getElementById('navUser'). textContent = `${datos.username} (${datos.rol})`;
+                document.getElementById('navUser').textContent = `${datos.username} (${datos. rol})`;
             }
             
             // Cargar lista de departamentos existentes
