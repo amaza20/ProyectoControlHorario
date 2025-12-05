@@ -1188,3 +1188,4 @@ async function cargarRoles() {
         console.error('Error al cargar roles:', error);
     }
 }
+
