@@ -909,7 +909,10 @@ function mostrarTablaFichajesConEditar(fichajes) {
             // ⏳ PENDIENTE: Determinar el valor efectivo actual
             // Si nuevoInstante existe → última edición aprobada es el valor efectivo
             // Si nuevoInstante es null → el valor original es el valor efectivo
-            const valorEfectivoActual = fichaje.nuevoInstante || fichaje.instanteAnterior;
+
+            const valorEfectivoActualUTC = fichaje.nuevoInstante || fichaje.instanteAnterior;
+            const valorEfectivoActual = formatearFechaLocal(valorEfectivoActualUTC);
+
             const tipoEfectivoActual = fichaje.nuevoTipo || fichaje.tipoAnterior;
             
             // El valor solicitado viene de solicitudInstante (solo existe cuando aprobado=FALSO)
