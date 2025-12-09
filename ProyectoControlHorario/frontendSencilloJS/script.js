@@ -425,7 +425,6 @@ async function solicitarEdicion(event) {
     console.log('📤 Enviando solicitud de edición:', {
         id_fichaje: parseInt(fichajeId),
         nuevoInstante: nuevoInstante,
-        usoHorario: usoHorario
     });
 
     try {
@@ -438,7 +437,6 @@ async function solicitarEdicion(event) {
             body: JSON.stringify({
                 id_fichaje: parseInt(fichajeId),
                 nuevoInstante: nuevoInstante,
-                usoHorario: usoHorario
             })
         });
 
