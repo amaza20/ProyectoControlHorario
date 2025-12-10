@@ -44,6 +44,8 @@ public class DatabaseInitializer {
 
     @PostConstruct
     public void init() {
+
+
         try {
             // Crear carpeta si no existe
             Files.createDirectories(Path.of(dbFolder));

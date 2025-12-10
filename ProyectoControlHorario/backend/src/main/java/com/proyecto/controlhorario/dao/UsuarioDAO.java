@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Repository;
 
+import com.proyecto.controlhorario.controllers.dto.CambiarPasswordResponse;
 import com.proyecto.controlhorario.controllers.dto.CrearDepartamentoResponse;
 import com.proyecto.controlhorario.dao.entity.Usuario;
 import com.proyecto.controlhorario.db.DatabaseManager;
@@ -277,5 +278,32 @@ public class UsuarioDAO {
     }
 
 
+
+    public CambiarPasswordResponse cambiarPassword(String username, String nuevaPassword) {
+        String dbPath = dbFolder + "control_general.db";
+        final CambiarPasswordResponse toret = new CambiarPasswordResponse(); 
+
+        try {
+            DatabaseManager.withConnection(dbPath, conn -> {
+                String sqlUpdate = "UPDATE usuarios SET password = ? WHERE username = ?";
+                try (PreparedStatement stmt = conn.prepareStatement(sqlUpdate)) {
+                    stmt.setString(1, encoder.encode(nuevaPassword));
+                    stmt.setString(2, username);
+                    int rowsAffected = stmt.executeUpdate();
+                    
+                    if (rowsAffected > 0) {
+                        toret.setUsername(username);
+                        System.out.println("✅ Contraseña actualizada para usuario: " + username);
+                    } else {
+                        System.out.println("❌ No se encontró el usuario: " + username);
+                        toret.setUsername(null);
+                    }
+                }
+            });
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return toret;
+    }
 
 }

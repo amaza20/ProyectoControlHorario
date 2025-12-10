@@ -1,5 +1,7 @@
 package com.proyecto.controlhorario.controllers;
 
+import com.proyecto.controlhorario.controllers.dto.CambiarPasswordRequest;
+import com.proyecto.controlhorario.controllers.dto.CambiarPasswordResponse;
 import com.proyecto.controlhorario.controllers.dto.CrearDepartamentoResponse;
 import com.proyecto.controlhorario.controllers.dto.LoginRequest;
 import com.proyecto.controlhorario.controllers.dto.LoginResponse;
@@ -171,6 +173,50 @@ public class ControladorUsuario {
             return ResponseEntity
                 .status(HttpStatus. INTERNAL_SERVER_ERROR)
                 .body("Error al obtener roles: " + e.getMessage());
+        }
+    }
+
+
+
+    // ==============================================
+    // ✅ ENDPOINT: CAMBIAR CONTRASEÑA DE UN USUARIO 
+    // ==============================================
+    @PostMapping("/cambiarPassword")
+    public ResponseEntity<CambiarPasswordResponse> cambiarPassword(@Valid @RequestBody CambiarPasswordRequest dto, @RequestHeader("Authorization") String authHeader) {
+
+        try {
+
+            //  Extraer el token (sin "Bearer ")
+            String token = authHeader.replace("Bearer ", "");
+
+            //  Validar token y obtener claims
+            Map<String, Object> claims = JwtUtil.validateToken(token);
+            String rolUsuarioActual = (String) claims.get("rol");
+
+            //  Llamar al servicio (aquí se valida el rol)
+            CambiarPasswordResponse response = servicio.cambiarPassword(dto, rolUsuarioActual);
+            response.setMsg("Contraseña cambiada correctamente");
+
+            // En Spring Boot, la conversión a JSON es automática gracias a Jackson
+            return ResponseEntity
+                    .status(HttpStatus.CREATED)
+                    .body(response);
+        }catch (JwtException e) {
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body(new CambiarPasswordResponse("Error: " + e.getMessage()));
+        }catch (ForbiddenException e) {
+            return ResponseEntity
+                    .status(HttpStatus.FORBIDDEN)
+                    .body(new CambiarPasswordResponse("Error: " + e.getMessage()));  
+        }catch (IllegalArgumentException e) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(new CambiarPasswordResponse("Error: " + e.getMessage()));      
+        }catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new CambiarPasswordResponse("Error interno: " + e.getMessage()));
         }
     }
 

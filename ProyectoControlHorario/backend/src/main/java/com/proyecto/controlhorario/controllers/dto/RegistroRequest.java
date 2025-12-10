@@ -15,7 +15,8 @@ public class RegistroRequest {
     private String password;
 
    
-    private String departamento;  // El departamento puede ser NULL si el rol es 'Auditor' o 'Supervisor'
+    private String departamento;  // El departamento puede ser NULL si el rol es 'Administrador'
+                                  // Un Auditor, un Supervisor o un Empleado si deben de pertener a un departamento existente.
 
     @NotBlank(message = "El rol no puede estar vacío")
     private String rol;

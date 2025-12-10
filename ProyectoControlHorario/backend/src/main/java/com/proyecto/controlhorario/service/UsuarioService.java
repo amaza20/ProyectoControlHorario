@@ -1,5 +1,7 @@
 package com.proyecto.controlhorario.service;
 
+import com.proyecto.controlhorario.controllers.dto.CambiarPasswordRequest;
+import com.proyecto.controlhorario.controllers.dto.CambiarPasswordResponse;
 import com.proyecto.controlhorario.controllers.dto.CrearDepartamentoResponse;
 import com.proyecto.controlhorario.controllers.dto.LoginRequest;
 import com.proyecto.controlhorario.controllers.dto.LoginResponse;
@@ -27,11 +29,18 @@ public class UsuarioService {
 
     public RegistroResponse guardarRegistro(RegistroRequest dto, String rolUsuarioActual) {
 
-        // Administrador -->   es el unico rol que puede crear nuevos usuarios y nuevos departamentos, solo estara en la base de datos general, 
-        //                   puede comprobar integridad (departamento null).
-        //       Auditor -->  solo estara en la base de datos general, puede comprobar integridad (departamento null).
-        //    Supervisor -->  es el que da el OK de la edicion del fichaje.
-        //      Empleado -->  es el que ficha sin mas.
+        // Administrador -->   es el unico rol que puede crear nuevos usuarios, nuevos departamentos y cambiar contraseñas, 
+        //                    solo estara en la base de datos general (departamento null) 
+        //                    puede comprobar integridad BlockChain de los fichajes y de las ediciones de todos los departamentos.
+        
+        //       Auditor -->   pertenece a un departamento, puede comprobar integridad BlockChain de fichajes y de ediciones del departamento 
+        //                    al que pertenece.
+
+        //    Supervisor -->   pertenece a un departamento, es el que da el 'OK' o el 'Rechazado' de la edicion del fichaje. 
+        //                    puede comprobar integridad BlockChain de fichajes y de ediciones del departamento al que pertenece.
+        //                     Ficha normalmente.
+
+        //      Empleado -->   Ficha normalmente.
 
         // ✅ VALIDAR QUE EL USUARIO ACTUAL SEA ADMINISTRADOR
         if (!"Administrador".equals(rolUsuarioActual)) {
@@ -131,6 +140,26 @@ public class UsuarioService {
 
     public List<String> obtenerRoles() {
         return usuarioDAO.listarRoles();
+    }
+
+
+    public CambiarPasswordResponse cambiarPassword(CambiarPasswordRequest dto, String rolUsuarioActual) {
+
+        // ✅ VALIDAR QUE EL USUARIO ACTUAL SEA ADMINISTRADOR
+        if (!"Administrador".equals(rolUsuarioActual)) {
+            throw new ForbiddenException("Solo los administradores pueden cambiar contraseñas de otros usuarios");
+        }
+
+        //  Validar que el username ya existe
+        if (!usuarioDAO.existsByUsername(dto.getUsername())) {
+            throw new UnauthorizedException("El username no está registrado");
+        }
+
+        // Llamar al DAO para cambiar la contraseña
+        CambiarPasswordResponse usuarioActualizado = usuarioDAO.cambiarPassword(dto.getUsername(), dto.getNuevaPassword());
+
+        return usuarioActualizado;
+
     }
 }
 
