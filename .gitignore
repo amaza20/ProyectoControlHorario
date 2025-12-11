@@ -14,3 +14,6 @@ Ignorar TODOS los archivos .p12 en el proyecto (Recomendado)
 #**/*.p12
 
 .env
+
+
+~$Modelo de Datos.xlsx

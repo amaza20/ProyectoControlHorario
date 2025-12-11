@@ -198,22 +198,26 @@ public class FichajesDAO {
 
     // La cadena de hashes se construye en orden ASC (del más antiguo al más reciente)
     // Cuando inserto un fichaje, cada huella depende de la anterior cronológicamente.
-    public List<IntegridadResponse> verificarIntegridadFichajes(String departamentoConsultado) {
+    public List<IntegridadResponse> verificarIntegridadFichajes(String departamentoConsultado, int pagina, int elementosPorPagina) {
         String dbPath = dbFolder+"departamento_"+departamentoConsultado.toLowerCase()+".db";
         List<IntegridadResponse> toret = new ArrayList<>();
         
-
         try {
+            // ✅ IMPORTANTE: Para la verificación de integridad, necesitamos calcular la huella
+            // desde el primer fichaje, pero solo devolver los de la página solicitada. 
+
             DatabaseManager.withConnection(dbPath, conn -> {
-                String sql = "SELECT id, username, instante, tipo, huella FROM fichajes ORDER BY id ASC";  // Del más antiguo al más reciente
+                String sql = "SELECT id, username, instante, tipo, huella FROM fichajes ORDER BY id ASC";  
+                                                                     // Del más antiguo al más reciente
                                                                      // Si dos fichajes tienen el mismo instante (milisegundo igual), el 
                                                                      // orden por instante podría ser inconsistente. El id autoincremental 
                                                                      // garantiza el orden de inserción.
-                try (Statement st = conn.createStatement();
-                    ResultSet rs = st.executeQuery(sql)) {
+                try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                    int cont=0;
+                    ResultSet rs = stmt.executeQuery();
 
                     String huellaAnterior = null;
-                    while (rs.next() ) {  
+                    while (rs.next() || cont <= elementosPorPagina) {  
                         int id = rs.getInt("id");
                         String usuario = rs.getString("username");
                         String fechaHora = rs.getString("instante");
@@ -223,13 +227,19 @@ public class FichajesDAO {
                         String base = usuario + "|" + fechaHora + "|" + tipo + "|" + (huellaAnterior != null ? huellaAnterior : "GENESIS");
                         String huellaCalculada = generarHash(base);
 
-                        toret.add(new IntegridadResponse(id, usuario, fechaHora, tipo, huellaCalculada)); 
+                        if(id > pagina * elementosPorPagina  &&  id <= (pagina + 1) * elementosPorPagina ) {
+                            // Solo procesar los fichajes de la página solicitada
+                            toret.add(new IntegridadResponse(id, usuario, fechaHora, tipo, huellaCalculada)); 
 
-                        if (!huellaCalculada.equals(huellaGuardada)) {
-                            toret.get(toret.size()-1).setMensaje("INCONSISTENCIA DETECTADA");
-                        } else {
-                            toret.get(toret.size()-1).setMensaje("Huella válida");
-                            huellaAnterior = huellaGuardada;
+                            System.out.println("ID: " + id);
+
+                            if (!huellaCalculada.equals(huellaGuardada)) {
+                                toret.get(toret.size()-1).setMensaje("INCONSISTENCIA DETECTADA");
+                            } else {
+                                toret.get(toret.size()-1).setMensaje("Huella válida");
+                                huellaAnterior = huellaGuardada;
+                            }
+                          cont++;
                         }                   
                     }
                 }

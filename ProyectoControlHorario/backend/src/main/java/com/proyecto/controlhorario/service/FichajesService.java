@@ -57,7 +57,7 @@ public class FichajesService {
 
     // Nuevo método para verificar integridad de fichajes
     // Cadena de hashes (similar a blockchain) para detectar manipulaciones no autorizadas en los registros de fichajes
-    public List<IntegridadResponse> comprobarIntegridadFichajes(String departamentoConsultado, String rolUsuarioActual) {
+    public List<IntegridadResponse> comprobarIntegridadFichajes(String departamentoConsultado, String rolUsuarioActual, int pagina, int elementosPorPagina) {
 
         // Administrador -->   es el unico rol que puede crear nuevos usuarios, solo estara en la base de datos general, 
         //                   puede comprobar integridad (departamento null).
@@ -71,7 +71,7 @@ public class FichajesService {
         }
 
 
-        return fichajeDAO.verificarIntegridadFichajes(departamentoConsultado);
+        return fichajeDAO.verificarIntegridadFichajes(departamentoConsultado, pagina, elementosPorPagina);
     }
 
 

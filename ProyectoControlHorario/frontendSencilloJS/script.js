@@ -594,9 +594,12 @@ function cerrarSesion() {
 }
 
 // ============================================
-// FUNCIÓN: VERIFICAR INTEGRIDAD
+// FUNCIÓN:  VERIFICAR INTEGRIDAD (CON PAGINACIÓN)
 // ============================================
-async function verificarIntegridad(event) {
+let paginaActualIntegridad = 0;
+let elementosPorPaginaIntegridad = 20;
+
+async function verificarIntegridad(event, pagina = 0) {
     if (event) event.preventDefault();
     
     const authToken = localStorage.getItem('authToken');
@@ -614,17 +617,29 @@ async function verificarIntegridad(event) {
         return;
     }
 
+    paginaActualIntegridad = pagina;
+
     mostrarRespuesta('verificarResponse', '🔄 Verificando integridad, por favor espera...', 'success');
 
+    // Limpiar tabla antes de cargar
+    const container = document.getElementById('detallesVerificacion');
+    if (container) {
+        container. innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">🔄 Verificando integridad... </p>';
+    }
+
     try {
-        const response = await fetch(`${API_BASE_URL}/verificarIntegridadFichajes?departamento=${encodeURIComponent(departamento)}`, {
+        const url = `${API_BASE_URL}/verificarIntegridadFichajes?departamento=${encodeURIComponent(departamento)}&pagina=${pagina}&elementosPorPagina=${elementosPorPaginaIntegridad}`;
+        
+        console.log('📡 Verificando integridad:', url);
+        
+        const response = await fetch(url, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${authToken}`
             }
         });
 
-        const data = await response. json();
+        const data = await response.json();
         
         console.log('📦 Respuesta de verificación:', data);
         
@@ -634,18 +649,101 @@ async function verificarIntegridad(event) {
                 responseElement.style.display = 'none';
             }
             
-            mostrarTablaIntegridad(data. fichajes || data, departamento);
+            if (data.length === 0 && pagina === 0) {
+                mostrarRespuesta('verificarResponse', 'ℹ️ No hay fichajes en este departamento', 'success');
+                if (container) {
+                    container.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">No hay fichajes para verificar</p>';
+                }
+                const controles = document.getElementById('paginacionControlesIntegridad');
+                if (controles) {
+                    controles.style.display = 'none';
+                }
+            } else if (data.length === 0 && pagina > 0) {
+                // Si estamos en una página mayor que 0 y no hay resultados, volver a la página anterior
+                verificarIntegridad(null, pagina - 1);
+            } else {
+                mostrarTablaIntegridad(data, departamento);
+                actualizarControlesPaginacionIntegridad(data. length, departamento);
+            }
         } else {
-            mostrarRespuesta('verificarResponse', data.mensaje || data.msg || 'Error al verificar integridad', 'error');
+            mostrarRespuesta('verificarResponse', data. mensaje || data.msg || 'Error al verificar integridad', 'error');
+            if (container) {
+                container.innerHTML = '<p style="text-align: center; color: #e74c3c; padding: 20px;">❌ Error al verificar integridad</p>';
+            }
             if (response.status === 401) {
                 cerrarSesion();
             }
         }
     } catch (error) {
         console.error('Error al verificar integridad:', error);
-        mostrarRespuesta('verificarResponse', '❌ Error de conexión: ' + error.message, 'error');
+        mostrarRespuesta('verificarResponse', '❌ Error de conexión:  ' + error.message, 'error');
+        if (container) {
+            container.innerHTML = '<p style="text-align: center; color: #e74c3c; padding:  20px;">❌ Error de conexión</p>';
+        }
     }
 }
+
+// ============================================
+// FUNCIÓN:  ACTUALIZAR CONTROLES DE PAGINACIÓN INTEGRIDAD
+// ============================================
+function actualizarControlesPaginacionIntegridad(fichajesEnPagina, departamento) {
+    const controles = document.getElementById('paginacionControlesIntegridad');
+    
+    if (! controles) {
+        console.warn('⚠️ No se encontró el elemento paginacionControlesIntegridad');
+        return;
+    }
+    
+    controles.style.display = 'block';
+    
+    const hayMasPaginas = fichajesEnPagina === elementosPorPaginaIntegridad;
+    const esLaPrimeraPagina = paginaActualIntegridad === 0;
+    
+    let html = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; gap: 15px; flex-wrap: wrap;">
+            <button 
+                class="btn btn-secondary" 
+                onclick="verificarIntegridad(null, ${paginaActualIntegridad - 1})" 
+                ${esLaPrimeraPagina ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' :  ''}>
+                ← Anterior
+            </button>
+            
+            <span style="color: #666; font-weight: 500;">
+                Página ${paginaActualIntegridad + 1} 
+                <span style="font-size: 0.9em; color: #999;">(${fichajesEnPagina} fichaje${fichajesEnPagina !== 1 ? 's' :  ''})</span>
+            </span>
+            
+            <button 
+                class="btn btn-secondary" 
+                onclick="verificarIntegridad(null, ${paginaActualIntegridad + 1})" 
+                ${! hayMasPaginas ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}>
+                Siguiente →
+            </button>
+        </div>
+        
+        <div style="text-align: center; margin-top: 15px;">
+            <label for="elementosPorPaginaIntegridadSelect" style="color: #666; margin-right: 10px;">Fichajes por página:</label>
+            <select id="elementosPorPaginaIntegridadSelect" onchange="cambiarElementosPorPaginaIntegridad(this.value, '${departamento}')" style="padding: 5px 10px; border-radius: 5px; border: 1px solid #ddd;">
+                <option value="10" ${elementosPorPaginaIntegridad === 10 ? 'selected' : ''}>10</option>
+                <option value="20" ${elementosPorPaginaIntegridad === 20 ? 'selected' : ''}>20</option>
+                <option value="50" ${elementosPorPaginaIntegridad === 50 ? 'selected' : ''}>50</option>
+                <option value="100" ${elementosPorPaginaIntegridad === 100 ? 'selected' : ''}>100</option>
+            </select>
+        </div>
+    `;
+    
+    controles.innerHTML = html;
+}
+
+// ============================================
+// FUNCIÓN:  CAMBIAR ELEMENTOS POR PÁGINA INTEGRIDAD
+// ============================================
+function cambiarElementosPorPaginaIntegridad(nuevoValor, departamento) {
+    elementosPorPaginaIntegridad = parseInt(nuevoValor);
+    console.log('📊 Elementos por página (integridad) cambiados a:', elementosPorPaginaIntegridad);
+    verificarIntegridad(null, 0); // Volver a la primera página
+}
+
 
 // ============================================
 // FUNCIÓN: MOSTRAR TABLA DE INTEGRIDAD

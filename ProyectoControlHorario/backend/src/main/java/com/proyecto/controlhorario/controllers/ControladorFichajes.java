@@ -118,9 +118,8 @@ public class ControladorFichajes {
     // // ✅ ENDPOINT: VERIFICAR INTEGRIDAD DE FICHAJES
     // // =============================================================
     @GetMapping("/verificarIntegridadFichajes") // deberia recibir el numero de pagina y el numero de elementos por pagina
-    
-    public ResponseEntity<?> verificarIntegridadFichajes(@RequestHeader("Authorization") String authHeader, @RequestParam String departamento) {
-
+    public ResponseEntity<?> verificarIntegridadFichajes(@RequestHeader("Authorization") String authHeader, @RequestParam String departamento,@RequestParam(required = true, defaultValue = "0") int pagina,
+                                                            @RequestParam(required = true, defaultValue = "10") int elementosPorPagina) {
         try {
             // 1️⃣ Extraer el token (sin "Bearer ")
             String token = authHeader.replace("Bearer ", "");
@@ -135,7 +134,7 @@ public class ControladorFichajes {
         
 
             // 3️⃣ Llamar al servicio para comprobar integridad
-            List<IntegridadResponse> response = servicio.comprobarIntegridadFichajes(departamento, rol);
+            List<IntegridadResponse> response = servicio.comprobarIntegridadFichajes(departamento, rol, pagina,elementosPorPagina);;
         
 
             // En Spring Boot, la conversión a JSON es automática gracias a Jackson
