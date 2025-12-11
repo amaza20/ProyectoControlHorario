@@ -1,6 +1,7 @@
 package com.proyecto.controlhorario.dao;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -217,7 +218,7 @@ public class FichajesDAO {
                     ResultSet rs = stmt.executeQuery();
 
                     String huellaAnterior = null;
-                    while (rs.next() || cont <= elementosPorPagina) {  
+                    while (rs.next() && cont <= elementosPorPagina) {  
                         int id = rs.getInt("id");
                         String usuario = rs.getString("username");
                         String fechaHora = rs.getString("instante");
@@ -231,22 +232,24 @@ public class FichajesDAO {
                             // Solo procesar los fichajes de la página solicitada
                             toret.add(new IntegridadResponse(id, usuario, fechaHora, tipo, huellaCalculada)); 
 
-                            System.out.println("ID: " + id);
-
                             if (!huellaCalculada.equals(huellaGuardada)) {
                                 toret.get(toret.size()-1).setMensaje("INCONSISTENCIA DETECTADA");
                             } else {
                                 toret.get(toret.size()-1).setMensaje("Huella válida");
-                                huellaAnterior = huellaGuardada;
                             }
                           cont++;
-                        }                   
+                        } 
+
+                        huellaAnterior = huellaCalculada;                  
                     }
                 }
             });
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        
+        // ✅ Invertir la lista para mostrar los más recientes primero
+        Collections.reverse(toret);
         return toret;
     }
 }
