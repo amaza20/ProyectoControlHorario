@@ -552,7 +552,7 @@ async function listarSolicitudesPendientes(pagina = 0) {
     paginaActualSolicitudes = pagina;
 
     try {
-        const url = `${API_BASE_URL}/listarSolicitudes? pagina=${pagina}&elementosPorPagina=${elementosPorPaginaSolicitudes}`;
+        const url = `${API_BASE_URL}/listarSolicitudes?pagina=${pagina}&elementosPorPagina=${elementosPorPaginaSolicitudes}`;
         
         console.log('📡 Listando solicitudes:', url);
         
