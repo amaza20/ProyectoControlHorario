@@ -282,7 +282,7 @@ public class EdicionesDAO {
                                  SELECT  ediciones.id, fichaje_id, username,  ediciones.instante as instante_editado, 
                                          fichajes.instante as instante_original,  ediciones.tipo,  huella_fichaje,  ediciones.huella
                                             FROM ediciones 
-                                                  "LEFT JOIN fichajes ON ediciones.fichaje_id = fichajes.id ORDER BY id ASC ;  
+                                                  LEFT JOIN fichajes ON ediciones.fichaje_id = fichajes.id ORDER BY id ASC ;  
                                                        """; 
                                                                      // Del más antiguo al más reciente
                                                                    

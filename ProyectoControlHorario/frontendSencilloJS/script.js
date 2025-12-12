@@ -1246,9 +1246,9 @@ function poblarSelectFichajes(fichajes) {
 }
 
 // ============================================
-// FUNCIÓN: CARGAR DEPARTAMENTOS
+// FUNCIÓN:  CARGAR DEPARTAMENTOS
 // ============================================
-async function cargarDepartamentos() {
+async function cargarDepartamentos(selectId = 'regDepartamento') {
     try {
         const response = await fetch(`${API_BASE_URL}/general/listarDepartamentos`, {
             method: 'GET',
@@ -1261,15 +1261,23 @@ async function cargarDepartamentos() {
             const departamentos = await response.json();
             
             // Llenar el select de departamentos
-            const select = document.getElementById('regDepartamento');
-            select.innerHTML = '<option value="">Seleccionar departamento</option>';
+            const select = document.getElementById(selectId);
+            
+            if (! select) {
+                console.warn(`⚠️ No se encontró el elemento con ID: ${selectId}`);
+                return;
+            }
+            
+            select.innerHTML = '<option value="">Selecciona un departamento</option>';
             
             departamentos.forEach(dept => {
                 const option = document.createElement('option');
                 option.value = dept;
                 option.textContent = dept;
-                select.appendChild(option);
+                select. appendChild(option);
             });
+        } else {
+            console. error('Error al cargar departamentos:', response.status);
         }
     } catch (error) {
         console.error('Error al cargar departamentos:', error);
@@ -1634,6 +1642,7 @@ async function cambiarPassword(event) {
 }
 
 
+
 // ============================================
 // FUNCIÓN:  VERIFICAR INTEGRIDAD DE EDICIONES (CON PAGINACIÓN)
 // ============================================
@@ -1885,36 +1894,4 @@ function cambiarElementosPorPaginaIntegridadEdiciones(nuevoValor, departamento) 
     elementosPorPaginaIntegridadEdiciones = parseInt(nuevoValor);
     console.log('📊 Elementos por página (integridad ediciones) cambiados a:', elementosPorPaginaIntegridadEdiciones);
     verificarIntegridadEdiciones(null, 0); // Volver a la primera página
-}
-
-// ============================================
-// FUNCIÓN: CARGAR DEPARTAMENTOS EN SELECT DE EDICIONES
-// ============================================
-async function cargarDepartamentosEdiciones() {
-    const authToken = localStorage.getItem('authToken');
-    const selectDepartamento = document.getElementById('departamentoEdiciones');
-    
-    if (!authToken || ! selectDepartamento) return;
-    
-    try {
-        const response = await fetch(`${API_BASE_URL}/general/listarDepartamentos`, {
-            method: 'GET',
-            headers: {
-                'Authorization':  `Bearer ${authToken}`
-            }
-        });
-        
-        if (response.ok) {
-            const departamentos = await response.json();
-            selectDepartamento.innerHTML = '<option value="">Selecciona un departamento</option>';
-            departamentos.forEach(dep => {
-                const option = document.createElement('option');
-                option.value = dep.nombre;
-                option.textContent = dep.nombre;
-                selectDepartamento.appendChild(option);
-            });
-        }
-    } catch (error) {
-        console.error('Error al cargar departamentos:', error);
-    }
 }
