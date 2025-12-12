@@ -295,7 +295,7 @@ async function fichar() {
 // FUNCIÓN:  LISTAR FICHAJES DEL USUARIO (CON PAGINACIÓN)
 // ============================================
 let paginaActual = 0;
-let elementosPorPagina = 10;
+let elementosPorPagina = 5;
 
 async function listarFichajes(pagina = 0) {
     const authToken = localStorage.getItem('authToken');
@@ -535,10 +535,13 @@ async function solicitarEdicion(event) {
 }
 
 // ============================================
-// FUNCIÓN: LISTAR SOLICITUDES PENDIENTES
+// FUNCIÓN:  LISTAR SOLICITUDES PENDIENTES (CON PAGINACIÓN)
 // ============================================
-async function listarSolicitudesPendientes() {
-    const authToken = localStorage. getItem('authToken');
+let paginaActualSolicitudes = 0;
+let elementosPorPaginaSolicitudes = 5;
+
+async function listarSolicitudesPendientes(pagina = 0) {
+    const authToken = localStorage.getItem('authToken');
     
     if (!authToken) {
         mostrarRespuesta('solicitudesResponse', '⚠️ No estás autenticado', 'error');
@@ -546,8 +549,14 @@ async function listarSolicitudesPendientes() {
         return;
     }
 
+    paginaActualSolicitudes = pagina;
+
     try {
-        const response = await fetch(`${API_BASE_URL}/listarSolicitudes`, {
+        const url = `${API_BASE_URL}/listarSolicitudes? pagina=${pagina}&elementosPorPagina=${elementosPorPaginaSolicitudes}`;
+        
+        console.log('📡 Listando solicitudes:', url);
+        
+        const response = await fetch(url, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${authToken}`
@@ -556,33 +565,167 @@ async function listarSolicitudesPendientes() {
 
         if (response.ok) {
             const solicitudes = await response.json();
+            console.log('📦 Solicitudes recibidas:', solicitudes);
             
-            if (solicitudes && solicitudes.length > 0) {
-                const responseElement = document.getElementById('solicitudesResponse');
-                if (responseElement) {
-                    responseElement.style.display = 'none';
+            if (solicitudes.length === 0 && pagina === 0) {
+                mostrarSolicitudes([]);
+                const controles = document.getElementById('paginacionControlesSolicitudes');
+                if (controles) {
+                    controles.style.display = 'none';
                 }
-                mostrarTablaSolicitudes(solicitudes);
+            } else if (solicitudes.length === 0 && pagina > 0) {
+                // Volver a la página anterior si no hay resultados
+                listarSolicitudesPendientes(pagina - 1);
             } else {
-                mostrarRespuesta('solicitudesResponse', 'ℹ️ No hay solicitudes en tu departamento', 'success');
-                const tableContainer = document.getElementById('solicitudesTable');
-                if (tableContainer) {
-                    tableContainer. innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">No hay solicitudes en tu departamento</p>';
-                }
+                mostrarSolicitudes(solicitudes);
+                actualizarControlesPaginacionSolicitudes(solicitudes.length);
             }
         } else {
-            const data = await response.json();
-            mostrarRespuesta('solicitudesResponse', data.mensaje || data.msg || 'Error al listar solicitudes', 'error');
+            const error = await response.text();
+            mostrarRespuesta('solicitudesResponse', error || 'Error al cargar solicitudes', 'error');
             if (response.status === 401) {
                 cerrarSesion();
-            } else if (response.status === 403) {
-                mostrarRespuesta('solicitudesResponse', '⚠️ No tienes permisos para ver las solicitudes (solo supervisores)', 'error');
             }
         }
     } catch (error) {
-        console. error('Error al listar solicitudes:', error);
+        console.error('Error al listar solicitudes:', error);
         mostrarRespuesta('solicitudesResponse', '❌ Error de conexión: ' + error.message, 'error');
     }
+}
+
+// ============================================
+// FUNCIÓN:  MOSTRAR SOLICITUDES EN TABLA
+// ============================================
+function mostrarSolicitudes(solicitudes) {
+    const container = document.getElementById('solicitudesContainer');
+    
+    if (! container) return;
+    
+    if (! solicitudes || solicitudes.length === 0) {
+        container. innerHTML = `
+            <p style="text-align: center; color: #666; padding: 20px;">
+                No hay solicitudes pendientes en este momento.
+            </p>
+        `;
+        return;
+    }
+    
+    let tableHTML = `
+        <table style="width: 100%; border-collapse: collapse; margin-top: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <thead>
+                <tr style="background:  #5e72e4; color: white;">
+                    <th style="padding: 12px; text-align: left; border:  1px solid #ddd;">ID Solicitud</th>
+                    <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Usuario</th>
+                    <th style="padding: 12px; text-align: left; border:  1px solid #ddd;">Instante Original</th>
+                    <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Nuevo Instante</th>
+                    <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Tipo</th>
+                    <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Estado</th>
+                    <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+    
+    solicitudes.forEach((solicitud, index) => {
+        const estadoAprobado = solicitud.aprobado || 'FALSO';
+        let estadoHTML = '';
+        let accionHTML = '';
+        const bgColor = index % 2 === 0 ? '#f8f9fa' : 'white';
+        
+        if (estadoAprobado === 'VERDADERO') {
+            estadoHTML = '<span style="color: #28a745; font-weight: bold;">✅ Aprobada</span>';
+            accionHTML = '<span style="color: #28a745;">✅ Aprobada</span>';
+        } else if (estadoAprobado === 'FALSO') {
+            estadoHTML = '<span style="color: #6c757d;">⏳ Pendiente</span>';
+            accionHTML = `<button class="btn btn-success btn-sm" onclick="aprobarSolicitud(${solicitud.id})">✅ Aprobar</button>`;
+        } else {
+            estadoHTML = '<span style="color: #999;">❓ Desconocido</span>';
+            accionHTML = '<span style="color: #999;">-</span>';
+        }
+        
+        const instanteOriginal = formatearFechaLocal(solicitud.instante_original) || 'N/A';
+        const nuevoInstante = formatearFechaLocal(solicitud.nuevo_instante) || 'N/A';
+        
+        tableHTML += `
+            <tr style="background: ${bgColor};">
+                <td style="padding:  10px; border: 1px solid #ddd;"><strong>${solicitud.id}</strong></td>
+                <td style="padding: 10px; border: 1px solid #ddd;">${solicitud.username || 'N/A'}</td>
+                <td style="padding: 10px; border: 1px solid #ddd; color: #dc3545; text-decoration: line-through;">${instanteOriginal}</td>
+                <td style="padding: 10px; border: 1px solid #ddd; color: #007bff; font-weight: 500;">${nuevoInstante}</td>
+                <td style="padding: 10px; border: 1px solid #ddd;"><span style="background: #e3f2fd; padding: 4px 8px; border-radius: 4px;">${solicitud.tipo || 'N/A'}</span></td>
+                <td style="padding: 10px; border: 1px solid #ddd;">${estadoHTML}</td>
+                <td style="padding: 10px; border: 1px solid #ddd;">${accionHTML}</td>
+            </tr>
+        `;
+    });
+    
+    tableHTML += `
+            </tbody>
+        </table>
+    `;
+    
+    container.innerHTML = tableHTML;
+}
+
+// ============================================
+// FUNCIÓN:  ACTUALIZAR CONTROLES DE PAGINACIÓN SOLICITUDES
+// ============================================
+function actualizarControlesPaginacionSolicitudes(solicitudesEnPagina) {
+    const controles = document.getElementById('paginacionControlesSolicitudes');
+    
+    if (!controles) {
+        console.warn('⚠️ No se encontró el elemento paginacionControlesSolicitudes');
+        return;
+    }
+    
+    controles.style.display = 'block';
+    
+    const hayMasPaginas = solicitudesEnPagina === elementosPorPaginaSolicitudes;
+    const esLaPrimeraPagina = paginaActualSolicitudes === 0;
+    
+    let html = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; gap: 15px; flex-wrap: wrap;">
+            <button 
+                class="btn btn-secondary" 
+                onclick="listarSolicitudesPendientes(${paginaActualSolicitudes - 1})" 
+                ${esLaPrimeraPagina ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' :  ''}>
+                ← Anterior
+            </button>
+            
+            <span style="color: #666; font-weight: 500;">
+                Página ${paginaActualSolicitudes + 1} 
+                <span style="font-size: 0.9em; color: #999;">(${solicitudesEnPagina} solicitud${solicitudesEnPagina !== 1 ? 'es' : ''})</span>
+            </span>
+            
+            <button 
+                class="btn btn-secondary" 
+                onclick="listarSolicitudesPendientes(${paginaActualSolicitudes + 1})" 
+                ${! hayMasPaginas ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}>
+                Siguiente →
+            </button>
+        </div>
+        
+        <div style="text-align: center; margin-top: 15px;">
+            <label for="elementosPorPaginaSolicitudesSelect" style="color: #666; margin-right: 10px;">Solicitudes por página:</label>
+            <select id="elementosPorPaginaSolicitudesSelect" onchange="cambiarElementosPorPaginaSolicitudes(this.value)" style="padding: 5px 10px; border-radius: 5px; border: 1px solid #ddd;">
+                <option value="5" ${elementosPorPaginaSolicitudes === 5 ? 'selected' : ''}>5</option>
+                <option value="10" ${elementosPorPaginaSolicitudes === 10 ? 'selected' : ''}>10</option>
+                <option value="20" ${elementosPorPaginaSolicitudes === 20 ? 'selected' : ''}>20</option>
+                <option value="50" ${elementosPorPaginaSolicitudes === 50 ? 'selected' :  ''}>50</option>
+            </select>
+        </div>
+    `;
+    
+    controles.innerHTML = html;
+}
+
+// ============================================
+// FUNCIÓN: CAMBIAR ELEMENTOS POR PÁGINA SOLICITUDES
+// ============================================
+function cambiarElementosPorPaginaSolicitudes(nuevoValor) {
+    elementosPorPaginaSolicitudes = parseInt(nuevoValor);
+    console.log('📊 Elementos por página (solicitudes) cambiados a:', elementosPorPaginaSolicitudes);
+    listarSolicitudesPendientes(0); // Volver a la primera página
 }
 
 // ============================================
@@ -597,7 +740,7 @@ function cerrarSesion() {
 // FUNCIÓN:  VERIFICAR INTEGRIDAD (CON PAGINACIÓN)
 // ============================================
 let paginaActualIntegridad = 0;
-let elementosPorPaginaIntegridad = 20;
+let elementosPorPaginaIntegridad = 5;
 
 async function verificarIntegridad(event, pagina = 0) {
     if (event) event.preventDefault();
@@ -724,6 +867,7 @@ function actualizarControlesPaginacionIntegridad(fichajesEnPagina, departamento)
         <div style="text-align: center; margin-top: 15px;">
             <label for="elementosPorPaginaIntegridadSelect" style="color: #666; margin-right: 10px;">Fichajes por página:</label>
             <select id="elementosPorPaginaIntegridadSelect" onchange="cambiarElementosPorPaginaIntegridad(this.value, '${departamento}')" style="padding: 5px 10px; border-radius: 5px; border: 1px solid #ddd;">
+                <option value="5" ${elementosPorPaginaIntegridad === 5 ? 'selected' : ''}>5</option>    
                 <option value="10" ${elementosPorPaginaIntegridad === 10 ? 'selected' : ''}>10</option>
                 <option value="20" ${elementosPorPaginaIntegridad === 20 ? 'selected' : ''}>20</option>
                 <option value="50" ${elementosPorPaginaIntegridad === 50 ? 'selected' : ''}>50</option>
@@ -1647,7 +1791,7 @@ async function cambiarPassword(event) {
 // FUNCIÓN:  VERIFICAR INTEGRIDAD DE EDICIONES (CON PAGINACIÓN)
 // ============================================
 let paginaActualIntegridadEdiciones = 0;
-let elementosPorPaginaIntegridadEdiciones = 20;
+let elementosPorPaginaIntegridadEdiciones = 5;
 
 async function verificarIntegridadEdiciones(event, pagina = 0) {
     if (event) event.preventDefault();
@@ -1734,7 +1878,7 @@ async function verificarIntegridadEdiciones(event, pagina = 0) {
 }
 
 // ============================================
-// FUNCIÓN: MOSTRAR TABLA DE INTEGRIDAD DE EDICIONES
+// FUNCIÓN:  MOSTRAR TABLA DE INTEGRIDAD DE EDICIONES
 // ============================================
 function mostrarTablaIntegridadEdiciones(ediciones, departamento) {
     const container = document.getElementById('detallesVerificacionEdiciones');
@@ -1743,7 +1887,7 @@ function mostrarTablaIntegridadEdiciones(ediciones, departamento) {
     
     if (! ediciones || ediciones.length === 0) {
         container. innerHTML = `
-            <div style="padding: 20px; text-align: center; color:  #666;">
+            <div style="padding: 20px; text-align: center; color: #666;">
                 <p>No hay ediciones en el departamento <strong>${departamento}</strong></p>
             </div>
         `;
@@ -1757,9 +1901,9 @@ function mostrarTablaIntegridadEdiciones(ediciones, departamento) {
     let corruptos = 0;
     let validos = 0;
     
-    edicionesOrdenados.forEach(e => {
+    edicionesOrdenados. forEach(e => {
         const mensaje = (e.mensaje || e.estado || '').toUpperCase();
-        if (mensaje. includes('INCONSISTENCIA') || mensaje.includes('INVÁLIDA')) {
+        if (mensaje.includes('INCONSISTENCIA') || mensaje.includes('INVÁLIDA')) {
             corruptos++;
         } else {
             validos++;
@@ -1779,7 +1923,8 @@ function mostrarTablaIntegridadEdiciones(ediciones, departamento) {
                         <tr style="background:  #5e72e4; color: white;">
                             <th style="padding: 12px; text-align: left; border:  1px solid #ddd;">ID</th>
                             <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Usuario</th>
-                            <th style="padding: 12px; text-align: left; border:  1px solid #ddd;">Fecha y Hora</th>
+                            <th style="padding: 12px; text-align: left; border:  1px solid #ddd;">Fecha Original</th>
+                            <th style="padding: 12px; text-align: left; border:  1px solid #ddd;">Fecha Editada</th>
                             <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Tipo</th>
                             <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Estado</th>
                         </tr>
@@ -1794,12 +1939,17 @@ function mostrarTablaIntegridadEdiciones(ediciones, departamento) {
         const estadoIcono = esValido ? '✅' : '⚠️';
         const estadoTexto = esValido ? 'Huella válida' : 'INCONSISTENCIA DETECTADA';
         
+        // Formatear fechas
+        const fechaOriginal = formatearFechaLocal(edicion.fechaHora_original) || 'N/A';
+        const fechaEditada = formatearFechaLocal(edicion.fechaHora_editado) || 'N/A';
+        
         tableHTML += `
             <tr style="background: ${bgColor};">
                 <td style="padding:  10px; border: 1px solid #ddd;"><strong>${edicion.id}</strong></td>
                 <td style="padding: 10px; border: 1px solid #ddd;">${edicion.usuario || 'N/A'}</td>
-                <td style="padding: 10px; border: 1px solid #ddd;">${formatearFechaLocal(edicion.fechaHora) || 'N/A'}</td>
-                <td style="padding: 10px; border:  1px solid #ddd;"><span style="background: #e3f2fd; padding: 4px 8px; border-radius: 4px; font-weight: 500;">${edicion. tipo || 'N/A'}</span></td>
+                <td style="padding: 10px; border: 1px solid #ddd; color: #6c757d;">${fechaOriginal}</td>
+                <td style="padding: 10px; border: 1px solid #ddd; color: #007bff; font-weight: 500;">${fechaEditada}</td>
+                <td style="padding: 10px; border: 1px solid #ddd;"><span style="background: #e3f2fd; padding: 4px 8px; border-radius: 4px; font-weight: 500;">${edicion. tipo || 'N/A'}</span></td>
                 <td style="padding: 10px; border: 1px solid #ddd; color: ${estadoColor}; font-weight: bold;">
                     ${estadoIcono} ${estadoTexto}
                 </td>
@@ -1813,18 +1963,18 @@ function mostrarTablaIntegridadEdiciones(ediciones, departamento) {
             </div>
         </div>
         
-        <div style="margin-top: 30px; padding: 20px; background:  linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 10px; color: white;">
+        <div style="margin-top: 30px; padding:  20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 10px; color: white;">
             <h3 style="margin-bottom: 15px;">📋 Resumen de Verificación:</h3>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
                 <div style="background:  rgba(255,255,255,0.2); padding: 15px; border-radius: 8px; text-align: center;">
                     <div style="font-size: 0.9em; opacity: 0.9;">Ediciones válidas</div>
-                    <div style="font-size:  2em; font-weight: bold; margin-top: 5px;">✅ ${validos} (${porcentajeValidos}%)</div>
+                    <div style="font-size: 2em; font-weight: bold; margin-top: 5px;">✅ ${validos} (${porcentajeValidos}%)</div>
                 </div>
                 <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 8px; text-align: center;">
                     <div style="font-size: 0.9em; opacity: 0.9;">Ediciones con inconsistencias</div>
                     <div style="font-size: 2em; font-weight: bold; margin-top: 5px;">⚠️ ${corruptos} (${porcentajeCorruptos}%)</div>
                 </div>
-                <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 8px; text-align: center;">
+                <div style="background:  rgba(255,255,255,0.2); padding: 15px; border-radius: 8px; text-align: center;">
                     <div style="font-size: 0.9em; opacity: 0.9;">Total de ediciones</div>
                     <div style="font-size:  2em; font-weight:  bold; margin-top: 5px;">📊 ${total}</div>
                 </div>
@@ -1876,6 +2026,7 @@ function actualizarControlesPaginacionIntegridadEdiciones(edicionesEnPagina, dep
         <div style="text-align: center; margin-top: 15px;">
             <label for="elementosPorPaginaIntegridadEdicionesSelect" style="color: #666; margin-right: 10px;">Ediciones por página:</label>
             <select id="elementosPorPaginaIntegridadEdicionesSelect" onchange="cambiarElementosPorPaginaIntegridadEdiciones(this.value, '${departamento}')" style="padding: 5px 10px; border-radius: 5px; border: 1px solid #ddd;">
+                <option value="5" ${elementosPorPaginaIntegridadEdiciones === 5 ? 'selected' :  ''}>5</option>    
                 <option value="10" ${elementosPorPaginaIntegridadEdiciones === 10 ? 'selected' :  ''}>10</option>
                 <option value="20" ${elementosPorPaginaIntegridadEdiciones === 20 ? 'selected' : ''}>20</option>
                 <option value="50" ${elementosPorPaginaIntegridadEdiciones === 50 ? 'selected' : ''}>50</option>

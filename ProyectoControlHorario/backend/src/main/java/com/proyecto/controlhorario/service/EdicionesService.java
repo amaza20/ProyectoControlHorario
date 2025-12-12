@@ -64,7 +64,7 @@ public class EdicionesService {
     }
 
     // Nuevo método para listar solicitudes
-    public List<ListarSolicitudesResponse> listarSolicitudes(String departamento, String rol) {
+    public List<ListarSolicitudesResponse> listarSolicitudes(String departamento, String rol, int pagina, int elementosPorPagina) {
 
         // Solo el rol 'supervisor' podra listar las solicitudes de edicion de fichaje, ya que es el unico que puede aprobarlas
         // El supervisor es un empleado que pertenece al mismo departamento que el fichaje
@@ -73,7 +73,7 @@ public class EdicionesService {
             throw new ForbiddenException("Solo el rol de SUPERVISOR puede listar las solicitudes de edicion de fichaje");
         }
 
-        List<ListarSolicitudesResponse> response = solicitudEdicionDAO.listarSolicitudes(departamento);
+        List<ListarSolicitudesResponse> response = solicitudEdicionDAO.listarSolicitudes(departamento, pagina, elementosPorPagina);
         return response;
     }
 

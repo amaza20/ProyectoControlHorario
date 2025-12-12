@@ -49,43 +49,72 @@
                 </div>
             </div>
             
-            <div style="margin-top: 60px; padding: 30px; background: rgba(255, 255, 255, 0.95); border-radius: 15px; box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);">
+            <!-- ✅ AQUÍ VA EL CÓDIGO NUEVO (líneas 52-88) -->
+            <div style="margin-top: 60px; padding:  30px; background: rgba(255, 255, 255, 0.95); border-radius: 15px; box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);">
                 <h2 style="color: #667eea; margin-bottom: 20px;">🎯 Sistema de Roles</h2>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; text-align: left;">
-                    <div>
-                        <h4 style="color: #333; margin-bottom: 10px;">👔 Administrador</h4>
-                        <ul style="color: #666; font-size: 0.9em; padding-left: 20px;">
-                            <li>Crear usuarios</li>
-                            <li>Verificar integridad</li>
-                            <li>Gestión completa</li>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 25px; text-align:  left;">
+                    
+                    <!-- ADMINISTRADOR -->
+                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 12px; color: white; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                        <h4 style="color: white; margin-bottom:  12px; font-size:  1.1em; display: flex; align-items: center; gap: 8px;">
+                            👔 Administrador
+                        </h4>
+                        <ul style="color: rgba(255, 255, 255, 0.95); font-size: 0.9em; padding-left: 20px; line-height: 1.8;">
+                            <li>Verificar integridad de <strong>fichajes y ediciones</strong> de todos los departamentos</li>
+                            <li>Crear usuarios, departamentos, cambiar contraseñas</li>
+                            <li><strong>NO</strong> ficha</li>
                         </ul>
                     </div>
-                    <div>
-                        <h4 style="color: #333; margin-bottom: 10px;">🔍 Auditor</h4>
-                        <ul style="color: #666; font-size: 0.9em; padding-left: 20px;">
-                            <li>Verificar integridad</li>
-                            <li>Auditoría de blockchain</li>
-                            <li>Revisión de registros</li>
+                    
+                    <!-- AUDITOR -->
+                    <div style="background:  linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 20px; border-radius: 12px; color: white; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                        <h4 style="color: white; margin-bottom: 12px; font-size: 1.1em; display: flex; align-items: center; gap: 8px;">
+                            🔍 Auditor
+                        </h4>
+                        <ul style="color: rgba(255, 255, 255, 0.95); font-size: 0.9em; padding-left: 20px; line-height:  1.8;">
+                            <li>Pertenece a un departamento</li>
+                            <li>Verificar integridad de <strong>fichajes y ediciones</strong> de su departamento</li>
+                            <li><strong>NO</strong> ficha</li>
                         </ul>
                     </div>
-                    <div>
-                        <h4 style="color: #333; margin-bottom: 10px;">👨‍💼 Supervisor</h4>
-                        <ul style="color: #666; font-size: 0.9em; padding-left: 20px;">
-                            <li>Aprobar solicitudes</li>
-                            <li>Fichar y editar</li>
-                            <li>Ver su departamento</li>
+                    
+                    <!-- SUPERVISOR -->
+                    <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); padding: 20px; border-radius: 12px; color: white; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                        <h4 style="color: white; margin-bottom:  12px; font-size:  1.1em; display: flex; align-items: center; gap: 8px;">
+                            👨‍💼 Supervisor
+                        </h4>
+                        <ul style="color: rgba(255, 255, 255, 0.95); font-size: 0.9em; padding-left: 20px; line-height:  1.8;">
+                            <li>Pertenece a un departamento</li>
+                            <li>Verificar integridad de <strong>fichajes y ediciones</strong> de su departamento</li>
+                            <li>Aprobar/rechazar solicitudes de edición</li>
+                            <li><strong>SÍ</strong> ficha normalmente</li>
                         </ul>
                     </div>
-                    <div>
-                        <h4 style="color: #333; margin-bottom: 10px;">👤 Empleado</h4>
-                        <ul style="color: #666; font-size: 0.9em; padding-left: 20px;">
-                            <li>Fichar entrada/salida</li>
-                            <li>Ver sus fichajes</li>
-                            <li>Solicitar ediciones</li>
+                    
+                    <!-- EMPLEADO -->
+                    <div style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); padding: 20px; border-radius: 12px; color:  white; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                        <h4 style="color: white; margin-bottom: 12px; font-size: 1.1em; display: flex; align-items: center; gap: 8px;">
+                            👤 Empleado
+                        </h4>
+                        <ul style="color: rgba(255, 255, 255, 0.95); font-size: 0.9em; padding-left: 20px; line-height:  1.8;">
+                            <li>Pertenece a un departamento</li>
+                            <li><strong>SÍ</strong> ficha normalmente</li>
+                            <li>Ver sus propios fichajes</li>
+                            <li>Solicitar ediciones de fichajes</li>
                         </ul>
                     </div>
+                    
+                </div>
+                
+                <!-- Nota adicional -->
+                <div style="margin-top: 25px; padding: 15px; background:  #e3f2fd; border-left: 4px solid #2196F3; border-radius: 8px;">
+                    <p style="color: #1565c0; margin:  0; font-size: 0.95em;">
+                        <strong>ℹ️ Nota importante:</strong> La verificación de integridad mediante blockchain ahora está disponible tanto para <strong>fichajes</strong> como para <strong>ediciones</strong>, garantizando la inmutabilidad de todos los registros del sistema.
+                    </p>
                 </div>
             </div>
+            <!-- FIN DEL CÓDIGO NUEVO -->
+            
         </div>
     </div>
     
@@ -93,7 +122,7 @@
     <script>
         // Si el usuario ya está autenticado, redirigir al dashboard
         if (verificarSesion()) {
-            window.location.href = 'dashboard.html';
+            window. location.href = 'dashboard.html';
         }
     </script>
 </body>

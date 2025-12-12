@@ -4,13 +4,15 @@ public class ListarSolicitudesResponse {
     
     private int id;
     private String username;
+     private String instante_original;  // ✅ NUEVO
     private String nuevo_instante;
     private String tipo;
     private String aprobado;
 
-    public ListarSolicitudesResponse(int id, String username, String nuevo_instante, String tipo, String aprobado) {
+    public ListarSolicitudesResponse(int id, String username, String instante_original, String nuevo_instante, String tipo, String aprobado) {
         this.id = id;
         this.username = username;
+        this.instante_original = instante_original;
         this.nuevo_instante = nuevo_instante;
         this.tipo = tipo;
         this.aprobado = aprobado;
@@ -48,4 +50,11 @@ public class ListarSolicitudesResponse {
     public void setAprobado(String aprobado) {
         this.aprobado = aprobado;
     }
+    public String getInstante_original() {
+        return instante_original;
+    }
+    public void setInstante_original(String instante_original) {
+        this.instante_original = instante_original;
+    }
+
 }

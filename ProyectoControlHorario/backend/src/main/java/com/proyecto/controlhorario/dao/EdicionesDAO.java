@@ -232,7 +232,7 @@ public class EdicionesDAO {
 
 
     // Metodo para listar todas las solicitudes de edicion de un departamento
-    public List<ListarSolicitudesResponse> listarSolicitudes(String departamento) {
+    public List<ListarSolicitudesResponse> listarSolicitudes(String departamento, int pagina, int elementosPorPagina) {
         String dbPath = dbFolder+"departamento_"+departamento.toLowerCase()+".db";
         List<ListarSolicitudesResponse> solicitudesList = new ArrayList<>();
 
@@ -240,17 +240,20 @@ public class EdicionesDAO {
             DatabaseManager.withConnection(dbPath, conn -> {
                 // 1 - Listar todos las solicitudes de edicion
                 String query = """ 
-                                    SELECT solicitud_edicion.id, username, nuevo_instante, solicitud_edicion.tipo, aprobado
+                                    SELECT solicitud_edicion.id, username, instante, nuevo_instante, solicitud_edicion.tipo, aprobado
                                     FROM solicitud_edicion LEFT JOIN fichajes ON solicitud_edicion.fichaje_id = fichajes.id
-                                    ORDER BY solicitud_edicion.id DESC ; 
+                                    ORDER BY solicitud_edicion.id DESC LIMIT ? OFFSET ?; 
                                 """;
                 try (PreparedStatement st = conn.prepareStatement(query)) {
+                    st.setInt(1, elementosPorPagina);
+                    st.setInt(2, pagina  * elementosPorPagina);
                     ResultSet rst = st.executeQuery();
                     while (rst.next()) {
                         solicitudesList.add(new ListarSolicitudesResponse(
                             rst.getInt("id"),
                             rst.getString("username"),
-                            rst.getString("nuevo_instante"),
+                            rst.getString("instante"),       // ✅ instante original del fichaje
+                            rst.getString("nuevo_instante"), // ✅ nuevo instante solicitado
                             rst.getString("tipo"),
                             rst.getString("aprobado")
                         ));
@@ -282,7 +285,7 @@ public class EdicionesDAO {
                                  SELECT  ediciones.id, fichaje_id, username,  ediciones.instante as instante_editado, 
                                          fichajes.instante as instante_original,  ediciones.tipo,  huella_fichaje,  ediciones.huella
                                             FROM ediciones 
-                                                  LEFT JOIN fichajes ON ediciones.fichaje_id = fichajes.id ORDER BY id ASC ;  
+                                                  LEFT JOIN fichajes ON ediciones.fichaje_id = fichajes.id ORDER BY ediciones.id ASC ;  
                                                        """; 
                                                                      // Del más antiguo al más reciente
                                                                    

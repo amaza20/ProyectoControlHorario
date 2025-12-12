@@ -113,7 +113,8 @@ public class ControladorEdiciones {
 
 
     @GetMapping("/listarSolicitudes")
-    public ResponseEntity<?> listarSolicitudes(@RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<?> listarSolicitudes(@RequestHeader("Authorization") String authHeader, @RequestParam(required = false, defaultValue = "0") int pagina,
+                                                                    @RequestParam(required = false, defaultValue = "10") int elementosPorPagina) {
        try {
             // 1️⃣ Extraer el token (sin "Bearer ")
             String token = authHeader.replace("Bearer ", "");
@@ -125,7 +126,7 @@ public class ControladorEdiciones {
 
 
             // 3️⃣ Listar toda las solicitudes del departamento correspondiente
-            List<ListarSolicitudesResponse> response = servicio.listarSolicitudes(departamento, rol);  
+            List<ListarSolicitudesResponse> response = servicio.listarSolicitudes(departamento, rol, pagina,elementosPorPagina);  
 
             // En Spring Boot, la conversión a JSON es automática gracias a Jackson
             return ResponseEntity
