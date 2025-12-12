@@ -59,10 +59,10 @@ function mostrarRespuesta(elementId, mensaje, tipo) {
     if (element) {
         if (mensaje && mensaje.trim() !== '') {
             element.textContent = mensaje;
-            element. className = `response ${tipo}`;
+            element.className = `response ${tipo}`;
             element.style.display = 'block';
         } else {
-            element. style.display = 'none';
+            element.style.display = 'none';
         }
     }
 }
@@ -85,7 +85,7 @@ async function registrarUsuario(event) {
     }
     
     const username = document.getElementById('regUsername').value;
-    const password = document.getElementById('regPassword'). value;
+    const password = document.getElementById('regPassword').value;
     const departamento = document.getElementById('regDepartamento').value;
     const rol = document.getElementById('regRol').value;
 
@@ -229,8 +229,8 @@ async function loginUsuario(event) {
                 mostrarRespuesta('loginResponse', data.mensaje || 'Error: No se recibió el token', 'error');
             }
         } else {
-            console. error('❌ Login fallido');
-            mostrarRespuesta('loginResponse', data. mensaje || 'Error en el login', 'error');
+            console.error('❌ Login fallido');
+            mostrarRespuesta('loginResponse', data.mensaje || 'Error en el login', 'error');
         }
     } catch (error) {
         console.error('💥 Error:', error);
@@ -277,7 +277,7 @@ async function fichar() {
                 'Estado': 'Guardado en blockchain'
             });
             
-            mostrarRespuesta('ficharResponse', data. mensaje || '✅ Fichaje registrado correctamente', 'success');
+            mostrarRespuesta('ficharResponse', data.mensaje || '✅ Fichaje registrado correctamente', 'success');
         } else {
             alert('❌ ERROR AL FICHAR\n\n' + (data.mensaje || 'Error desconocido'));
             mostrarRespuesta('ficharResponse', data.mensaje || 'Error al fichar', 'error');
@@ -474,7 +474,7 @@ async function solicitarEdicion(event) {
     }
 
     const fichajeId = document.getElementById('fichajeIdHidden')?.value;
-    const nuevoInstanteInput = document.getElementById('nuevoInstante'). value;
+    const nuevoInstanteInput = document.getElementById('nuevoInstante').value;
 
     if (!fichajeId) {
         mostrarRespuesta('edicionResponse', '⚠️ No se ha seleccionado un fichaje válido', 'error');
@@ -512,15 +512,15 @@ async function solicitarEdicion(event) {
             })
         });
 
-        const data = await response. json();
+        const data = await response.json();
         
         console.log('📥 Respuesta del servidor:', data);
         
         if (response.ok) {
-            mostrarRespuesta('edicionResponse', data.msg || '✅ Solicitud de edición registrada correctamente.  Redirigiendo a tus fichajes... ', 'success');
+            mostrarRespuesta('edicionResponse', data.msg || '✅ Solicitud de edición registrada correctamente. Redirigiendo a tus fichajes...', 'success');
             
             setTimeout(() => {
-                window.location.href = 'fichajes. html';
+                window.location.href = 'fichajes.html';
             }, 2000);
         } else {
             mostrarRespuesta('edicionResponse', data.msg || data.mensaje || 'Error al solicitar edición', 'error');
@@ -806,10 +806,10 @@ async function verificarIntegridad(event, pagina = 0) {
                 verificarIntegridad(null, pagina - 1);
             } else {
                 mostrarTablaIntegridad(data, departamento);
-                actualizarControlesPaginacionIntegridad(data. length, departamento);
+                actualizarControlesPaginacionIntegridad(data.length, departamento);
             }
         } else {
-            mostrarRespuesta('verificarResponse', data. mensaje || data.msg || 'Error al verificar integridad', 'error');
+            mostrarRespuesta('verificarResponse', data.mensaje || data.msg || 'Error al verificar integridad', 'error');
             if (container) {
                 container.innerHTML = '<p style="text-align: center; color: #e74c3c; padding: 20px;">❌ Error al verificar integridad</p>';
             }
@@ -1418,10 +1418,10 @@ async function cargarDepartamentos(selectId = 'regDepartamento') {
                 const option = document.createElement('option');
                 option.value = dept;
                 option.textContent = dept;
-                select. appendChild(option);
+                select.appendChild(option);
             });
         } else {
-            console. error('Error al cargar departamentos:', response.status);
+            console.error('Error al cargar departamentos:', response.status);
         }
     } catch (error) {
         console.error('Error al cargar departamentos:', error);
@@ -1474,7 +1474,7 @@ async function crearDepartamento(event) {
         return;
     }
     
-    const nombreDepartamento = document.getElementById('nombreDepartamento').value. trim();
+    const nombreDepartamento = document.getElementById('nombreDepartamento').value.trim();
 
     // Validaciones
     if (!nombreDepartamento) {
@@ -1497,11 +1497,11 @@ async function crearDepartamento(event) {
 
         const data = await response.json();
         
-        if (response. ok) {
+        if (response.ok) {
             // Mostrar diálogo con los datos del departamento creado
             mostrarDialogoExito('🏢 DEPARTAMENTO CREADO EXITOSAMENTE', {
                 'Nombre': nombreDepartamento,
-                'Base de datos': `departamento_${nombreDepartamento. toLowerCase()}. db`,
+                'Base de datos': `departamento_${nombreDepartamento.toLowerCase()}.db`,
                 'Estado': 'Activo y disponible para asignar usuarios'
             });
             
@@ -1517,7 +1517,7 @@ async function crearDepartamento(event) {
         } else {
             alert('❌ ERROR AL CREAR DEPARTAMENTO\n\n' + (data.msg || 'Error desconocido'));
             mostrarRespuesta('crearDeptResponse', data.msg || 'Error al crear departamento', 'error');
-            if (response. status === 401) {
+            if (response.status === 401) {
                 cerrarSesion();
             }
         }
