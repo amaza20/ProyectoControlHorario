@@ -64,9 +64,9 @@
             if (datos) {
                 document.getElementById('navUser').textContent = `${datos.username} (${datos.rol})`;
             }
-
-            // ✅ CARGAR DEPARTAMENTOS DINÁMICAMENTE
-            cargarDepartamentos();
+            
+            // ✅ Cargar departamentos pasando el ID del select específico
+            cargarDepartamentos('departamentoEdiciones');
         }
     </script>
 </body>
