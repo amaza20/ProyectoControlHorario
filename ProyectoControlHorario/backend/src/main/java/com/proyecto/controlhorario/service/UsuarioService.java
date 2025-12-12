@@ -32,15 +32,16 @@ public class UsuarioService {
         // Administrador -->   es el unico rol que puede crear nuevos usuarios, nuevos departamentos y cambiar contraseñas, 
         //                    solo estara en la base de datos general (departamento null) 
         //                    puede comprobar integridad BlockChain de los fichajes y de las ediciones de todos los departamentos.
+        //                    No ficha.
         
-        //       Auditor -->   pertenece a un departamento, puede comprobar integridad BlockChain de fichajes y de ediciones del departamento 
-        //                    al que pertenece.
+        //       Auditor -->   Pertenece a un departamento, puede comprobar integridad BlockChain de fichajes y de ediciones del departamento 
+        //                    al que pertenece. No ficha.
 
-        //    Supervisor -->   pertenece a un departamento, es el que da el 'OK' o el 'Rechazado' de la edicion del fichaje. 
+        //    Supervisor -->   Pertenece a un departamento, es el que da el 'OK' o el 'Rechazado' de la edicion del fichaje. 
         //                    puede comprobar integridad BlockChain de fichajes y de ediciones del departamento al que pertenece.
         //                     Ficha normalmente.
 
-        //      Empleado -->   Ficha normalmente.
+        //      Empleado -->    Pertenece a un departamento. Ficha normalmente.
 
         // ✅ VALIDAR QUE EL USUARIO ACTUAL SEA ADMINISTRADOR
         if (!"Administrador".equals(rolUsuarioActual)) {

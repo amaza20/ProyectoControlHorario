@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.*;
 
 import com.proyecto.controlhorario.controllers.dto.AprobarSolicitudResponse;
 import com.proyecto.controlhorario.controllers.dto.IntegridadEdicionesResponse;
-import com.proyecto.controlhorario.controllers.dto.IntegridadResponse;
 import com.proyecto.controlhorario.controllers.dto.ListarSolicitudesResponse;
 import com.proyecto.controlhorario.controllers.dto.SolicitudEdicionRequest;
 import com.proyecto.controlhorario.controllers.dto.SolicitudEdicionResponse;
@@ -153,7 +152,7 @@ public class ControladorEdiciones {
 
 
     // // =============================================================
-    // // ✅ ENDPOINT: VERIFICAR INTEGRIDAD DE FICHAJES
+    // // ✅ ENDPOINT: VERIFICAR INTEGRIDAD DE EDICIONES
     // // =============================================================
     @GetMapping("/verificarIntegridadEdiciones") // deberia recibir el numero de pagina y el numero de elementos por pagina
     public ResponseEntity<?> verificarIntegridadEdiciones(@RequestHeader("Authorization") String authHeader, @RequestParam String departamento,@RequestParam(required = true, defaultValue = "0") int pagina,

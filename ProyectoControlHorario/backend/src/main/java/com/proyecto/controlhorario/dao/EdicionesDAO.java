@@ -2,7 +2,6 @@ package com.proyecto.controlhorario.dao;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -12,7 +11,6 @@ import org.springframework.stereotype.Repository;
 
 import com.proyecto.controlhorario.controllers.dto.AprobarSolicitudResponse;
 import com.proyecto.controlhorario.controllers.dto.IntegridadEdicionesResponse;
-import com.proyecto.controlhorario.controllers.dto.IntegridadResponse;
 import com.proyecto.controlhorario.controllers.dto.ListarSolicitudesResponse;
 import com.proyecto.controlhorario.controllers.dto.SolicitudEdicionResponse;
 import com.proyecto.controlhorario.dao.entity.Edicion;
