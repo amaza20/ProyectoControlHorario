@@ -34,6 +34,6 @@ CREATE TABLE IF NOT EXISTS solicitud_edicion (
     fichaje_id INTEGER NOT NULL,
     nuevo_instante TEXT NOT NULL,
     tipo TEXT CHECK(tipo IN ('ENTRA', 'SALE')) NOT NULL,
-    aprobado TEXT CHECK(aprobado IN ('VERDADERO', 'FALSO')) DEFAULT 'FALSO',
+    aprobado TEXT CHECK(aprobado IN ('PENDIENTE', 'APROBADO', 'RECHAZADO')) DEFAULT 'PENDIENTE',
     FOREIGN KEY (fichaje_id) REFERENCES fichajes(id)
 );

@@ -161,7 +161,7 @@ public class EdicionesDAO {
                 }       
 
                 // Poniendo a verdadero el campo 'aprobado' en la tabla 'solicitud_edicion'
-                String sqlUpdateSolicitud = "UPDATE solicitud_edicion SET aprobado = 'VERDADERO' WHERE id = ? AND aprobado = 'FALSO'";
+                String sqlUpdateSolicitud = "UPDATE solicitud_edicion SET aprobado = 'APROBADO' WHERE id = ? AND aprobado = 'PENDIENTE'";
                 try (PreparedStatement stmtUpdate = conn.prepareStatement(sqlUpdateSolicitud)) {    
                     stmtUpdate.setInt(1, solicitudId);
                     int rowsUpdated = stmtUpdate.executeUpdate();
@@ -188,6 +188,31 @@ public class EdicionesDAO {
         }
       return new AprobarSolicitudResponse(edicion);
     }
+
+
+
+
+    public AprobarSolicitudResponse denegarSolicitudEdicion(String departamento, int solicitudId) {
+        String dbPath = dbFolder+"departamento_"+departamento.toLowerCase()+".db";
+
+        try {
+            DatabaseManager.withTransaction(dbPath, conn -> {    
+                // Poniendo a RECHAZADO el campo 'aprobado' en la tabla 'solicitud_edicion'
+                String sqlUpdateSolicitud = "UPDATE solicitud_edicion SET aprobado = 'RECHAZADO' WHERE id = ? AND aprobado = 'PENDIENTE'";
+                try (PreparedStatement stmtUpdate = conn.prepareStatement(sqlUpdateSolicitud)) {    
+                    stmtUpdate.setInt(1, solicitudId);
+                    int rowsUpdated = stmtUpdate.executeUpdate();
+                    if (rowsUpdated == 0) {
+                        throw new SQLException("No se encontró una solicitud pendiente para aprobar.");
+                    }
+                }               
+            });
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+      return new AprobarSolicitudResponse();
+    }
+
 
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

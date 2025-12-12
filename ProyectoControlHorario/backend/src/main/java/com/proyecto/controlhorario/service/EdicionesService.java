@@ -35,10 +35,9 @@ public class EdicionesService {
         SolicitudEdicion solicitud = new SolicitudEdicion();
         solicitud.setFichajeId(dto.getId_fichaje());
         solicitud.setNuevoInstante(dto.getNuevoInstante());
-        solicitud.rechazar(); // Por defecto, la solicitud se marca como "rechazada"
+        solicitud.marcarPendiente(); // Por defecto, la solicitud se marca como "PENDIENTE"
         // El tipo de la solicitud se deduce del fichaje original (ENTRA/SALE)
      
-
         SolicitudEdicionResponse response = solicitudEdicionDAO.solicitarEdicion(solicitud, departamento);
         response.setUsername(username);
 
@@ -59,6 +58,20 @@ public class EdicionesService {
         Edicion edicion =  solicitudEdicionDAO.copiarCampos(new Edicion(), departamento, solicitudId);
          
         AprobarSolicitudResponse response = solicitudEdicionDAO.aprobarSolicitudEdicion(edicion, departamento, solicitudId);
+        
+        return response;
+    }
+
+
+    public AprobarSolicitudResponse denegarSolicitud(int solicitudId, String departamento, String rol) {
+
+        //   Solo el rol 'supervisor' podra denegar la solicitud de edicion de fichaje
+         //  El supervisor es un empleado que pertenece al mismo departamento que el fichaje
+        if (!rol.equals("Supervisor")) {
+            throw new ForbiddenException("Solo el rol de SUPERVISOR puede denegar ediciones de fichajes");
+        }
+         
+        AprobarSolicitudResponse response = solicitudEdicionDAO.denegarSolicitudEdicion(departamento, solicitudId);
         
         return response;
     }

@@ -111,6 +111,47 @@ public class ControladorEdiciones {
     }
 
 
+    @PostMapping("/denegarSolicitud")
+    public ResponseEntity<AprobarSolicitudResponse> denegarSolicitud(@RequestHeader("Authorization") String authHeader,@Valid @RequestParam int solicitudId) {
+
+        try {
+            String token = authHeader.replace("Bearer ", "");
+            Map<String, Object> claims = JwtUtil.validateToken(token);
+
+            //  Solo el rol 'supervisor' podra aprobar la solicitud de edicion de fichaje
+            //  El supervisor es un empleado que pertenece al mismo departamento que el fichaje
+            String rol = (String) claims.get("rol");
+            String departamento = (String) claims.get("departamento");
+
+                   
+            // 3️⃣ Aprobar la solicitud en las tablas correspondientes
+            AprobarSolicitudResponse response = servicio.denegarSolicitud(solicitudId, departamento, rol);
+            response.setMsg("Solicitud de edición ha sido denegada correctamente");
+
+            // En Spring Boot, la conversión a JSON es automática gracias a Jackson
+            return ResponseEntity
+                    .status(HttpStatus.CREATED)
+                    .body(response);
+        }catch (JwtException e) {
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body(new AprobarSolicitudResponse("Error: " + e.getMessage()));
+        }catch (ForbiddenException e) {
+            return ResponseEntity
+                    .status(HttpStatus.FORBIDDEN)
+                    .body(new AprobarSolicitudResponse("Error: " + e.getMessage()));  
+        }catch (IllegalArgumentException e) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(new AprobarSolicitudResponse("Error: " + e.getMessage()));      
+        }catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new AprobarSolicitudResponse("Error interno: " + e.getMessage()));
+        }
+    }
+
+
 
     @GetMapping("/listarSolicitudes")
     public ResponseEntity<?> listarSolicitudes(@RequestHeader("Authorization") String authHeader, @RequestParam(required = false, defaultValue = "0") int pagina,
