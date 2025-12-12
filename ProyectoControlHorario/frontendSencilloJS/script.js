@@ -604,20 +604,20 @@ function mostrarSolicitudes(solicitudes) {
     if (! solicitudes || solicitudes.length === 0) {
         container. innerHTML = `
             <p style="text-align: center; color: #666; padding: 20px;">
-                No hay solicitudes pendientes en este momento.
+                No hay solicitudes en este momento.
             </p>
         `;
         return;
     }
     
     let tableHTML = `
-        <table style="width: 100%; border-collapse: collapse; margin-top: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+        <table style="width: 100%; border-collapse: collapse; margin-top:  20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
             <thead>
                 <tr style="background:  #5e72e4; color: white;">
                     <th style="padding: 12px; text-align: left; border:  1px solid #ddd;">ID Solicitud</th>
                     <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Usuario</th>
-                    <th style="padding: 12px; text-align: left; border:  1px solid #ddd;">Instante Original</th>
-                    <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Nuevo Instante</th>
+                    <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Instante Original</th>
+                    <th style="padding: 12px; text-align: left; border:  1px solid #ddd;">Nuevo Instante</th>
                     <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Tipo</th>
                     <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Estado</th>
                     <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Acción</th>
@@ -627,20 +627,30 @@ function mostrarSolicitudes(solicitudes) {
     `;
     
     solicitudes.forEach((solicitud, index) => {
-        const estadoAprobado = solicitud.aprobado || 'FALSO';
+        const estadoAprobado = (solicitud.aprobado || 'PENDIENTE').toUpperCase();
         let estadoHTML = '';
         let accionHTML = '';
         const bgColor = index % 2 === 0 ? '#f8f9fa' : 'white';
         
-        if (estadoAprobado === 'VERDADERO') {
+        // ✅ Actualizado: usar los 3 estados
+        if (estadoAprobado === 'APROBADO') {
             estadoHTML = '<span style="color: #28a745; font-weight: bold;">✅ Aprobada</span>';
             accionHTML = '<span style="color: #28a745;">✅ Aprobada</span>';
-        } else if (estadoAprobado === 'FALSO') {
-            estadoHTML = '<span style="color: #6c757d;">⏳ Pendiente</span>';
-            accionHTML = `<button class="btn btn-success btn-sm" onclick="aprobarSolicitud(${solicitud.id})">✅ Aprobar</button>`;
-        } else {
-            estadoHTML = '<span style="color: #999;">❓ Desconocido</span>';
-            accionHTML = '<span style="color: #999;">-</span>';
+        } else if (estadoAprobado === 'RECHAZADO') {
+            estadoHTML = '<span style="color: #dc3545; font-weight: bold;">❌ Rechazada</span>';
+            accionHTML = '<span style="color: #dc3545;">❌ Rechazada</span>';
+        } else if (estadoAprobado === 'PENDIENTE') {
+            estadoHTML = '<span style="color: #ff9800; font-weight: bold;">⏳ Pendiente</span>';
+            accionHTML = `
+                <div style="display:  flex; gap: 8px; flex-wrap: wrap;">
+                    <button class="btn btn-success btn-sm" onclick="aprobarSolicitud(${solicitud.id})" style="flex: 1; min-width: 80px;">
+                        ✅ Aprobar
+                    </button>
+                    <button class="btn btn-danger btn-sm" onclick="rechazarSolicitud(${solicitud. id})" style="flex: 1; min-width: 80px;">
+                        ❌ Rechazar
+                    </button>
+                </div>
+            `;
         }
         
         const instanteOriginal = formatearFechaLocal(solicitud.instante_original) || 'N/A';
@@ -1166,23 +1176,21 @@ function mostrarTablaFichajesConEditar(fichajes) {
         const idFichaje = fichaje.id_fichaje || fichaje.id;
         const aprobadoEdicion = fichaje.aprobadoEdicion;
         
-        // Determinar el estado basado en aprobadoEdicion
+        // ✅ MEJORADO: Determinar el estado basado en aprobadoEdicion
         let estadoAprobacion = null;
         
         if (aprobadoEdicion === null || aprobadoEdicion === undefined) {
             estadoAprobacion = null;
-        } else if (typeof aprobadoEdicion === 'boolean') {
-            estadoAprobacion = aprobadoEdicion ? 'aprobado' : 'pendiente';
         } else if (typeof aprobadoEdicion === 'string') {
             const aprobadoUpper = aprobadoEdicion.toUpperCase().trim();
-            if (aprobadoUpper === 'VERDADERO' || aprobadoUpper === 'TRUE') {
+            if (aprobadoUpper === 'APROBADO') {
                 estadoAprobacion = 'aprobado';
-            } else if (aprobadoUpper === 'FALSO' || aprobadoUpper === 'FALSE') {
+            } else if (aprobadoUpper === 'PENDIENTE') {
                 estadoAprobacion = 'pendiente';
+            } else if (aprobadoUpper === 'RECHAZADO') {
+                estadoAprobacion = 'rechazado';
             }
         }
-        
-        const fueEditado = nuevoInstante && nuevoInstante !== null && nuevoInstante !== '' && estadoAprobacion === 'aprobado';
         
         let celdaFechaHora = '';
         let celdaTipo = '';
@@ -1257,6 +1265,21 @@ function mostrarTablaFichajesConEditar(fichajes) {
             celdaEstado = '<span style="background: #fff3cd; padding: 6px 10px; border-radius: 4px; color: #856404; font-size: 0.85em; font-weight: bold; display: inline-block;">⏳ Pendiente</span>';
             
             botonEditar = `<button class="btn btn-secondary btn-sm" disabled style="font-size: 0. 85em; opacity: 0.5; cursor: not-allowed; white-space: nowrap;">⏳ En trámite</button>`;
+            
+        } else if (estadoAprobacion === 'rechazado') {
+            // ❌ RECHAZADO - Nueva lógica
+            const valorActualUTC = fichaje.nuevoInstante || fichaje.instanteAnterior;
+            const valorActual = formatearFechaLocal(valorActualUTC);
+            const tipoActual = fichaje. nuevoTipo || fichaje. tipoAnterior;
+            
+            celdaFechaHora = valorActual;
+            celdaTipo = `<strong>${tipoActual}</strong>`;
+            celdaEstado = '<span style="background: #f8d7da; padding: 6px 10px; border-radius: 4px; color:  #721c24; font-size: 0.85em; font-weight: bold; display: inline-block;">❌ Rechazado</span>';
+            
+            // ✅ PERMITIR SOLICITAR NUEVA EDICIÓN
+            const instanteEscapado = String(valorActual).replace(/'/g, "\\'");
+            const tipoEscapado = String(tipoActual).replace(/'/g, "\\'");
+            botonEditar = `<button class="btn btn-secondary btn-sm" onclick="abrirFormularioEdicion(${idFichaje}, '${instanteEscapado}', '${tipoEscapado}')" style="font-size: 0.85em; white-space: nowrap;">✏️ Editar</button>`;
             
         } else {
             // 📋 ORIGINAL
@@ -2045,4 +2068,60 @@ function cambiarElementosPorPaginaIntegridadEdiciones(nuevoValor, departamento) 
     elementosPorPaginaIntegridadEdiciones = parseInt(nuevoValor);
     console.log('📊 Elementos por página (integridad ediciones) cambiados a:', elementosPorPaginaIntegridadEdiciones);
     verificarIntegridadEdiciones(null, 0); // Volver a la primera página
+}
+
+
+// ============================================
+// FUNCIÓN:  RECHAZAR SOLICITUD (SUPERVISOR)
+// ============================================
+async function rechazarSolicitud(solicitudId) {
+    console.log('📤 Intentando rechazar solicitud ID:', solicitudId);
+    
+    const authToken = localStorage.getItem('authToken');
+    
+    if (!authToken) {
+        alert('⚠️ No estás autenticado');
+        window.location.href = 'login.html';
+        return;
+    }
+
+    if (!solicitudId || isNaN(solicitudId)) {
+        alert('❌ Error: ID de solicitud inválido');
+        console.error('solicitudId inválido:', solicitudId);
+        return;
+    }
+
+    if (!confirm('¿Estás seguro de que deseas RECHAZAR esta solicitud?')) {
+        return;
+    }
+
+    const params = new URLSearchParams();
+    params.append('solicitudId', solicitudId);
+    
+    const url = `${API_BASE_URL}/denegarSolicitud?${params.toString()}`;
+    console.log('📡 URL de la petición:', url);
+
+    try {
+        const response = await fetch(url, {
+            method:  'POST',
+            headers:  {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+
+        const data = await response.json();
+        
+        if (response.ok) {
+            alert(data.msg || '✅ Solicitud rechazada correctamente');
+            listarSolicitudesPendientes();
+        } else {
+            alert(data.msg || 'Error al rechazar solicitud');
+            if (response.status === 401) {
+                cerrarSesion();
+            }
+        }
+    } catch (error) {
+        console.error('💥 Error en rechazarSolicitud:', error);
+        alert('❌ Error de conexión: ' + error.message);
+    }
 }

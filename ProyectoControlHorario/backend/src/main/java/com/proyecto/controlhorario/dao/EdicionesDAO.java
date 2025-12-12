@@ -238,7 +238,7 @@ public class EdicionesDAO {
                         }
                         else {
                             estado_aprobacion = rs.getString("aprobado");
-                            if (!estado_aprobacion.equals("FALSO")) {
+                            if (!estado_aprobacion.equals("PENDIENTE")) {
                                 throw new IllegalArgumentException("La solicitud ya ha sido procesada.");
                             }
                         }

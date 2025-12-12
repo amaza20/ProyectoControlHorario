@@ -83,7 +83,7 @@
                         console.log('📋 Fichaje recibido para editar:', fichaje);
                         
                         // Guardar el ID en el campo oculto
-                        document.getElementById('fichajeIdHidden').value = fichaje. id;
+                        document.getElementById('fichajeIdHidden').value = fichaje.id;
                         
                         // Mostrar información del fichaje seleccionado
                         const infoDiv = document.getElementById('fichajeSeleccionadoInfo');
@@ -91,7 +91,7 @@
                         
                         if (infoDiv && textoDiv) {
                             textoDiv.textContent = `${fichaje.instante} (${fichaje.tipo})`;
-                            infoDiv. style.display = 'block';
+                            infoDiv.style.display = 'block';
                         }
                         
                         // Limpiar el localStorage
