@@ -70,9 +70,6 @@ function mostrarRespuesta(elementId, mensaje, tipo) {
 // ============================================
 // FUNCIÓN: REGISTRAR USUARIO (MEJORADA)
 // ============================================
-// ============================================
-// FUNCIÓN: REGISTRAR USUARIO
-// ============================================
 async function registrarUsuario(event) {
     if (event) event.preventDefault();
     
@@ -105,10 +102,11 @@ async function registrarUsuario(event) {
         return;
     }
 
-    const departamentoFinal = (rol === 'Administrador' || rol === 'Auditor') ? '' : departamento;
+    const departamentoFinal = (rol === 'Administrador') ? '' : departamento;
 
-    if ((rol === 'Empleado' || rol === 'Supervisor') && !departamentoFinal) {
-        alert('⚠️ Los empleados y supervisores deben tener un departamento');
+    // ✅ MODIFICADO:  Empleado, Supervisor y Auditor requieren departamento
+    if ((rol === 'Empleado' || rol === 'Supervisor' || rol === 'Auditor') && !departamentoFinal) {
+        alert('⚠️ Este rol requiere un departamento');
         return;
     }
 

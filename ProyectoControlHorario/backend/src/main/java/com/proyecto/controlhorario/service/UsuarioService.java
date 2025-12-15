@@ -64,13 +64,19 @@ public class UsuarioService {
         if (!rolesHashMap.containsKey(dto.getRol())) {
             throw new IllegalArgumentException("El rol especificado no es válido");
         }
-        //  Validar que el departamento sea válido (si el rol no es Auditor ni es Administrador)
-        if (!dto.getRol().equals("Auditor") && !dto.getRol().equals("Administrador")) {
+        // ✅ MODIFICADO: Solo el Administrador no requiere departamento
+        if (dto.getRol().equals("Administrador")) {
+            // Los administradores NO tienen departamento
+            dto.setDepartamento(null);
+        } else {
+            // Empleado, Supervisor y Auditor SÍ requieren departamento
+            if (dto.getDepartamento() == null || dto.getDepartamento().isEmpty()) {
+                throw new IllegalArgumentException("El rol " + dto.getRol() + " requiere un departamento");
+            }
+            
             if (!usuarioDAO.existsDepartamento(dto.getDepartamento())) {
                 throw new IllegalArgumentException("El departamento especificado no existe");
             }
-        } else {
-            dto.setDepartamento(null);  // Los Auditores y Administradores no tienen departamento
         }
 
         

@@ -52,8 +52,8 @@
                          <option value="">Cargando departamentos...</option>
                         <!-- ✅ Este select se llenará dinámicamente desde JavaScript -->
                     </select>
-                    <small style="color: #666; display: block; margin-top: 5px;">
-                        Los empleados y supervisores deben tener un departamento
+                    <small style="color:  #666; display: block; margin-top: 5px;">
+                        Empleados, Supervisores y Auditores deben tener un departamento
                     </small>
                 </div>
                 
@@ -67,7 +67,7 @@
                 <ul style="margin-top: 10px; padding-left: 20px;">
                     <li><strong>Empleado:</strong> Puede fichar y solicitar ediciones</li>
                     <li><strong>Supervisor:</strong> Puede aprobar ediciones de su departamento</li>
-                    <li><strong>Auditor:</strong> Puede verificar integridad de fichajes</li>
+                    <li><strong>Auditor:</strong> Pertenece a un departamento.  Puede verificar integridad de fichajes y ediciones de su departamento.  NO ficha</li>
                     <li><strong>Administrador:</strong> Puede crear usuarios y crear departamentos</li>
                 </ul>
             </div>
@@ -101,15 +101,17 @@
             
             console.log('🔄 toggleDepartamento ejecutado. Rol seleccionado:', rol);
             
-            if (rol === 'Empleado' || rol === 'Supervisor') {
-                console.log('✅ Mostrando departamento');
-                departamentoGroup.style.display = 'block';
-                departamentoSelect.required = true;
-            } else {
-                console.log('❌ Ocultando departamento');
+            // ✅ MODIFICADO:  Mostrar departamento para todos EXCEPTO Administrador
+            if (rol === 'Administrador') {
+                console.log('❌ Ocultando departamento (Administrador)');
                 departamentoGroup.style.display = 'none';
                 departamentoSelect.required = false;
                 departamentoSelect.value = '';
+            } else {
+                // Empleado, Supervisor y Auditor SÍ necesitan departamento
+                console.log(`✅ Mostrando departamento para rol:  ${rol}`);
+                departamentoGroup.style.display = 'block';
+                departamentoSelect.required = true;
             }
         }
         
