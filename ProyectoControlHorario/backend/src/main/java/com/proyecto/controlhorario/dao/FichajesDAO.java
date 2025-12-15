@@ -231,7 +231,9 @@ public class FichajesDAO {
                         String base = usuario + "|" + fechaHora_Original + "|" + tipo + "|" + (huellaAnterior != null ? huellaAnterior : "GENESIS");
                         String huellaCalculada = generarHash(base);
                           
-                        toret.add(new IntegridadResponse(id, usuario, fechaHora_Original, fechaHora_Editada, tipo, huellaCalculada)); 
+                        // La huella Guardada en la BD debe coincidir con la huella Calculada
+                        // Si coinciden, el registro es íntegro
+                        toret.add(new IntegridadResponse(id, usuario, fechaHora_Original, fechaHora_Editada, tipo, huellaGuardada, huellaCalculada)); 
 
                         if (!huellaCalculada.equals(huellaGuardada)) {
                             toret.get(toret.size()-1).setMensaje("INCONSISTENCIA DETECTADA");

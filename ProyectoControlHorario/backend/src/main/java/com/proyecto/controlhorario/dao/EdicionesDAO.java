@@ -333,7 +333,7 @@ public class EdicionesDAO {
                         String base = fichajeId + "|" + fechaHora_editado + "|" + tipo + "|" + huellaFichajeOriginal + "|" + (huellaAnterior != null ? huellaAnterior : "GENESIS");
                         String huellaCalculada = FichajesDAO.generarHash(base);
        
-                        toret.add(new IntegridadEdicionesResponse(id, usuario, fechaHora_editado, fechaHora_original, tipo, huellaCalculada)); 
+                        toret.add(new IntegridadEdicionesResponse(id, usuario, fechaHora_editado, fechaHora_original, tipo, huellaGuardada,huellaCalculada)); 
 
                         if (!huellaCalculada.equals(huellaGuardada)) {
                             toret.get(toret.size()-1).setMensaje("INCONSISTENCIA DETECTADA");

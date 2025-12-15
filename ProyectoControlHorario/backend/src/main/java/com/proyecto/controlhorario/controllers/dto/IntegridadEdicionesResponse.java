@@ -7,7 +7,8 @@ public class IntegridadEdicionesResponse {
     private String fechaHora_editado; 
     private String fechaHora_original; 
     private String tipo; 
-    private String huella;
+    private String huellaGuardada;
+    private String huellaCalculada;
 
     private String mensaje;
 
@@ -15,16 +16,28 @@ public class IntegridadEdicionesResponse {
     public IntegridadEdicionesResponse() {
     }
 
-    public IntegridadEdicionesResponse(int id, String usuario, String fechaHora_editado, String fechaHora_original, String tipo, String huella) {
+    public IntegridadEdicionesResponse(int id, String usuario, String fechaHora_editado, String fechaHora_original, String tipo, String huellaGuardada, String huellaCalculada) {
         this.id = id;
         this.usuario = usuario;
         this.fechaHora_editado = fechaHora_editado;
         this.fechaHora_original = fechaHora_original;
         this.tipo = tipo;
-        this.huella = huella;
+        this.huellaGuardada = huellaGuardada;
+        this.huellaCalculada = huellaCalculada;
     }
 
-    
+    public String getHuellaGuardada() {
+        return huellaGuardada;
+    }
+    public String getHuellaCalculada() {
+        return huellaCalculada;
+    }
+    public void setHuellaGuardada(String huellaGuardada) {
+        this.huellaGuardada = huellaGuardada;
+    }
+    public void setHuellaCalculada(String huellaCalculada) {
+        this.huellaCalculada = huellaCalculada;
+    }
     public IntegridadEdicionesResponse(String mensaje) {
         this.mensaje = mensaje;
     }
@@ -43,9 +56,6 @@ public class IntegridadEdicionesResponse {
     }
     public String getTipo() {
         return tipo;
-    }
-    public String getHuella() {
-        return huella;
     }
     public String getMensaje() {
         return mensaje;

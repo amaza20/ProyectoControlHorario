@@ -7,18 +7,33 @@ public class IntegridadResponse {
     private String fechaHora_editado; 
     private String fechaHora_original; 
     private String tipo;
-    private String huella;
+    private String huellaGuardada;
+    private String huellaCalculada;
     private String mensaje;
 
     public IntegridadResponse() {}
 
-    public IntegridadResponse(int id, String username, String fechaHora_original, String fechaHora_editado, String tipo, String huella) {
+    public IntegridadResponse(int id, String username, String fechaHora_original, String fechaHora_editado, String tipo, String huellaGuardada, String huellaCalculada) {
         this.id = id;
         this.username = username;
         this.fechaHora_original = fechaHora_original;
         this.fechaHora_editado = fechaHora_editado;
         this.tipo = tipo;
-        this.huella = huella;
+        this.huellaGuardada = huellaGuardada;
+        this.huellaCalculada = huellaCalculada;
+    }
+
+    public String getHuellaGuardada() {
+        return huellaGuardada;
+    }
+    public String getHuellaCalculada() {
+        return huellaCalculada;
+    }
+    public void setHuellaGuardada(String huellaGuardada) {
+        this.huellaGuardada = huellaGuardada;
+    }
+    public void setHuellaCalculada(String huellaCalculada) {
+        this.huellaCalculada = huellaCalculada;
     }
     
     public int getId() {
@@ -41,10 +56,6 @@ public class IntegridadResponse {
         return tipo;
     }
 
-    public String getHuella() {
-        return huella;
-    }
-
     public String getMensaje() {
         return mensaje;
     }
@@ -55,9 +66,7 @@ public class IntegridadResponse {
     public void setTipo(String tipo) {
         this.tipo = tipo;
     }
-    public void setHuella(String huella) {
-        this.huella = huella;
-    }
+
     public void setMensaje(String mensaje) {
         this.mensaje = mensaje;
     }
@@ -74,5 +83,5 @@ public class IntegridadResponse {
     public void setFechaHora_original(String fechaHora_original) {
         this.fechaHora_original = fechaHora_original;
     }
-    
+
 }
