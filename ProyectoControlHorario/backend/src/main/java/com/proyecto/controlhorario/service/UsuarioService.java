@@ -3,6 +3,7 @@ package com.proyecto.controlhorario.service;
 import com.proyecto.controlhorario.controllers.dto.CambiarPasswordRequest;
 import com.proyecto.controlhorario.controllers.dto.CambiarPasswordResponse;
 import com.proyecto.controlhorario.controllers.dto.CrearDepartamentoResponse;
+import com.proyecto.controlhorario.controllers.dto.ListarUsuarioResponse;
 import com.proyecto.controlhorario.controllers.dto.LoginRequest;
 import com.proyecto.controlhorario.controllers.dto.LoginResponse;
 import com.proyecto.controlhorario.controllers.dto.RegistroRequest;
@@ -141,6 +142,10 @@ public class UsuarioService {
 
     public List<String> obtenerRoles() {
         return usuarioDAO.listarRoles();
+    }
+
+    public List<ListarUsuarioResponse> obtenerUsuarios() {
+        return usuarioDAO.listarUsuarios();
     }
 
 

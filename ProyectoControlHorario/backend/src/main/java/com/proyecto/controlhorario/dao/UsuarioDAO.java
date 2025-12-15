@@ -6,6 +6,7 @@ import org.springframework.stereotype.Repository;
 
 import com.proyecto.controlhorario.controllers.dto.CambiarPasswordResponse;
 import com.proyecto.controlhorario.controllers.dto.CrearDepartamentoResponse;
+import com.proyecto.controlhorario.controllers.dto.ListarUsuarioResponse;
 import com.proyecto.controlhorario.dao.entity.Usuario;
 import com.proyecto.controlhorario.db.DatabaseManager;
 
@@ -275,6 +276,38 @@ public class UsuarioDAO {
         }
         
         return roles;
+    }
+
+    public List<ListarUsuarioResponse> listarUsuarios() {
+        String dbPath = dbFolder + "control_general.db";
+        List<ListarUsuarioResponse> usuarios = new ArrayList<>();
+        
+        try {
+            DatabaseManager.withConnection(dbPath, conn -> {
+                String sql = "SELECT username, roles.nombre as rol, departamentos.nombre as departamento " +
+                                      "FROM usuarios JOIN roles ON usuarios.rol_id = roles.id " +
+                                                    "JOIN departamentos ON usuarios.departamento_id = departamentos.id ORDER BY username";
+                try (PreparedStatement stmt = conn.prepareStatement(sql);
+                    ResultSet rs = stmt.executeQuery()) {
+                    while (rs.next()) {
+                        String username = rs.getString("username");
+                        String rol = rs. getString("rol");
+                        String departamento = rs.getString("departamento");
+                        
+                        // Si el departamento es null o vacío, mostrar "N/A"
+                        if (departamento == null || departamento. isEmpty()) {
+                            departamento = "N/A";
+                        }
+                        
+                        usuarios.add(new ListarUsuarioResponse(username, rol, departamento));
+                    }
+                }
+            });
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        
+        return usuarios;
     }
 
 

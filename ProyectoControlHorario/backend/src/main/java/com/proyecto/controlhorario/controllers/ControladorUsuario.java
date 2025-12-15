@@ -3,6 +3,7 @@ package com.proyecto.controlhorario.controllers;
 import com.proyecto.controlhorario.controllers.dto.CambiarPasswordRequest;
 import com.proyecto.controlhorario.controllers.dto.CambiarPasswordResponse;
 import com.proyecto.controlhorario.controllers.dto.CrearDepartamentoResponse;
+import com.proyecto.controlhorario.controllers.dto.ListarUsuarioResponse;
 import com.proyecto.controlhorario.controllers.dto.LoginRequest;
 import com.proyecto.controlhorario.controllers.dto.LoginResponse;
 import com.proyecto.controlhorario.controllers.dto.RegistroRequest;
@@ -169,6 +170,19 @@ public class ControladorUsuario {
         try {
             List<String> roles = servicio.obtenerRoles();
             return ResponseEntity.ok(roles);
+        } catch (Exception e) {
+            return ResponseEntity
+                .status(HttpStatus. INTERNAL_SERVER_ERROR)
+                .body("Error al obtener roles: " + e.getMessage());
+        }
+    }
+
+      // ✅ ENDPOINT: LISTAR USUARIOS
+    @GetMapping("/listarUsuarios")
+    public ResponseEntity<?> listarUsuarios() {
+        try {
+            List<ListarUsuarioResponse> usuarios = servicio.obtenerUsuarios();
+            return ResponseEntity.ok(usuarios);
         } catch (Exception e) {
             return ResponseEntity
                 .status(HttpStatus. INTERNAL_SERVER_ERROR)

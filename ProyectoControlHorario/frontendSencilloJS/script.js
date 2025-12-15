@@ -2203,3 +2203,70 @@ async function cargarDepartamentosSegunRol(selectId = 'regDepartamento') {
         console.error(`❌ Rol ${rol} no tiene permisos para verificar integridad`);
     }
 }
+
+// ============================================
+// FUNCIÓN: CARGAR USUARIOS EXISTENTES
+// ============================================
+async function cargarUsuariosExistentes() {
+    const container = document.getElementById('listaUsuarios');
+    
+    if (!container) return;
+    
+    container.innerHTML = '<p style="color: #666; text-align:  center;">🔄 Cargando usuarios...</p>';
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/general/listarUsuarios`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (response.ok) {
+            const usuarios = await response.json();
+            
+            if (usuarios && usuarios.length > 0) {
+                let html = '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px;">';
+                
+                usuarios.forEach(user => {
+                    // Determinar color según el rol
+                    let colorRol = '#667eea'; // Por defecto
+                    if (user.rol === 'Administrador') colorRol = '#dc3545';
+                    else if (user.rol === 'Supervisor') colorRol = '#28a745';
+                    else if (user.rol === 'Auditor') colorRol = '#ffc107';
+                    else if (user.rol === 'Empleado') colorRol = '#17a2b8';
+                    
+                    html += `
+                        <div style="padding: 15px; background:  white; border-radius: 8px; border-left: 4px solid ${colorRol}; box-shadow:  0 2px 5px rgba(0,0,0,0.1); cursor: pointer; transition: transform 0.2s;" 
+                             onclick="document.getElementById('usernamePassword').value = '${user.username}'; document.getElementById('usernamePassword').focus();"
+                             onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 10px rgba(0,0,0,0.15)';"
+                             onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.1)';">
+                            <div style="font-weight: bold; color: #333; font-size: 1.1em; margin-bottom: 5px;">👤 ${user.username}</div>
+                            <div style="font-size: 0.9em; color: ${colorRol}; font-weight: 500; margin-bottom: 3px;">${user.rol}</div>
+                            <div style="font-size: 0.85em; color: #666;">
+                                ${user.departamento !== 'N/A' ? '🏢 ' + user.departamento : '🌐 Sin departamento'}
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+                html += `<p style="margin-top: 15px; color: #666; font-size: 0.9em; text-align: center;">
+                    💡 <strong>Consejo:</strong> Haz clic en un usuario para seleccionarlo automáticamente
+                </p>`;
+                html += `<p style="margin-top:  5px; color: #666; font-size: 0.9em; text-align: center;">
+                    Total:  ${usuarios.length} usuario(s)
+                </p>`;
+                
+                container.innerHTML = html;
+            } else {
+                container.innerHTML = '<p style="color: #666; text-align:  center;">No hay usuarios registrados aún</p>';
+            }
+        } else {
+            container.innerHTML = '<p style="color: #e74c3c; text-align:  center;">❌ Error al cargar usuarios</p>';
+        }
+    } catch (error) {
+        console.error('Error al cargar usuarios:', error);
+        container.innerHTML = '<p style="color: #e74c3c; text-align: center;">❌ Error de conexión</p>';
+    }
+}
