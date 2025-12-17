@@ -10,8 +10,8 @@ import { FechaLocalPipe } from '../../../shared/pipes/fecha-local-pipe';
   selector: 'app-lista-fichajes',
   standalone: true,
   imports: [CommonModule, FechaLocalPipe],
-  templateUrl: './lista-fichajes.component.html',
-  styleUrls: ['./lista-fichajes.component.css']
+  templateUrl: './lista-fichajes.html',
+  styleUrls: ['./lista-fichajes.css']
 })
 export class ListaFichajesComponent implements OnInit {
   fichajes: Fichaje[] = [];

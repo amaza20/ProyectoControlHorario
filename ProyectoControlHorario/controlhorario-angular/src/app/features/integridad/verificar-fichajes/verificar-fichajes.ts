@@ -12,8 +12,8 @@ import { FechaLocalPipe } from '../../../shared/pipes/fecha-local-pipe';
   selector: 'app-verificar-fichajes',
   standalone: true,
   imports: [CommonModule, FormsModule, FechaLocalPipe],
-  templateUrl: './verificar-fichajes. component.html',
-  styleUrls: ['./verificar-fichajes.component.css']
+  templateUrl: './verificar-fichajes.html',
+  styleUrls: ['./verificar-fichajes.css']
 })
 export class VerificarFichajesComponent implements OnInit {
   departamentos: string[] = [];

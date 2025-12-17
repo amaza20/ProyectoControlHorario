@@ -11,8 +11,8 @@ import { RegistroRequest } from '../../../core/models/usuario.model';
   selector: 'app-crear-usuario',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './crear-usuario.component.html',
-  styleUrls: ['./crear-usuario.component.css']
+  templateUrl: './crear-usuario.html',
+  styleUrls: ['./crear-usuario.css']
 })
 export class CrearUsuarioComponent implements OnInit {
   username = '';

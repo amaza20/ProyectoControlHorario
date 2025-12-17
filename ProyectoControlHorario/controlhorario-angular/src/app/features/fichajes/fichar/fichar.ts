@@ -8,8 +8,8 @@ import { AuthService } from '../../../core/services/auth.service';
   selector: 'app-fichar',
   standalone: true,
   imports: [CommonModule],
-  templateUrl:  './fichar.component.html',
-  styleUrls: ['./fichar.component.css']
+  templateUrl:  './fichar.html',
+  styleUrls: ['./fichar.css']
 })
 export class FicharComponent {
   successMessage = '';

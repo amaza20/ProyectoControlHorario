@@ -12,8 +12,8 @@ import { FechaLocalPipe } from '../../../shared/pipes/fecha-local-pipe';
   selector: 'app-verificar-ediciones',
   standalone: true,
   imports: [CommonModule, FormsModule, FechaLocalPipe],
-  templateUrl: './verificar-ediciones. component.html',
-  styleUrls: ['./verificar-ediciones.component.css']
+  templateUrl: './verificar-ediciones.html',
+  styleUrls: ['./verificar-ediciones.css']
 })
 export class VerificarEdicionesComponent implements OnInit {
   departamentos: string[] = [];

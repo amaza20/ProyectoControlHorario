@@ -9,8 +9,8 @@ import { AuthService } from '../../../core/services/auth.service';
   selector: 'app-crear-departamento',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './crear-departamento.component.html',
-  styleUrls: ['./crear-departamento.component.css']
+  templateUrl: './crear-departamento.html',
+  styleUrls: ['./crear-departamento.css']
 })
 export class CrearDepartamentoComponent implements OnInit {
   nombreDepartamento = '';

@@ -10,8 +10,8 @@ import { SolicitarEdicionRequest } from '../../../core/models/fichaje.model';
   selector: 'app-editar-fichaje',
   standalone: true,
   imports:  [CommonModule, FormsModule],
-  templateUrl: './editar-fichaje.component.html',
-  styleUrls: ['./editar-fichaje.component. css']
+  templateUrl: './editar-fichaje.html',
+  styleUrls: ['./editar-fichaje.css']
 })
 export class EditarFichajeComponent implements OnInit {
   fichajeId: number | null = null;

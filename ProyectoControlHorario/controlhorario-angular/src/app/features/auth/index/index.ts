@@ -6,8 +6,8 @@ import { AuthService } from '../../../core/services/auth.service';
   selector: 'app-index',
   standalone: true,
   imports: [],
-  templateUrl: './index. component.html',
-  styleUrls: ['./index.component. css']
+  templateUrl: './index.html',
+  styleUrls: ['./index.css']
 })
 export class IndexComponent implements OnInit {
   constructor(

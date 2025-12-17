@@ -10,8 +10,8 @@ import { FechaLocalPipe } from '../../../shared/pipes/fecha-local-pipe';
   selector: 'app-aprobar-solicitudes',
   standalone: true,
   imports:  [CommonModule, FechaLocalPipe],
-  templateUrl:  './aprobar-solicitudes.component.html',
-  styleUrls: ['./aprobar-solicitudes.component.css']
+  templateUrl:  './aprobar-solicitudes.html',
+  styleUrls: ['./aprobar-solicitudes.css']
 })
 export class AprobarSolicitudesComponent implements OnInit {
   solicitudes: SolicitudEdicion[] = [];

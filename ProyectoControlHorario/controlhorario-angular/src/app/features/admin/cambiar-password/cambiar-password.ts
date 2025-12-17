@@ -9,8 +9,8 @@ import { AuthService } from '../../../core/services/auth.service';
   selector: 'app-cambiar-password',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './cambiar-password.component.html',
-  styleUrls: ['./cambiar-password.component. css']
+  templateUrl: './cambiar-password.html',
+  styleUrls: ['./cambiar-password.css']
 })
 export class CambiarPasswordComponent implements OnInit {
   username = '';
