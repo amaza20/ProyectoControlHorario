@@ -5,7 +5,7 @@ import { environment } from '../../../environments/environment';
 import { IntegridadResponse } from '../models/integridad.model';
 
 @Injectable({
-  providedIn:  'root'
+  providedIn: 'root'
 })
 export class IntegridadService {
   private apiUrl = environment.apiUrl;
@@ -20,10 +20,13 @@ export class IntegridadService {
     pagina: number = 0, 
     elementosPorPagina: number = 5
   ): Observable<IntegridadResponse[]> {
+    // ✅ CORRECCIÓN: HttpParams codifica automáticamente los parámetros
     const params = new HttpParams()
       .set('departamento', departamento)
       .set('pagina', pagina.toString())
-      .set('elementosPorPagina', elementosPorPagina. toString());
+      .set('elementosPorPagina', elementosPorPagina.toString());
+
+    console.log('📡 URL verificarIntegridadFichajes:', `${this.apiUrl}/verificarIntegridadFichajes?${params.toString()}`);
 
     return this.http.get<IntegridadResponse[]>(
       `${this.apiUrl}/verificarIntegridadFichajes`, 
@@ -43,6 +46,8 @@ export class IntegridadService {
       .set('departamento', departamento)
       .set('pagina', pagina.toString())
       .set('elementosPorPagina', elementosPorPagina.toString());
+
+    console.log('📡 URL verificarIntegridadEdiciones:', `${this.apiUrl}/verificarIntegridadEdiciones? ${params.toString()}`);
 
     return this.http.get<IntegridadResponse[]>(
       `${this.apiUrl}/verificarIntegridadEdiciones`, 
