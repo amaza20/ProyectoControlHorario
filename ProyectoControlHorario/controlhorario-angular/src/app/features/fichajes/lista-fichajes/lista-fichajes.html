@@ -1,0 +1,193 @@
+<nav class="navbar">
+  <div class="nav-brand">🕐 Control Horario</div>
+  <div class="nav-user">{{ (authService. currentUser$ | async)?.username }} ({{ (authService.currentUser$ | async)?.rol }})</div>
+</nav>
+
+<div class="container" style="margin-top: 100px;">
+  <div class="back-link">
+    <a (click)="goToDashboard()" style="cursor: pointer;">← Volver al Dashboard</a>
+  </div>
+
+  <h1 style="text-align: center; color: white; margin-bottom: 10px;">📋 Mis Fichajes</h1>
+  <p style="text-align: center; color: white; margin-bottom:  30px;">Historial de entradas y salidas</p>
+
+  <div style="text-align: center; margin-bottom: 20px;">
+    <button class="btn btn-primary" (click)="goToFichar()">⏰ Fichar Ahora</button>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="isLoading" style="text-align: center; padding: 40px;">
+    <div class="loading-spinner"></div>
+    <p style="color: white; margin-top: 15px;">Cargando fichajes...</p>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="errorMessage" class="response error" style="display: block; margin:  20px auto; max-width: 600px;">
+    {{ errorMessage }}
+  </div>
+
+  <!-- Tabla de fichajes -->
+  <div *ngIf="! isLoading && fichajes.length > 0" style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+    <table>
+      <thead>
+        <tr>
+          <th>Fecha y Hora</th>
+          <th>Tipo</th>
+          <th style="text-align: center;">Estado</th>
+          <th style="text-align: center;">Acción</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let fichaje of fichajes" 
+            [style.background-color]="getEstadoAprobacion(fichaje) === 'aprobado' ? '#f0fff4' : getEstadoAprobacion(fichaje) === 'pendiente' ? '#fffbf0' : 'white'"
+            [style.border-left]="getEstadoAprobacion(fichaje) === 'aprobado' ? '3px solid #28a745' : getEstadoAprobacion(fichaje) === 'pendiente' ? '3px solid #ffc107' :  'none'">
+          
+          <!-- Fecha y Hora -->
+          <td>
+            <div *ngIf="getEstadoAprobacion(fichaje) === 'aprobado'">
+              <div style="color: #dc3545; text-decoration: line-through; font-size: 0.85em;">
+                {{ fichaje. instanteAnterior | fechaLocal }}
+              </div>
+              <div style="color: #28a745; font-weight: bold;">
+                {{ fichaje.nuevoInstante | fechaLocal }}
+              </div>
+            </div>
+            
+            <div *ngIf="getEstadoAprobacion(fichaje) === 'pendiente'" style="line-height: 1.6;">
+              <div style="color: #333; font-weight: 500;">
+                {{ (fichaje.nuevoInstante || fichaje.instanteAnterior) | fechaLocal }}
+              </div>
+              <div style="display: flex; align-items: center; gap: 5px; margin-top: 5px;">
+                <span style="color: #856404; font-size: 0.9em;">→</span>
+                <span style="color: #856404; font-weight: 600; font-size: 0.95em;">
+                  {{ fichaje.solicitudInstante | fechaLocal }}
+                </span>
+              </div>
+            </div>
+            
+            <div *ngIf="getEstadoAprobacion(fichaje) === 'rechazado' || getEstadoAprobacion(fichaje) === null">
+              {{ (fichaje.nuevoInstante || fichaje.instanteAnterior) | fechaLocal }}
+            </div>
+          </td>
+          
+          <!-- Tipo -->
+          <td>
+            <div *ngIf="getEstadoAprobacion(fichaje) === 'aprobado'">
+              <div style="color: #dc3545; text-decoration: line-through; font-size: 0.85em;">
+                {{ fichaje.tipoAnterior }}
+              </div>
+              <div style="color: #28a745; font-weight: bold;">
+                {{ fichaje.nuevoTipo }}
+              </div>
+            </div>
+            
+            <div *ngIf="getEstadoAprobacion(fichaje) === 'pendiente'" style="line-height: 1.6;">
+              <div style="color: #333;">
+                <strong>{{ fichaje.nuevoTipo || fichaje.tipoAnterior }}</strong>
+              </div>
+              <div style="display:  flex; align-items: center; gap: 5px; margin-top: 5px;">
+                <span style="color: #856404; font-size: 0.9em;">→</span>
+                <span style="color:  #856404; font-weight:  600; font-size: 0.95em;">
+                  {{ fichaje.solicitudTipo }}
+                </span>
+              </div>
+            </div>
+            
+            <div *ngIf="getEstadoAprobacion(fichaje) === 'rechazado' || getEstadoAprobacion(fichaje) === null">
+              <strong>{{ fichaje.nuevoTipo || fichaje.tipoAnterior }}</strong>
+            </div>
+          </td>
+          
+          <!-- Estado -->
+          <td style="text-align: center;">
+            <span *ngIf="getEstadoAprobacion(fichaje) === 'aprobado'" 
+                  style="background: #d4edda; padding: 6px 10px; border-radius: 4px; color: #155724; font-size: 0.85em; font-weight: bold; display: inline-block;">
+              ✏️ Editado
+            </span>
+            
+            <span *ngIf="getEstadoAprobacion(fichaje) === 'pendiente'" 
+                  style="background: #fff3cd; padding: 6px 10px; border-radius:  4px; color: #856404; font-size: 0.85em; font-weight: bold; display: inline-block;">
+              ⏳ Pendiente
+            </span>
+            
+            <span *ngIf="getEstadoAprobacion(fichaje) === 'rechazado'" 
+                  style="background:  #f8d7da; padding: 6px 10px; border-radius: 4px; color: #721c24; font-size: 0.85em; font-weight: bold; display: inline-block;">
+              ❌ Rechazado
+            </span>
+            
+            <span *ngIf="getEstadoAprobacion(fichaje) === null" 
+                  style="color: #6c757d; font-size: 0.85em; display: inline-block;">
+              📋 Original
+            </span>
+          </td>
+          
+          <!-- Acción -->
+          <td style="text-align: center;">
+            <button *ngIf="puedeEditar(fichaje)" 
+                    class="btn btn-secondary btn-sm"
+                    (click)="editarFichaje(fichaje)"
+                    style="font-size: 0.85em; white-space: nowrap;">
+              ✏️ Editar
+            </button>
+            
+            <button *ngIf="! puedeEditar(fichaje)" 
+                    class="btn btn-secondary btn-sm"
+                    disabled
+                    style="font-size:  0.85em; opacity: 0.5; cursor: not-allowed; white-space: nowrap;">
+              ⏳ En trámite
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Paginación -->
+    <div class="pagination-controls">
+      <button 
+        class="btn btn-secondary"
+        (click)="paginaAnterior()"
+        [disabled]="paginaActual === 0"
+        [style.opacity]="paginaActual === 0 ? '0.5' : '1'"
+        [style.cursor]="paginaActual === 0 ? 'not-allowed' : 'pointer'">
+        ← Anterior
+      </button>
+      
+      <span style="color: #666; font-weight: 500;">
+        Página {{ paginaActual + 1 }}
+        <span style="font-size: 0.9em; color: #999;">({{ fichajes.length }} fichaje{{ fichajes.length !== 1 ? 's' :  '' }})</span>
+      </span>
+      
+      <button 
+        class="btn btn-secondary"
+        (click)="paginaSiguiente()"
+        [disabled]="! hayMasPaginas"
+        [style.opacity]="! hayMasPaginas ? '0.5' : '1'"
+        [style.cursor]="!hayMasPaginas ?  'not-allowed' : 'pointer'">
+        Siguiente →
+      </button>
+    </div>
+
+    <div style="text-align: center; margin-top: 15px;">
+      <label for="elementosPorPagina" style="color: #666; margin-right: 10px;">Fichajes por página:</label>
+      <select 
+        id="elementosPorPagina"
+        (change)="cambiarElementosPorPagina($event)"
+        [value]="elementosPorPagina"
+        style="padding: 5px 10px; border-radius: 5px; border: 1px solid #ddd;">
+        <option [value]="5">5</option>
+        <option [value]="10">10</option>
+        <option [value]="20">20</option>
+        <option [value]="50">50</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Sin fichajes -->
+  <div *ngIf="! isLoading && fichajes.length === 0" 
+       style="background: white; padding: 40px; border-radius: 12px; text-align: center; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+    <p style="color: #666; font-size: 1.1em;">No tienes fichajes registrados aún</p>
+    <button class="btn btn-primary" (click)="goToFichar()" style="margin-top: 20px;">
+      ⏰ Registrar mi primer fichaje
+    </button>
+  </div>
+</div>

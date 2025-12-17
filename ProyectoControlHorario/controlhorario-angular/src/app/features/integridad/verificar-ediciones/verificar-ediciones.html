@@ -1,0 +1,190 @@
+<nav class="navbar">
+  <div class="nav-brand">🕐 Control Horario</div>
+  <div class="nav-user">{{ (authService.currentUser$ | async)?.username }} ({{ (authService.currentUser$ | async)?.rol }})</div>
+</nav>
+
+<div class="container" style="margin-top: 100px;">
+  <div class="back-link">
+    <a (click)="goToDashboard()" style="cursor: pointer;">← Volver al Dashboard</a>
+  </div>
+
+  <div style="background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); max-width: 800px; margin: 0 auto;">
+    <h1 style="text-align: center; margin-bottom: 10px;">🔒 Verificar Integridad de Ediciones</h1>
+    <p style="text-align: center; color: #666; margin-bottom: 30px;">
+      Comprueba la autenticidad de las ediciones mediante blockchain
+    </p>
+
+    <form (ngSubmit)="verificarIntegridad()">
+      <div class="form-group">
+        <label for="departamento">Departamento a Verificar *</label>
+        <select 
+          id="departamento"
+          name="departamento"
+          [(ngModel)]="departamentoSeleccionado"
+          required
+          [disabled]="isLoadingDepartamentos || (authService.getCurrentUser()?.rol === 'Auditor' || authService.getCurrentUser()?.rol === 'Supervisor')"
+          [style.background]="(authService.getCurrentUser()?.rol === 'Auditor' || authService.getCurrentUser()?.rol === 'Supervisor') ? '#f0f0f0' :  ''">
+          <option value="">Selecciona un departamento</option>
+          <option *ngFor="let dept of departamentos" [value]="dept">{{ dept }}</option>
+        </select>
+        <small *ngIf="departamentos.length === 1" style="color: #666; display: block; margin-top: 5px;">
+          ℹ️ Solo puedes verificar la integridad de tu departamento
+        </small>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block" [disabled]="isLoading || isLoadingDepartamentos">
+        {{ isLoading ? '🔄 Verificando...' :  '🔍 Verificar Integridad de Ediciones' }}
+      </button>
+    </form>
+
+    <div *ngIf="errorMessage" class="response error" style="display: block; margin-top: 20px;">
+      {{ errorMessage }}
+    </div>
+  </div>
+
+  <!-- Resultados -->
+  <div *ngIf="mostrarResultados && ! isLoading" style="margin-top: 30px;">
+    <!-- Header de resultado -->
+    <div *ngIf="getCorruptos() === 0" 
+         style="background: #d4edda; border: 2px solid #28a745; border-radius: 8px; padding: 20px; margin-bottom: 20px; text-align: center;">
+      <div style="font-size: 3em; margin-bottom: 10px;">✅</div>
+      <h2 style="color: #155724; margin: 0;">¡Integridad Verificada! </h2>
+      <p style="color: #155724; margin-top: 10px;">
+        Todas las <strong>{{ ediciones.length }}</strong> ediciones del departamento 
+        <strong>{{ departamentoSeleccionado }}</strong> son válidas y auténticas.
+      </p>
+    </div>
+
+    <div *ngIf="getCorruptos() > 0" 
+         style="background: #f8d7da; border: 2px solid #dc3545; border-radius: 8px; padding: 20px; margin-bottom: 20px; text-align: center;">
+      <div style="font-size: 3em; margin-bottom: 10px;">⚠️</div>
+      <h2 style="color: #721c24; margin: 0;">¡Integridad Comprometida!</h2>
+      <p style="color: #721c24; margin-top: 10px;">
+        Se detectaron <strong>{{ getCorruptos() }}</strong> edición(es) con inconsistencias de un total de 
+        <strong>{{ ediciones.length }}</strong> en el departamento <strong>{{ departamentoSeleccionado }}</strong>.
+      </p>
+    </div>
+
+    <!-- Tabla -->
+    <div *ngIf="ediciones.length > 0" style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+      <h3 style="margin-bottom: 15px;">📊 Detalle de Ediciones (ordenados por ID):</h3>
+      
+      <div style="overflow-x: auto;">
+        <table>
+          <thead>
+            <tr>
+              <th style="text-align: center;">ID</th>
+              <th>Usuario</th>
+              <th>Fecha/Hora Original</th>
+              <th>Fecha/Hora Editada</th>
+              <th style="text-align: center;">Tipo</th>
+              <th style="min-width: 250px;">Huella Guardada</th>
+              <th style="min-width: 250px;">Huella Calculada</th>
+              <th style="text-align: center;">Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let edicion of ediciones; let i = index"
+                [style.background-color]="esCorrupto(edicion) ? '#fff5f5' : (i % 2 === 0 ? '#f8f9fa' : 'white')"
+                [style.border-left]="esCorrupto(edicion) ? '4px solid #dc3545' : 'none'">
+              
+              <td style="text-align: center;"><strong>{{ edicion.id }}</strong></td>
+              <td>{{ edicion.username || edicion.usuario }}</td>
+              <td>{{ edicion.fechaHora_original | fechaLocal }}</td>
+              <td>
+                <span *ngIf="edicion.fechaHora_editado" style="color: #007bff; font-weight: 500;">
+                  {{ edicion.fechaHora_editado | fechaLocal }}
+                </span>
+                <span *ngIf="! edicion.fechaHora_editado" style="color: #999; font-style: italic;">
+                  Sin edición
+                </span>
+              </td>
+              <td style="text-align: center;">
+                <strong style="background: #e3f2fd; padding: 4px 8px; border-radius: 4px;">{{ edicion.tipo }}</strong>
+              </td>
+              
+              <!-- Huella Guardada -->
+              <td>
+                <div [style.background-color]="huellasCoinciden(edicion) ? '#d4edda' : '#f8d7da'"
+                     [style.border]="huellasCoinciden(edicion) ? '1px solid #28a745' : '1px solid #dc3545'"
+                     style="padding: 8px; border-radius: 4px; font-family: 'Courier New', monospace; font-size: 0.8em; word-break: break-all;">
+                  <div style="font-weight: bold; margin-bottom: 4px; color: #555;">💾 Guardada:  </div>
+                  <span [title]="edicion.huellaGuardada" style="cursor: help;">
+                    {{ abreviarHuella(edicion.huellaGuardada) }}
+                  </span>
+                </div>
+              </td>
+              
+              <!-- Huella Calculada -->
+              <td>
+                <div [style.background-color]="huellasCoinciden(edicion) ? '#d4edda' :  '#f8d7da'"
+                     [style.border]="huellasCoinciden(edicion) ? '1px solid #28a745' : '1px solid #dc3545'"
+                     style="padding: 8px; border-radius: 4px; font-family: 'Courier New', monospace; font-size: 0.8em; word-break: break-all;">
+                  <div style="font-weight: bold; margin-bottom: 4px; color: #555;">🔢 Calculada: </div>
+                  <span [title]="edicion.huellaCalculada" style="cursor:  help;">
+                    {{ abreviarHuella(edicion. huellaCalculada) }}
+                  </span>
+                </div>
+              </td>
+              
+              <!-- Estado -->
+              <td style="text-align: center;">
+                <span *ngIf="esCorrupto(edicion)" 
+                      style="background: #f8d7da; color: #721c24; padding: 6px 12px; border-radius: 4px; font-weight: bold; display: inline-block;">
+                  ⚠️ {{ edicion.mensaje || edicion.estado }}
+                </span>
+                <span *ngIf="!esCorrupto(edicion)" 
+                      style="background: #d4edda; color: #155724; padding: 6px 12px; border-radius: 4px; font-weight: bold; display: inline-block;">
+                  ✅ {{ edicion.mensaje || edicion. estado }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Paginación -->
+      <div class="pagination-controls" style="margin-top: 20px;">
+        <button class="btn btn-secondary" (click)="paginaAnterior()" [disabled]="paginaActual === 0">← Anterior</button>
+        <span>Página {{ paginaActual + 1 }} ({{ ediciones.length }} edición{{ ediciones.length !== 1 ? 'es' : '' }})</span>
+        <button class="btn btn-secondary" (click)="paginaSiguiente()" [disabled]="! hayMasPaginas">Siguiente →</button>
+      </div>
+
+      <div style="text-align: center; margin-top: 15px;">
+        <label>Ediciones por página:</label>
+        <select (change)="cambiarElementosPorPagina($event)" [value]="elementosPorPagina">
+          <option [value]="5">5</option>
+          <option [value]="10">10</option>
+          <option [value]="20">20</option>
+          <option [value]="50">50</option>
+          <option [value]="100">100</option>
+        </select>
+      </div>
+
+      <!-- Resumen -->
+      <div [style.background-color]="getCorruptos() === 0 ? '#e7f3ff' : '#fff3cd'"
+           style="margin-top: 20px; padding: 20px; border-radius: 8px; border-left: 4px solid #2196F3;">
+        <strong>📈 Resumen de Verificación:</strong>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px;">
+          <div>
+            <div style="font-size: 0.9em; color: #666;">Ediciones válidas</div>
+            <div style="font-size: 1.5em; font-weight: bold; color: #28a745;">✅ {{ getValidos() }}</div>
+          </div>
+          <div>
+            <div style="font-size: 0.9em; color: #666;">Ediciones con inconsistencias</div>
+            <div style="font-size: 1.5em; font-weight: bold; color: #dc3545;">⚠️ {{ getCorruptos() }}</div>
+          </div>
+          <div>
+            <div style="font-size:  0.9em; color: #666;">Total de ediciones</div>
+            <div style="font-size:  1.5em; font-weight: bold; color: #333;">📊 {{ ediciones.length }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sin ediciones -->
+    <div *ngIf="ediciones.length === 0" style="background: white; padding: 40px; border-radius: 12px; text-align: center;">
+      <p style="color: #666;">No hay ediciones en este departamento</p>
+    </div>
+  </div>
+</div>

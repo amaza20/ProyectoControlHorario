@@ -1,0 +1,114 @@
+<nav class="navbar">
+  <div class="nav-brand">🕐 Control Horario</div>
+  <div class="nav-user">{{ (authService.currentUser$ | async)?.username }} ({{ (authService.currentUser$ | async)?.rol }})</div>
+</nav>
+
+<div class="container" style="margin-top: 100px;">
+  <div class="back-link">
+    <a (click)="goToDashboard()" style="cursor: pointer;">← Volver al Dashboard</a>
+  </div>
+
+  <div style="max-width: 600px; margin: 0 auto;">
+    <div class="form-container">
+      <h1>👤 Registrar Usuario</h1>
+      <p class="subtitle">Crear nuevos usuarios del sistema</p>
+
+      <form (ngSubmit)="onSubmit()">
+        <div class="form-group">
+          <label for="username">Usuario *</label>
+          <input 
+            type="text" 
+            id="username"
+            name="username"
+            [(ngModel)]="username"
+            placeholder="Nombre de usuario" 
+            required
+            [disabled]="isLoading"
+            minlength="3">
+        </div>
+
+        <div class="form-group">
+          <label for="password">Contraseña *</label>
+          <input 
+            type="password" 
+            id="password"
+            name="password"
+            [(ngModel)]="password"
+            placeholder="Mínimo 8 caracteres" 
+            required
+            [disabled]="isLoading"
+            minlength="8">
+        </div>
+
+        <div class="form-group">
+          <label for="rol">Rol *</label>
+          <select 
+            id="rol"
+            name="rol"
+            [(ngModel)]="rol"
+            (change)="onRolChange()"
+            required
+            [disabled]="isLoading">
+            <option value="">Seleccionar rol</option>
+            <option *ngFor="let r of roles" [value]="r">{{ r }}</option>
+          </select>
+        </div>
+
+        <div class="form-group" *ngIf="mostrarDepartamento">
+          <label for="departamento">Departamento *</label>
+          <select 
+            id="departamento"
+            name="departamento"
+            [(ngModel)]="departamento"
+            [required]="mostrarDepartamento"
+            [disabled]="isLoading">
+            <option value="">Seleccionar departamento</option>
+            <option *ngFor="let dept of departamentos" [value]="dept">{{ dept }}</option>
+          </select>
+        </div>
+
+        <button 
+          type="submit" 
+          class="btn btn-primary btn-block"
+          [disabled]="isLoading">
+          {{ isLoading ? '⏳ Creando usuario...' : '➕ Crear Usuario' }}
+        </button>
+      </form>
+
+      <!-- Mensajes -->
+      <div *ngIf="successMessage" class="response success" style="display: block;">
+        {{ successMessage }}
+      </div>
+
+      <div *ngIf="errorMessage" class="response error" style="display: block;">
+        {{ errorMessage }}
+      </div>
+    </div>
+
+    <!-- Lista de usuarios existentes -->
+    <div *ngIf="usuarios.length > 0" style="background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin-top: 30px;">
+      <h3 style="margin-bottom: 20px; color: #333;">👥 Usuarios Existentes</h3>
+      
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px;">
+        <div *ngFor="let user of usuarios" 
+             [style.border-left]="'4px solid ' + getColorRol(user.rol)"
+             style="padding: 15px; background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; transition: all 0.3s;"
+             (mouseenter)="$event.currentTarget.style.transform='translateY(-3px)'; $event.currentTarget.style.boxShadow='0 4px 10px rgba(0,0,0,0.15)'"
+             (mouseleave)="$event.currentTarget.style.transform='translateY(0)'; $event.currentTarget.style.boxShadow='0 2px 5px rgba(0,0,0,0.1)'">
+          <div style="font-weight: bold; color: #333; font-size: 1.1em; margin-bottom: 5px;">👤 {{ user.username }}</div>
+          <div [style.color]="getColorRol(user.rol)" style="font-size: 0.9em; font-weight: 500; margin-bottom: 3px;">{{ user.rol }}</div>
+          <div style="font-size: 0.85em; color: #666;">
+            {{ user.departamento !== 'N/A' ? '🏢 ' + user.departamento : '🌐 Sin departamento' }}
+          </div>
+        </div>
+      </div>
+
+      <p style="margin-top: 15px; color: #666; font-size:  0.9em; text-align: center;">
+        💡 <strong>Consejo:</strong> Haz clic en un usuario para ver detalles
+      </p>
+      <p style="margin-top: 5px; color: #666; font-size: 0.9em; text-align: center;">
+        Total:  {{ usuarios.length }} usuario(s)
+      </p>
+    </div>
+  </div>
+</div>

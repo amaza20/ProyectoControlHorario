@@ -1,0 +1,85 @@
+<nav class="navbar">
+  <div class="nav-brand">🕐 Control Horario</div>
+  <div class="nav-user">{{ (authService.currentUser$ | async)?.username }} ({{ (authService.currentUser$ | async)?.rol }})</div>
+</nav>
+
+<div class="container" style="margin-top: 100px;">
+  <div class="back-link">
+    <a (click)="cancelar()" style="cursor: pointer;">← Volver a Fichajes</a>
+  </div>
+
+  <div class="form-container">
+    <h1>✏️ Solicitar Edición de Fichaje</h1>
+    <p class="subtitle">Solicita un cambio en tu fichaje</p>
+
+    <form (ngSubmit)="onSubmit()" *ngIf="fichajeId">
+      <div class="form-group">
+        <label>Fecha/Hora Original:</label>
+        <input 
+          type="text" 
+          [value]="instanteOriginal"
+          disabled
+          style="background: #f5f5f5; cursor: not-allowed;">
+      </div>
+
+      <div class="form-group">
+        <label>Tipo Original:</label>
+        <input 
+          type="text" 
+          [value]="tipoOriginal"
+          disabled
+          style="background: #f5f5f5; cursor: not-allowed;">
+      </div>
+
+      <div class="form-group">
+        <label for="nuevoInstante">Nueva Fecha y Hora:  *</label>
+        <input 
+          type="datetime-local" 
+          id="nuevoInstante"
+          name="nuevoInstante"
+          [(ngModel)]="nuevoInstante"
+          required
+          [disabled]="isLoading">
+      </div>
+
+      <div style="background: #fff3cd; border:  1px solid #ffc107; border-radius: 8px; padding: 15px; margin:  20px 0;">
+        <p style="margin: 0; color: #856404;">
+          ⚠️ <strong>Nota:</strong> Esta solicitud debe ser aprobada por tu supervisor.
+        </p>
+      </div>
+
+      <button 
+        type="submit" 
+        class="btn btn-primary btn-block"
+        [disabled]="isLoading">
+        {{ isLoading ? '⏳ Enviando solicitud...' : '📤 Solicitar Edición' }}
+      </button>
+
+      <button 
+        type="button" 
+        class="btn btn-secondary btn-block"
+        (click)="cancelar()"
+        [disabled]="isLoading"
+        style="margin-top:  10px;">
+        ❌ Cancelar
+      </button>
+    </form>
+
+    <!-- Error al cargar -->
+    <div *ngIf="! fichajeId && ! isLoading" style="text-align: center; padding: 20px;">
+      <p style="color:  #dc3545; font-size: 1.1em;">❌ {{ errorMessage || 'No se encontraron datos del fichaje' }}</p>
+      <button class="btn btn-secondary" (click)="cancelar()" style="margin-top: 15px;">
+        ← Volver a Fichajes
+      </button>
+    </div>
+
+    <!-- Mensajes -->
+    <div *ngIf="successMessage" class="response success" style="display: block;">
+      {{ successMessage }}
+    </div>
+
+    <div *ngIf="errorMessage && fichajeId" class="response error" style="display: block;">
+      {{ errorMessage }}
+    </div>
+  </div>
+</div>
