@@ -19,7 +19,7 @@ export class FicharComponent {
 
   constructor(
     private fichajeService: FichajeService,
-    private authService: AuthService,
+    public authService: AuthService,
     private router: Router
   ) {}
   

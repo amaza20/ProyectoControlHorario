@@ -117,4 +117,16 @@ export class CambiarPasswordComponent implements OnInit {
   goToDashboard(): void {
     this.router.navigate(['/dashboard']);
   }
+
+  onMouseEnter(event:  Event): void {
+    const target = event.currentTarget as HTMLElement;
+    target.style.transform = 'translateY(-3px)';
+    target.style.boxShadow = '0 4px 10px rgba(0,0,0,0.15)';
+  }
+
+  onMouseLeave(event: Event): void {
+    const target = event.currentTarget as HTMLElement;
+    target.style.transform = 'translateY(0)';
+    target.style.boxShadow = '0 2px 5px rgba(0,0,0,0.1)';
+  }
 }

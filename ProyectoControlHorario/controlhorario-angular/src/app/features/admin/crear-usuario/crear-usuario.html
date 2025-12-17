@@ -93,8 +93,8 @@
         <div *ngFor="let user of usuarios" 
              [style.border-left]="'4px solid ' + getColorRol(user.rol)"
              style="padding: 15px; background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; transition: all 0.3s;"
-             (mouseenter)="$event.currentTarget.style.transform='translateY(-3px)'; $event.currentTarget.style.boxShadow='0 4px 10px rgba(0,0,0,0.15)'"
-             (mouseleave)="$event.currentTarget.style.transform='translateY(0)'; $event.currentTarget.style.boxShadow='0 2px 5px rgba(0,0,0,0.1)'">
+             (mouseenter)="onMouseEnter($event)"
+             (mouseleave)="onMouseLeave($event)">
           <div style="font-weight: bold; color: #333; font-size: 1.1em; margin-bottom: 5px;">👤 {{ user.username }}</div>
           <div [style.color]="getColorRol(user.rol)" style="font-size: 0.9em; font-weight: 500; margin-bottom: 3px;">{{ user.rol }}</div>
           <div style="font-size: 0.85em; color: #666;">
