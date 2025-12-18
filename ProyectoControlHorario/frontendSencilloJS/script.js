@@ -358,46 +358,89 @@ async function listarFichajes(pagina = 0) {
 }
 
 // ============================================
-// FUNCIÓN: ACTUALIZAR CONTROLES DE PAGINACIÓN
+// FUNCIÓN: ACTUALIZAR CONTROLES DE PAGINACIÓN (FICHAJES)
 // ============================================
 function actualizarControlesPaginacion(fichajesEnPagina) {
     const controles = document.getElementById('paginacionControles');
     
-    if (! controles) return;
+    if (!controles) return;
     
-    controles.style.display = 'flex';
+    controles.style.display = 'block';
     
     const hayMasPaginas = fichajesEnPagina === elementosPorPagina;
     const esLaPrimeraPagina = paginaActual === 0;
     
+    // ✅ NUEVO: Calcular número total de páginas (estimado)
+    // Como no sabemos el total exacto, asumimos que hay más páginas si la actual está llena
+    const totalPaginasEstimado = hayMasPaginas ? paginaActual + 2 : paginaActual + 1;
+    
     let html = `
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; gap: 15px;">
+        <div style="display: flex; justify-content:  center; align-items: center; gap: 15px; margin-top: 20px; flex-wrap: wrap;">
+            <!-- Primera página -->
+            <button 
+                class="btn btn-secondary" 
+                onclick="listarFichajes(0)" 
+                ${esLaPrimeraPagina ? 'disabled' : ''} 
+                style="${esLaPrimeraPagina ?  'opacity: 0.5; cursor: not-allowed;' : ''} padding: 8px 12px;">
+                ≪
+            </button>
+            
+            <!-- Página anterior -->
             <button 
                 class="btn btn-secondary" 
                 onclick="listarFichajes(${paginaActual - 1})" 
-                ${esLaPrimeraPagina ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}>
-                ← Anterior
+                ${esLaPrimeraPagina ? 'disabled' : ''} 
+                style="${esLaPrimeraPagina ? 'opacity: 0.5; cursor: not-allowed;' : ''} padding:  8px 12px;">
+                &lt;
             </button>
             
-            <span style="color: #666; font-weight: 500;">
-                Página ${paginaActual + 1} 
-                <span style="font-size: 0.9em; color: #999;">(${fichajesEnPagina} fichaje${fichajesEnPagina !== 1 ? 's' :  ''})</span>
-            </span>
+            <!-- Selector de página -->
+            <select 
+                id="selectorPaginaFichajes" 
+                onchange="listarFichajes(parseInt(this.value))" 
+                style="padding:  8px 12px; border-radius: 5px; border: 1px solid #ddd; font-size:  14px;">
+    `;
+    
+    // Generar opciones de página
+    for (let i = 0; i < totalPaginasEstimado; i++) {
+        html += `<option value="${i}" ${i === paginaActual ? 'selected' : ''}>${i + 1}</option>`;
+    }
+    
+    html += `
+            </select>
             
+            <!-- Página siguiente -->
             <button 
                 class="btn btn-secondary" 
                 onclick="listarFichajes(${paginaActual + 1})" 
-                ${! hayMasPaginas ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}>
-                Siguiente →
+                ${! hayMasPaginas ? 'disabled' : ''} 
+                style="${!hayMasPaginas ? 'opacity: 0.5; cursor: not-allowed;' : ''} padding:  8px 12px;">
+                &gt;
             </button>
-        </div>
-        
-        <div style="text-align: center; margin-top: 15px;">
-            <label for="elementosPorPaginaSelect" style="color: #666; margin-right: 10px;">Fichajes por página:</label>
-            <select id="elementosPorPaginaSelect" onchange="cambiarElementosPorPagina(this.value)" style="padding: 5px 10px; border-radius: 5px; border: 1px solid #ddd;">
-                <option value="5" ${elementosPorPagina === 5 ? 'selected' : ''}>5</option>
+            
+            <!-- Última página (estimada) -->
+            <button 
+                class="btn btn-secondary" 
+                onclick="listarFichajes(${totalPaginasEstimado - 1})" 
+                ${!hayMasPaginas ?  'disabled' : ''} 
+                style="${!hayMasPaginas ? 'opacity:  0.5; cursor: not-allowed;' : ''} padding: 8px 12px;">
+                ≫
+            </button>
+            
+            <span style="color: #666; margin:  0 10px;">|</span>
+            
+            <!-- Label para "Número de filas" -->
+            <label for="elementosPorPaginaSelect" style="color: #666; font-size: 14px;">Número de filas: </label>
+            
+            <!-- Selector de filas por página -->
+            <select 
+                id="elementosPorPaginaSelect" 
+                onchange="cambiarElementosPorPagina(this.value)" 
+                style="padding: 8px 12px; border-radius: 5px; border: 1px solid #ddd; font-size: 14px;">
+                <option value="5" ${elementosPorPagina === 5 ? 'selected' :  ''}>5</option>
                 <option value="10" ${elementosPorPagina === 10 ? 'selected' : ''}>10</option>
                 <option value="20" ${elementosPorPagina === 20 ? 'selected' : ''}>20</option>
+                <option value="25" ${elementosPorPagina === 25 ? 'selected' : ''}>25</option>
                 <option value="50" ${elementosPorPagina === 50 ? 'selected' : ''}>50</option>
             </select>
         </div>
@@ -693,7 +736,7 @@ function mostrarSolicitudes(solicitudes) {
 }
 
 // ============================================
-// FUNCIÓN:  ACTUALIZAR CONTROLES DE PAGINACIÓN SOLICITUDES
+// FUNCIÓN: ACTUALIZAR CONTROLES DE PAGINACIÓN SOLICITUDES
 // ============================================
 function actualizarControlesPaginacionSolicitudes(solicitudesEnPagina) {
     const controles = document.getElementById('paginacionControlesSolicitudes');
@@ -708,41 +751,75 @@ function actualizarControlesPaginacionSolicitudes(solicitudesEnPagina) {
     const hayMasPaginas = solicitudesEnPagina === elementosPorPaginaSolicitudes;
     const esLaPrimeraPagina = paginaActualSolicitudes === 0;
     
+    const totalPaginasEstimado = hayMasPaginas ? paginaActualSolicitudes + 2 : paginaActualSolicitudes + 1;
+    
     let html = `
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; gap: 15px; flex-wrap: wrap;">
+        <div style="display:  flex; justify-content: center; align-items: center; gap:  15px; margin-top:  20px; flex-wrap:  wrap;">
+            <button 
+                class="btn btn-secondary" 
+                onclick="listarSolicitudesPendientes(0)" 
+                ${esLaPrimeraPagina ? 'disabled' : ''} 
+                style="${esLaPrimeraPagina ? 'opacity: 0.5; cursor: not-allowed;' : ''} padding: 8px 12px;">
+                ≪
+            </button>
+            
             <button 
                 class="btn btn-secondary" 
                 onclick="listarSolicitudesPendientes(${paginaActualSolicitudes - 1})" 
-                ${esLaPrimeraPagina ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' :  ''}>
-                ← Anterior
+                ${esLaPrimeraPagina ? 'disabled' : ''} 
+                style="${esLaPrimeraPagina ? 'opacity: 0.5; cursor: not-allowed;' : ''} padding:  8px 12px;">
+                &lt;
             </button>
             
-            <span style="color: #666; font-weight: 500;">
-                Página ${paginaActualSolicitudes + 1} 
-                <span style="font-size: 0.9em; color: #999;">(${solicitudesEnPagina} solicitud${solicitudesEnPagina !== 1 ? 'es' : ''})</span>
-            </span>
+            <select 
+                id="selectorPaginaSolicitudes" 
+                onchange="listarSolicitudesPendientes(parseInt(this.value))" 
+                style="padding: 8px 12px; border-radius: 5px; border:  1px solid #ddd; font-size: 14px;">
+    `;
+    
+    for (let i = 0; i < totalPaginasEstimado; i++) {
+        html += `<option value="${i}" ${i === paginaActualSolicitudes ? 'selected' : ''}>${i + 1}</option>`;
+    }
+    
+    html += `
+            </select>
             
             <button 
                 class="btn btn-secondary" 
                 onclick="listarSolicitudesPendientes(${paginaActualSolicitudes + 1})" 
-                ${! hayMasPaginas ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}>
-                Siguiente →
+                ${!hayMasPaginas ? 'disabled' : ''} 
+                style="${!hayMasPaginas ?  'opacity: 0.5; cursor: not-allowed;' : ''} padding: 8px 12px;">
+                &gt;
             </button>
-        </div>
-        
-        <div style="text-align: center; margin-top: 15px;">
-            <label for="elementosPorPaginaSolicitudesSelect" style="color: #666; margin-right: 10px;">Solicitudes por página:</label>
-            <select id="elementosPorPaginaSolicitudesSelect" onchange="cambiarElementosPorPaginaSolicitudes(this.value)" style="padding: 5px 10px; border-radius: 5px; border: 1px solid #ddd;">
-                <option value="5" ${elementosPorPaginaSolicitudes === 5 ? 'selected' : ''}>5</option>
+            
+            <button 
+                class="btn btn-secondary" 
+                onclick="listarSolicitudesPendientes(${totalPaginasEstimado - 1})" 
+                ${!hayMasPaginas ? 'disabled' : ''} 
+                style="${!hayMasPaginas ? 'opacity: 0.5; cursor: not-allowed;' : ''} padding: 8px 12px;">
+                ≫
+            </button>
+            
+            <span style="color: #666; margin: 0 10px;">|</span>
+            
+            <label for="elementosPorPaginaSolicitudesSelect" style="color: #666; font-size: 14px;">Número de filas:</label>
+            
+            <select 
+                id="elementosPorPaginaSolicitudesSelect" 
+                onchange="cambiarElementosPorPaginaSolicitudes(this.value)" 
+                style="padding:  8px 12px; border-radius: 5px; border: 1px solid #ddd; font-size: 14px;">
+                <option value="5" ${elementosPorPaginaSolicitudes === 5 ?  'selected' : ''}>5</option>
                 <option value="10" ${elementosPorPaginaSolicitudes === 10 ? 'selected' : ''}>10</option>
                 <option value="20" ${elementosPorPaginaSolicitudes === 20 ? 'selected' : ''}>20</option>
-                <option value="50" ${elementosPorPaginaSolicitudes === 50 ? 'selected' :  ''}>50</option>
+                <option value="25" ${elementosPorPaginaSolicitudes === 25 ? 'selected' : ''}>25</option>
+                <option value="50" ${elementosPorPaginaSolicitudes === 50 ?  'selected' : ''}>50</option>
             </select>
         </div>
     `;
     
     controles.innerHTML = html;
 }
+
 
 // ============================================
 // FUNCIÓN: CAMBIAR ELEMENTOS POR PÁGINA SOLICITUDES
@@ -857,44 +934,77 @@ async function verificarIntegridad(event, pagina = 0) {
 function actualizarControlesPaginacionIntegridad(fichajesEnPagina, departamento) {
     const controles = document.getElementById('paginacionControlesIntegridad');
     
-    if (! controles) {
+    if (!controles) {
         console.warn('⚠️ No se encontró el elemento paginacionControlesIntegridad');
         return;
     }
     
-    controles.style.display = 'block';
+    controles. style.display = 'block';
     
     const hayMasPaginas = fichajesEnPagina === elementosPorPaginaIntegridad;
     const esLaPrimeraPagina = paginaActualIntegridad === 0;
     
+    const totalPaginasEstimado = hayMasPaginas ? paginaActualIntegridad + 2 :  paginaActualIntegridad + 1;
+    
     let html = `
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; gap: 15px; flex-wrap: wrap;">
+        <div style="display: flex; justify-content: center; align-items:  center; gap: 15px; margin-top: 20px; flex-wrap: wrap;">
+            <button 
+                class="btn btn-secondary" 
+                onclick="verificarIntegridad(null, 0)" 
+                ${esLaPrimeraPagina ? 'disabled' : ''} 
+                style="${esLaPrimeraPagina ? 'opacity:  0.5; cursor: not-allowed;' : ''} padding: 8px 12px;">
+                ≪
+            </button>
+            
             <button 
                 class="btn btn-secondary" 
                 onclick="verificarIntegridad(null, ${paginaActualIntegridad - 1})" 
-                ${esLaPrimeraPagina ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' :  ''}>
-                ← Anterior
+                ${esLaPrimeraPagina ? 'disabled' : ''} 
+                style="${esLaPrimeraPagina ? 'opacity: 0.5; cursor: not-allowed;' :  ''} padding: 8px 12px;">
+                &lt;
             </button>
             
-            <span style="color: #666; font-weight: 500;">
-                Página ${paginaActualIntegridad + 1} 
-                <span style="font-size: 0.9em; color: #999;">(${fichajesEnPagina} fichaje${fichajesEnPagina !== 1 ? 's' :  ''})</span>
-            </span>
+            <select 
+                id="selectorPaginaIntegridad" 
+                onchange="verificarIntegridad(null, parseInt(this.value))" 
+                style="padding: 8px 12px; border-radius: 5px; border:  1px solid #ddd; font-size: 14px;">
+    `;
+    
+    for (let i = 0; i < totalPaginasEstimado; i++) {
+        html += `<option value="${i}" ${i === paginaActualIntegridad ? 'selected' : ''}>${i + 1}</option>`;
+    }
+    
+    html += `
+            </select>
             
             <button 
                 class="btn btn-secondary" 
                 onclick="verificarIntegridad(null, ${paginaActualIntegridad + 1})" 
-                ${! hayMasPaginas ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}>
-                Siguiente →
+                ${!hayMasPaginas ? 'disabled' : ''} 
+                style="${!hayMasPaginas ? 'opacity: 0.5; cursor: not-allowed;' : ''} padding: 8px 12px;">
+                &gt;
             </button>
-        </div>
-        
-        <div style="text-align: center; margin-top: 15px;">
-            <label for="elementosPorPaginaIntegridadSelect" style="color: #666; margin-right: 10px;">Fichajes por página:</label>
-            <select id="elementosPorPaginaIntegridadSelect" onchange="cambiarElementosPorPaginaIntegridad(this.value, '${departamento}')" style="padding: 5px 10px; border-radius: 5px; border: 1px solid #ddd;">
-                <option value="5" ${elementosPorPaginaIntegridad === 5 ? 'selected' : ''}>5</option>    
-                <option value="10" ${elementosPorPaginaIntegridad === 10 ? 'selected' : ''}>10</option>
+            
+            <button 
+                class="btn btn-secondary" 
+                onclick="verificarIntegridad(null, ${totalPaginasEstimado - 1})" 
+                ${!hayMasPaginas ? 'disabled' : ''} 
+                style="${!hayMasPaginas ? 'opacity: 0.5; cursor: not-allowed;' : ''} padding: 8px 12px;">
+                ≫
+            </button>
+            
+            <span style="color: #666; margin: 0 10px;">|</span>
+            
+            <label for="elementosPorPaginaIntegridadSelect" style="color:  #666; font-size: 14px;">Número de filas:</label>
+            
+            <select 
+                id="elementosPorPaginaIntegridadSelect" 
+                onchange="cambiarElementosPorPaginaIntegridad(this.value)" 
+                style="padding: 8px 12px; border-radius: 5px; border:  1px solid #ddd; font-size: 14px;">
+                <option value="5" ${elementosPorPaginaIntegridad === 5 ?  'selected' : ''}>5</option>
+                <option value="10" ${elementosPorPaginaIntegridad === 10 ? 'selected' :  ''}>10</option>
                 <option value="20" ${elementosPorPaginaIntegridad === 20 ? 'selected' : ''}>20</option>
+                <option value="25" ${elementosPorPaginaIntegridad === 25 ? 'selected' : ''}>25</option>
                 <option value="50" ${elementosPorPaginaIntegridad === 50 ? 'selected' : ''}>50</option>
                 <option value="100" ${elementosPorPaginaIntegridad === 100 ? 'selected' : ''}>100</option>
             </select>
@@ -903,6 +1013,7 @@ function actualizarControlesPaginacionIntegridad(fichajesEnPagina, departamento)
     
     controles.innerHTML = html;
 }
+
 
 // ============================================
 // FUNCIÓN:  CAMBIAR ELEMENTOS POR PÁGINA INTEGRIDAD
@@ -2004,35 +2115,68 @@ function actualizarControlesPaginacionIntegridadEdiciones(edicionesEnPagina, dep
     const hayMasPaginas = edicionesEnPagina === elementosPorPaginaIntegridadEdiciones;
     const esLaPrimeraPagina = paginaActualIntegridadEdiciones === 0;
     
+    const totalPaginasEstimado = hayMasPaginas ?  paginaActualIntegridadEdiciones + 2 :  paginaActualIntegridadEdiciones + 1;
+    
     let html = `
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; gap: 15px; flex-wrap: wrap;">
+        <div style="display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 20px; flex-wrap: wrap;">
+            <button 
+                class="btn btn-secondary" 
+                onclick="verificarIntegridadEdiciones(null, 0)" 
+                ${esLaPrimeraPagina ? 'disabled' : ''} 
+                style="${esLaPrimeraPagina ? 'opacity:  0.5; cursor: not-allowed;' : ''} padding: 8px 12px;">
+                ≪
+            </button>
+            
             <button 
                 class="btn btn-secondary" 
                 onclick="verificarIntegridadEdiciones(null, ${paginaActualIntegridadEdiciones - 1})" 
-                ${esLaPrimeraPagina ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' :  ''}>
-                ← Anterior
+                ${esLaPrimeraPagina ?  'disabled' : ''} 
+                style="${esLaPrimeraPagina ? 'opacity: 0.5; cursor: not-allowed;' : ''} padding: 8px 12px;">
+                &lt;
             </button>
             
-            <span style="color: #666; font-weight: 500;">
-                Página ${paginaActualIntegridadEdiciones + 1} 
-                <span style="font-size: 0.9em; color: #999;">(${edicionesEnPagina} edición${edicionesEnPagina !== 1 ? 'es' : ''})</span>
-            </span>
+            <select 
+                id="selectorPaginaIntegridadEdiciones" 
+                onchange="verificarIntegridadEdiciones(null, parseInt(this.value))" 
+                style="padding: 8px 12px; border-radius: 5px; border: 1px solid #ddd; font-size: 14px;">
+    `;
+    
+    for (let i = 0; i < totalPaginasEstimado; i++) {
+        html += `<option value="${i}" ${i === paginaActualIntegridadEdiciones ? 'selected' : ''}>${i + 1}</option>`;
+    }
+    
+    html += `
+            </select>
             
             <button 
                 class="btn btn-secondary" 
                 onclick="verificarIntegridadEdiciones(null, ${paginaActualIntegridadEdiciones + 1})" 
-                ${! hayMasPaginas ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}>
-                Siguiente →
+                ${!hayMasPaginas ? 'disabled' : ''} 
+                style="${!hayMasPaginas ? 'opacity: 0.5; cursor: not-allowed;' : ''} padding: 8px 12px;">
+                &gt;
             </button>
-        </div>
-        
-        <div style="text-align: center; margin-top: 15px;">
-            <label for="elementosPorPaginaIntegridadEdicionesSelect" style="color: #666; margin-right: 10px;">Ediciones por página:</label>
-            <select id="elementosPorPaginaIntegridadEdicionesSelect" onchange="cambiarElementosPorPaginaIntegridadEdiciones(this.value, '${departamento}')" style="padding: 5px 10px; border-radius: 5px; border: 1px solid #ddd;">
-                <option value="5" ${elementosPorPaginaIntegridadEdiciones === 5 ? 'selected' :  ''}>5</option>    
-                <option value="10" ${elementosPorPaginaIntegridadEdiciones === 10 ? 'selected' :  ''}>10</option>
+            
+            <button 
+                class="btn btn-secondary" 
+                onclick="verificarIntegridadEdiciones(null, ${totalPaginasEstimado - 1})" 
+                ${!hayMasPaginas ?  'disabled' : ''} 
+                style="${!hayMasPaginas ? 'opacity:  0.5; cursor: not-allowed;' : ''} padding: 8px 12px;">
+                ≫
+            </button>
+            
+            <span style="color: #666; margin: 0 10px;">|</span>
+            
+            <label for="elementosPorPaginaIntegridadEdicionesSelect" style="color:  #666; font-size: 14px;">Número de filas:</label>
+            
+            <select 
+                id="elementosPorPaginaIntegridadEdicionesSelect" 
+                onchange="cambiarElementosPorPaginaIntegridadEdiciones(this.value)" 
+                style="padding: 8px 12px; border-radius: 5px; border:  1px solid #ddd; font-size: 14px;">
+                <option value="5" ${elementosPorPaginaIntegridadEdiciones === 5 ? 'selected' :  ''}>5</option>
+                <option value="10" ${elementosPorPaginaIntegridadEdiciones === 10 ? 'selected' : ''}>10</option>
                 <option value="20" ${elementosPorPaginaIntegridadEdiciones === 20 ? 'selected' : ''}>20</option>
-                <option value="50" ${elementosPorPaginaIntegridadEdiciones === 50 ? 'selected' : ''}>50</option>
+                <option value="25" ${elementosPorPaginaIntegridadEdiciones === 25 ? 'selected' : ''}>25</option>
+                <option value="50" ${elementosPorPaginaIntegridadEdiciones === 50 ? 'selected' :  ''}>50</option>
                 <option value="100" ${elementosPorPaginaIntegridadEdiciones === 100 ? 'selected' : ''}>100</option>
             </select>
         </div>
