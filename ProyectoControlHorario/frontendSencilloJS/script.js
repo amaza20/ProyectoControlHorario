@@ -2331,7 +2331,7 @@ function actualizarControlesPaginacionIntegridad(fichajesEnPagina, departamento)
             
             <select 
                 id="elementosPorPaginaIntegridadSelect" 
-                onchange="cambiarElementosPorPaginaIntegridad(this.value, '${departamento}')" 
+                onchange="cambiarElementosPorPaginaIntegridad(this.value)" 
                 style="padding: 6px 10px; border:  1px solid #ddd; border-radius: 4px; font-size: 14px; background: white; cursor: pointer; min-width: 60px;">
                 <option value="5" ${elementosPorPaginaIntegridad === 5 ? 'selected' : ''}>5</option>
                 <option value="10" ${elementosPorPaginaIntegridad === 10 ? 'selected' : ''}>10</option>
@@ -2413,7 +2413,7 @@ function actualizarControlesPaginacionIntegridadEdiciones(edicionesEnPagina, dep
             
             <select 
                 id="elementosPorPaginaIntegridadEdicionesSelect" 
-                onchange="cambiarElementosPorPaginaIntegridadEdiciones(this.value, '${departamento}')" 
+                onchange="cambiarElementosPorPaginaIntegridadEdiciones(this.value)" 
                 style="padding: 6px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; background: white; cursor:  pointer; min-width: 60px;">
                 <option value="5" ${elementosPorPaginaIntegridadEdiciones === 5 ? 'selected' : ''}>5</option>
                 <option value="10" ${elementosPorPaginaIntegridadEdiciones === 10 ? 'selected' :  ''}>10</option>
