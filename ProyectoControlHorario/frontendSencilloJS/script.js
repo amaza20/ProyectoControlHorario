@@ -514,6 +514,7 @@ async function solicitarEdicion(event) {
 // ============================================
 let paginaActualSolicitudes = 0;
 let elementosPorPaginaSolicitudes = 5;
+let hayMasPaginasSolicitudes = true; // ✅ NUEVO: Variable global para controlar si hay más páginas
 
 async function listarSolicitudesPendientes(pagina = 0) {
     const authToken = localStorage.getItem('authToken');
@@ -527,7 +528,7 @@ async function listarSolicitudesPendientes(pagina = 0) {
     paginaActualSolicitudes = pagina;
 
     try {
-        const url = `${API_BASE_URL}/listarSolicitudes?pagina=${pagina}&elementosPorPagina=${elementosPorPaginaSolicitudes}`;
+        const url = `${API_BASE_URL}/listarSolicitudes? pagina=${pagina}&elementosPorPagina=${elementosPorPaginaSolicitudes}`;
         
         console.log('📡 Listando solicitudes:', url);
         
@@ -549,15 +550,24 @@ async function listarSolicitudesPendientes(pagina = 0) {
                 if (controles) {
                     controles.style.display = 'none';
                 }
+                hayMasPaginasSolicitudes = false;
             } else if (solicitudes.length === 0 && pagina > 0) {
                 // ✅ Intentamos ir a una página vacía → volver a la anterior
-                console.warn(`⚠️ Página ${pagina} está vacía. Volviendo a página ${pagina - 1}`);
+                console.warn(`⚠️ Página ${pagina} está vacía.  Volviendo a página ${pagina - 1}`);
                 listarSolicitudesPendientes(pagina - 1);
             } else {
-                // ✅ Hay datos: mostrar tabla y controles
+                // ✅ Hay datos:  mostrar tabla
                 mostrarSolicitudes(solicitudes);
                 
-                // ✅ CRÍTICO: Pasar solicitudes.length para detectar última página
+                // ✅ NUEVO: Si la página está llena, verificar si hay más páginas
+                if (solicitudes.length === elementosPorPaginaSolicitudes) {
+                    await verificarSiguientePaginaSolicitudes(pagina + 1, authToken);
+                } else {
+                    // Si hay menos elementos de los esperados, es la última página
+                    hayMasPaginasSolicitudes = false;
+                }
+                
+                // Actualizar controles
                 actualizarControlesPaginacionSolicitudes(solicitudes.length);
             }
         } else {
@@ -570,6 +580,38 @@ async function listarSolicitudesPendientes(pagina = 0) {
     } catch (error) {
         console.error('Error al listar solicitudes:', error);
         mostrarRespuesta('solicitudesResponse', '❌ Error de conexión:  ' + error.message, 'error');
+    }
+}
+
+// ✅ NUEVO:  Función para verificar si hay una página siguiente (silenciosamente)
+async function verificarSiguientePaginaSolicitudes(paginaSiguiente, authToken) {
+    try {
+        const url = `${API_BASE_URL}/listarSolicitudes?pagina=${paginaSiguiente}&elementosPorPagina=${elementosPorPaginaSolicitudes}`;
+        
+        console.log('🔍 Verificando si existe página siguiente:', paginaSiguiente);
+        
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+
+        if (response.ok) {
+            const solicitudesSiguientes = await response.json();
+            
+            // Si la siguiente página tiene datos, hay más páginas
+            hayMasPaginasSolicitudes = solicitudesSiguientes. length > 0;
+            
+            console.log(`✅ Página siguiente ${paginaSiguiente}:  ${solicitudesSiguientes. length} elementos.  Hay más páginas: ${hayMasPaginasSolicitudes}`);
+            
+            // Actualizar controles con la información correcta
+            actualizarControlesPaginacionSolicitudes(elementosPorPaginaSolicitudes);
+        }
+    } catch (error) {
+        console.error('Error al verificar página siguiente:', error);
+        // En caso de error, asumir que puede haber más páginas
+        hayMasPaginasSolicitudes = true;
     }
 }
 
@@ -1575,6 +1617,7 @@ async function cambiarPassword(event) {
 // ============================================
 let paginaActualIntegridadEdiciones = 0;
 let elementosPorPaginaIntegridadEdiciones = 5;
+let hayMasPaginasIntegridadEdiciones = true; // ✅ NUEVO
 
 async function verificarIntegridadEdiciones(event, pagina = 0) {
     if (event) event.preventDefault();
@@ -1587,7 +1630,7 @@ async function verificarIntegridadEdiciones(event, pagina = 0) {
         return;
     }
 
-    const departamento = document. getElementById('departamentoEdiciones').value;
+    const departamento = document.getElementById('departamentoEdiciones').value;
 
     if (!departamento) {
         mostrarRespuesta('verificarEdicionesResponse', '⚠️ Por favor ingresa un departamento', 'error');
@@ -1620,36 +1663,44 @@ async function verificarIntegridadEdiciones(event, pagina = 0) {
         console.log('📦 Respuesta de verificación de ediciones:', data);
         
         if (response.ok) {
-            const responseElement = document. getElementById('verificarEdicionesResponse');
+            const responseElement = document.getElementById('verificarEdicionesResponse');
             if (responseElement) {
-                responseElement.style. display = 'none';
+                responseElement.style.display = 'none';
             }
             
             if (data.length === 0 && pagina === 0) {
                 // No hay ediciones en absoluto
                 mostrarRespuesta('verificarEdicionesResponse', 'ℹ️ No hay ediciones en este departamento', 'success');
                 if (container) {
-                    container. innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">No hay ediciones para verificar</p>';
+                    container.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">No hay ediciones para verificar</p>';
                 }
                 const controles = document.getElementById('paginacionControlesIntegridadEdiciones');
                 if (controles) {
                     controles.style.display = 'none';
                 }
-            } else if (data.length === 0 && pagina > 0) {
+                hayMasPaginasIntegridadEdiciones = false;
+            } else if (data. length === 0 && pagina > 0) {
                 // ✅ Intentamos ir a una página vacía → volver a la anterior
                 console.warn(`⚠️ Página ${pagina} está vacía.  Volviendo a página ${pagina - 1}`);
                 verificarIntegridadEdiciones(null, pagina - 1);
             } else {
-                // ✅ Hay datos:  mostrar tabla y controles
+                // ✅ Hay datos: mostrar tabla
                 mostrarTablaIntegridadEdiciones(data, departamento);
                 
-                // ✅ CRÍTICO: Pasar data.length para detectar última página
+                // ✅ NUEVO: Si la página está llena, verificar si hay más páginas
+                if (data.length === elementosPorPaginaIntegridadEdiciones) {
+                    await verificarSiguientePaginaIntegridadEdiciones(pagina + 1, authToken, departamento);
+                } else {
+                    hayMasPaginasIntegridadEdiciones = false;
+                }
+                
+                // Actualizar controles
                 actualizarControlesPaginacionIntegridadEdiciones(data.length, departamento);
             }
         } else {
             mostrarRespuesta('verificarEdicionesResponse', data.mensaje || data.msg || 'Error al verificar integridad de ediciones', 'error');
             if (container) {
-                container.innerHTML = '<p style="text-align: center; color:  #e74c3c; padding: 20px;">❌ Error al verificar integridad</p>';
+                container.innerHTML = '<p style="text-align: center; color: #e74c3c; padding: 20px;">❌ Error al verificar integridad</p>';
             }
             if (response.status === 401) {
                 cerrarSesion();
@@ -1659,8 +1710,38 @@ async function verificarIntegridadEdiciones(event, pagina = 0) {
         console.error('Error al verificar integridad de ediciones:', error);
         mostrarRespuesta('verificarEdicionesResponse', '❌ Error de conexión:  ' + error.message, 'error');
         if (container) {
-            container.innerHTML = '<p style="text-align: center; color: #e74c3c; padding: 20px;">❌ Error de conexión</p>';
+            container.innerHTML = '<p style="text-align: center; color: #e74c3c; padding:  20px;">❌ Error de conexión</p>';
         }
+    }
+}
+
+// ✅ NUEVO: Función para verificar si hay una página siguiente
+async function verificarSiguientePaginaIntegridadEdiciones(paginaSiguiente, authToken, departamento) {
+    try {
+        const url = `${API_BASE_URL}/verificarIntegridadEdiciones? departamento=${encodeURIComponent(departamento)}&pagina=${paginaSiguiente}&elementosPorPagina=${elementosPorPaginaIntegridadEdiciones}`;
+        
+        console.log('🔍 Verificando si existe página siguiente:', paginaSiguiente);
+        
+        const response = await fetch(url, {
+            method:  'GET',
+            headers:  {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+
+        if (response.ok) {
+            const edicionesSiguientes = await response. json();
+            
+            hayMasPaginasIntegridadEdiciones = edicionesSiguientes.length > 0;
+            
+            console.log(`✅ Página siguiente ${paginaSiguiente}: ${edicionesSiguientes.length} elementos. Hay más páginas: ${hayMasPaginasIntegridadEdiciones}`);
+            
+            // Actualizar controles
+            actualizarControlesPaginacionIntegridadEdiciones(elementosPorPaginaIntegridadEdiciones, departamento);
+        }
+    } catch (error) {
+        console.error('Error al verificar página siguiente:', error);
+        hayMasPaginasIntegridadEdiciones = true;
     }
 }
 
@@ -2181,7 +2262,7 @@ function actualizarControlesPaginacion(fichajesEnPagina) {
 }
 
 // ============================================
-// FUNCIÓN: ACTUALIZAR CONTROLES DE PAGINACIÓN SOLICITUDES
+// FUNCIÓN:  ACTUALIZAR CONTROLES DE PAGINACIÓN SOLICITUDES
 // ============================================
 function actualizarControlesPaginacionSolicitudes(solicitudesEnPagina) {
     const controles = document.getElementById('paginacionControlesSolicitudes');
@@ -2191,33 +2272,34 @@ function actualizarControlesPaginacionSolicitudes(solicitudesEnPagina) {
         return;
     }
     
-    controles.style. display = 'block';
+    controles.style.display = 'block';
     
-    const hayMasPaginas = solicitudesEnPagina === elementosPorPaginaSolicitudes;
+    // ✅ CORRECCIÓN:  Usar la variable global que se actualiza con la verificación
+    const hayMasPaginas = hayMasPaginasSolicitudes;
     const esLaPrimeraPagina = paginaActualSolicitudes === 0;
     
-    const totalPaginasEstimado = hayMasPaginas ?  paginaActualSolicitudes + 2 : paginaActualSolicitudes + 1;
+    const totalPaginasEstimado = hayMasPaginas ? paginaActualSolicitudes + 2 : paginaActualSolicitudes + 1;
     
     let html = `
         <div style="display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 20px; padding: 12px; background: #f5f5f5; border-radius: 8px; flex-wrap: nowrap;">
             <button 
                 onclick="listarSolicitudesPendientes(0)" 
-                ${esLaPrimeraPagina ? 'disabled' : ''} 
-                style="padding: 6px 12px; border:  1px solid #ddd; background: ${esLaPrimeraPagina ? '#e0e0e0' : 'white'}; border-radius: 4px; cursor: ${esLaPrimeraPagina ? 'not-allowed' : 'pointer'}; font-size: 14px; min-width: 40px;">
+                ${esLaPrimeraPagina ? 'disabled' :  ''} 
+                style="padding: 6px 12px; border: 1px solid #ddd; background: ${esLaPrimeraPagina ? '#e0e0e0' : 'white'}; border-radius: 4px; cursor: ${esLaPrimeraPagina ? 'not-allowed' : 'pointer'}; font-size: 14px; min-width: 40px;">
                 &lt;&lt;
             </button>
             
             <button 
                 onclick="listarSolicitudesPendientes(${paginaActualSolicitudes - 1})" 
                 ${esLaPrimeraPagina ? 'disabled' : ''} 
-                style="padding: 6px 12px; border: 1px solid #ddd; background: ${esLaPrimeraPagina ? '#e0e0e0' : 'white'}; border-radius: 4px; cursor: ${esLaPrimeraPagina ? 'not-allowed' : 'pointer'}; font-size: 14px; min-width: 40px;">
+                style="padding: 6px 12px; border:  1px solid #ddd; background: ${esLaPrimeraPagina ? '#e0e0e0' : 'white'}; border-radius: 4px; cursor: ${esLaPrimeraPagina ? 'not-allowed' : 'pointer'}; font-size: 14px; min-width: 40px;">
                 &lt;
             </button>
             
             <select 
                 id="selectorPaginaSolicitudes" 
                 onchange="listarSolicitudesPendientes(parseInt(this.value))" 
-                style="padding: 6px 10px; border:  1px solid #ddd; border-radius: 4px; font-size: 14px; background: white; cursor: pointer; min-width: 60px;">
+                style="padding: 6px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; background:  white; cursor: pointer; min-width: 60px;">
     `;
     
     for (let i = 0; i < totalPaginasEstimado; i++) {
@@ -2229,30 +2311,30 @@ function actualizarControlesPaginacionSolicitudes(solicitudesEnPagina) {
             
             <button 
                 onclick="listarSolicitudesPendientes(${paginaActualSolicitudes + 1})" 
-                ${!hayMasPaginas ? 'disabled' : ''} 
-                style="padding:  6px 12px; border: 1px solid #ddd; background: ${!hayMasPaginas ? '#e0e0e0' : 'white'}; border-radius: 4px; cursor: ${!hayMasPaginas ? 'not-allowed' : 'pointer'}; font-size: 14px; min-width: 40px;">
+                ${! hayMasPaginas ? 'disabled' : ''} 
+                style="padding: 6px 12px; border: 1px solid #ddd; background:  ${!hayMasPaginas ? '#e0e0e0' : 'white'}; border-radius: 4px; cursor: ${!hayMasPaginas ? 'not-allowed' : 'pointer'}; font-size: 14px; min-width: 40px;">
                 &gt;
             </button>
             
             <button 
                 onclick="listarSolicitudesPendientes(${totalPaginasEstimado - 1})" 
                 ${!hayMasPaginas ? 'disabled' : ''} 
-                style="padding: 6px 12px; border:  1px solid #ddd; background: ${!hayMasPaginas ? '#e0e0e0' : 'white'}; border-radius: 4px; cursor: ${!hayMasPaginas ? 'not-allowed' : 'pointer'}; font-size: 14px; min-width: 40px;">
+                style="padding: 6px 12px; border: 1px solid #ddd; background: ${!hayMasPaginas ?  '#e0e0e0' : 'white'}; border-radius: 4px; cursor:  ${!hayMasPaginas ? 'not-allowed' :  'pointer'}; font-size: 14px; min-width: 40px;">
                 &gt;&gt;
             </button>
             
-            <span style="color: #999; margin: 0 8px; font-size: 18px;">|</span>
+            <span style="color: #999; margin:  0 8px; font-size: 18px;">|</span>
             
-            <label for="elementosPorPaginaSolicitudesSelect" style="color: #666; font-size:  14px; white-space:  nowrap;">Número de filas:</label>
+            <label for="elementosPorPaginaSolicitudesSelect" style="color: #666; font-size: 14px; white-space: nowrap;">Número de filas:</label>
             
             <select 
                 id="elementosPorPaginaSolicitudesSelect" 
                 onchange="cambiarElementosPorPaginaSolicitudes(this.value)" 
-                style="padding: 6px 10px; border:  1px solid #ddd; border-radius: 4px; font-size: 14px; background: white; cursor: pointer; min-width: 60px;">
+                style="padding: 6px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; background: white; cursor: pointer; min-width: 60px;">
                 <option value="5" ${elementosPorPaginaSolicitudes === 5 ? 'selected' : ''}>5</option>
                 <option value="10" ${elementosPorPaginaSolicitudes === 10 ? 'selected' : ''}>10</option>
-                <option value="20" ${elementosPorPaginaSolicitudes === 20 ? 'selected' :  ''}>20</option>
-                <option value="25" ${elementosPorPaginaSolicitudes === 25 ? 'selected' : ''}>25</option>
+                <option value="20" ${elementosPorPaginaSolicitudes === 20 ? 'selected' : ''}>20</option>
+                <option value="25" ${elementosPorPaginaSolicitudes === 25 ?  'selected' : ''}>25</option>
                 <option value="50" ${elementosPorPaginaSolicitudes === 50 ? 'selected' : ''}>50</option>
             </select>
         </div>
@@ -2344,7 +2426,7 @@ function actualizarControlesPaginacionIntegridad(fichajesEnPagina, departamento)
 }
 
 // ============================================
-// FUNCIÓN:  ACTUALIZAR CONTROLES DE PAGINACIÓN INTEGRIDAD EDICIONES
+// FUNCIÓN: ACTUALIZAR CONTROLES DE PAGINACIÓN INTEGRIDAD EDICIONES
 // ============================================
 function actualizarControlesPaginacionIntegridadEdiciones(edicionesEnPagina, departamento) {
     const controles = document.getElementById('paginacionControlesIntegridadEdiciones');
@@ -2354,15 +2436,16 @@ function actualizarControlesPaginacionIntegridadEdiciones(edicionesEnPagina, dep
         return;
     }
     
-    controles.style. display = 'block';
+    controles. style.display = 'block';
     
-    const hayMasPaginas = edicionesEnPagina === elementosPorPaginaIntegridadEdiciones;
+    // ✅ CORRECCIÓN:  Usar la variable global
+    const hayMasPaginas = hayMasPaginasIntegridadEdiciones;
     const esLaPrimeraPagina = paginaActualIntegridadEdiciones === 0;
     
     const totalPaginasEstimado = hayMasPaginas ? paginaActualIntegridadEdiciones + 2 : paginaActualIntegridadEdiciones + 1;
     
     let html = `
-        <div style="display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 20px; padding: 12px; background: #f5f5f5; border-radius: 8px; flex-wrap: nowrap;">
+        <div style="display: flex; justify-content: center; align-items:  center; gap: 8px; margin-top: 20px; padding: 12px; background:  #f5f5f5; border-radius: 8px; flex-wrap: nowrap;">
             <button 
                 onclick="verificarIntegridadEdiciones(null, 0)" 
                 ${esLaPrimeraPagina ? 'disabled' : ''} 
@@ -2372,15 +2455,15 @@ function actualizarControlesPaginacionIntegridadEdiciones(edicionesEnPagina, dep
             
             <button 
                 onclick="verificarIntegridadEdiciones(null, ${paginaActualIntegridadEdiciones - 1})" 
-                ${esLaPrimeraPagina ?  'disabled' : ''} 
-                style="padding: 6px 12px; border: 1px solid #ddd; background: ${esLaPrimeraPagina ? '#e0e0e0' : 'white'}; border-radius: 4px; cursor: ${esLaPrimeraPagina ? 'not-allowed' : 'pointer'}; font-size: 14px; min-width: 40px;">
+                ${esLaPrimeraPagina ? 'disabled' : ''} 
+                style="padding: 6px 12px; border: 1px solid #ddd; background:  ${esLaPrimeraPagina ? '#e0e0e0' : 'white'}; border-radius: 4px; cursor: ${esLaPrimeraPagina ? 'not-allowed' : 'pointer'}; font-size: 14px; min-width: 40px;">
                 &lt;
             </button>
             
             <select 
                 id="selectorPaginaIntegridadEdiciones" 
                 onchange="verificarIntegridadEdiciones(null, parseInt(this.value))" 
-                style="padding: 6px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; background: white; cursor:  pointer; min-width: 60px;">
+                style="padding: 6px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; background:  white; cursor: pointer; min-width: 60px;">
     `;
     
     for (let i = 0; i < totalPaginasEstimado; i++) {
@@ -2392,32 +2475,32 @@ function actualizarControlesPaginacionIntegridadEdiciones(edicionesEnPagina, dep
             
             <button 
                 onclick="verificarIntegridadEdiciones(null, ${paginaActualIntegridadEdiciones + 1})" 
-                ${!hayMasPaginas ? 'disabled' :  ''} 
-                style="padding: 6px 12px; border: 1px solid #ddd; background: ${!hayMasPaginas ? '#e0e0e0' : 'white'}; border-radius: 4px; cursor: ${!hayMasPaginas ? 'not-allowed' : 'pointer'}; font-size: 14px; min-width: 40px;">
+                ${! hayMasPaginas ? 'disabled' : ''} 
+                style="padding: 6px 12px; border: 1px solid #ddd; background:  ${!hayMasPaginas ? '#e0e0e0' : 'white'}; border-radius: 4px; cursor: ${!hayMasPaginas ? 'not-allowed' : 'pointer'}; font-size: 14px; min-width: 40px;">
                 &gt;
             </button>
             
             <button 
                 onclick="verificarIntegridadEdiciones(null, ${totalPaginasEstimado - 1})" 
-                ${!hayMasPaginas ? 'disabled' :  ''} 
-                style="padding: 6px 12px; border: 1px solid #ddd; background: ${!hayMasPaginas ? '#e0e0e0' : 'white'}; border-radius: 4px; cursor: ${!hayMasPaginas ? 'not-allowed' : 'pointer'}; font-size: 14px; min-width: 40px;">
+                ${! hayMasPaginas ? 'disabled' : ''} 
+                style="padding: 6px 12px; border: 1px solid #ddd; background:  ${!hayMasPaginas ? '#e0e0e0' : 'white'}; border-radius: 4px; cursor: ${!hayMasPaginas ? 'not-allowed' : 'pointer'}; font-size: 14px; min-width: 40px;">
                 &gt;&gt;
             </button>
             
-            <span style="color:  #999; margin: 0 8px; font-size: 18px;">|</span>
+            <span style="color: #999; margin: 0 8px; font-size: 18px;">|</span>
             
             <label for="elementosPorPaginaIntegridadEdicionesSelect" style="color: #666; font-size: 14px; white-space: nowrap;">Número de filas:</label>
             
             <select 
                 id="elementosPorPaginaIntegridadEdicionesSelect" 
                 onchange="cambiarElementosPorPaginaIntegridadEdiciones(this.value)" 
-                style="padding: 6px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; background: white; cursor:  pointer; min-width: 60px;">
-                <option value="5" ${elementosPorPaginaIntegridadEdiciones === 5 ? 'selected' : ''}>5</option>
-                <option value="10" ${elementosPorPaginaIntegridadEdiciones === 10 ? 'selected' :  ''}>10</option>
+                style="padding: 6px 10px; border:  1px solid #ddd; border-radius: 4px; font-size: 14px; background: white; cursor: pointer; min-width: 60px;">
+                <option value="5" ${elementosPorPaginaIntegridadEdiciones === 5 ? 'selected' :  ''}>5</option>
+                <option value="10" ${elementosPorPaginaIntegridadEdiciones === 10 ?  'selected' : ''}>10</option>
                 <option value="20" ${elementosPorPaginaIntegridadEdiciones === 20 ? 'selected' : ''}>20</option>
                 <option value="25" ${elementosPorPaginaIntegridadEdiciones === 25 ? 'selected' : ''}>25</option>
                 <option value="50" ${elementosPorPaginaIntegridadEdiciones === 50 ? 'selected' : ''}>50</option>
-                <option value="100" ${elementosPorPaginaIntegridadEdiciones === 100 ? 'selected' :  ''}>100</option>
+                <option value="100" ${elementosPorPaginaIntegridadEdiciones === 100 ? 'selected' : ''}>100</option>
             </select>
         </div>
     `;
