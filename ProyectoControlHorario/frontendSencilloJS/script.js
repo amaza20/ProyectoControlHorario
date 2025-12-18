@@ -306,11 +306,13 @@ async function fichar() {
     }
 }
 
+
 // ============================================
-// FUNCIÓN:  LISTAR FICHAJES DEL USUARIO (CON PAGINACIÓN)
+// FUNCIÓN:   LISTAR FICHAJES DEL USUARIO (CON PAGINACIÓN)
 // ============================================
 let paginaActual = 0;
 let elementosPorPagina = 5;
+let hayMasPaginasFichajes = true; // ✅ NUEVO
 
 async function listarFichajes(pagina = 0) {
     const authToken = localStorage.getItem('authToken');
@@ -341,16 +343,24 @@ async function listarFichajes(pagina = 0) {
                 mostrarRespuesta('listarResponse', 'ℹ️ No tienes fichajes registrados aún', 'success');
                 document.getElementById('fichajesTable').innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">No hay fichajes para mostrar</p>';
                 document.getElementById('paginacionControles').style.display = 'none';
+                hayMasPaginasFichajes = false;
             } else if (fichajes.length === 0 && pagina > 0) {
                 // ✅ Intentamos ir a una página vacía → volver a la anterior
-                console.warn(`⚠️ Página ${pagina} está vacía.  Volviendo a página ${pagina - 1}`);
+                console.warn(`⚠️ Página ${pagina} está vacía. Volviendo a página ${pagina - 1}`);
                 listarFichajes(pagina - 1);
             } else {
-                // ✅ Hay datos: mostrar tabla y controles
+                // ✅ Hay datos:  mostrar tabla
                 mostrarRespuesta('listarResponse', `✅ Mostrando fichajes de la página ${pagina + 1}`, 'success');
                 mostrarTablaFichajesConEditar(fichajes);
                 
-                // ✅ CRÍTICO: Pasar fichajes.length para detectar última página
+                // ✅ NUEVO: Si la página está llena, verificar si hay más páginas
+                if (fichajes.length === elementosPorPagina) {
+                    await verificarSiguientePaginaFichajes(pagina + 1, authToken);
+                } else {
+                    hayMasPaginasFichajes = false;
+                }
+                
+                // Actualizar controles
                 actualizarControlesPaginacion(fichajes.length);
             }
         } else {
@@ -361,7 +371,37 @@ async function listarFichajes(pagina = 0) {
             }
         }
     } catch (error) {
-        mostrarRespuesta('listarResponse', '❌ Error de conexión:   ' + error.message, 'error');
+        mostrarRespuesta('listarResponse', '❌ Error de conexión:    ' + error.message, 'error');
+    }
+}
+
+// ✅ NUEVO: Función para verificar si hay una página siguiente
+async function verificarSiguientePaginaFichajes(paginaSiguiente, authToken) {
+    try {
+        const url = `${API_BASE_URL}/listarFichajesUsuario?pagina=${paginaSiguiente}&elementosPorPagina=${elementosPorPagina}`;
+        
+        console.log('🔍 Verificando si existe página siguiente:', paginaSiguiente);
+        
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+
+        if (response.ok) {
+            const fichajesSiguientes = await response.json();
+            
+            hayMasPaginasFichajes = fichajesSiguientes.length > 0;
+            
+            console.log(`✅ Página siguiente ${paginaSiguiente}:  ${fichajesSiguientes. length} elementos.  Hay más páginas:  ${hayMasPaginasFichajes}`);
+            
+            // Actualizar controles
+            actualizarControlesPaginacion(elementosPorPagina);
+        }
+    } catch (error) {
+        console.error('Error al verificar página siguiente:', error);
+        hayMasPaginasFichajes = true;
     }
 }
 
@@ -719,10 +759,11 @@ function cerrarSesion() {
 }
 
 // ============================================
-// FUNCIÓN:   VERIFICAR INTEGRIDAD (CON PAGINACIÓN)
+// FUNCIÓN:  VERIFICAR INTEGRIDAD (CON PAGINACIÓN)
 // ============================================
 let paginaActualIntegridad = 0;
 let elementosPorPaginaIntegridad = 5;
+let hayMasPaginasIntegridad = true; // ✅ NUEVO
 
 async function verificarIntegridad(event, pagina = 0) {
     if (event) event.preventDefault();
@@ -748,7 +789,7 @@ async function verificarIntegridad(event, pagina = 0) {
 
     const container = document.getElementById('detallesVerificacion');
     if (container) {
-        container.innerHTML = '<p style="text-align: center; color: #666; padding:  20px;">🔄 Verificando integridad... </p>';
+        container. innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">🔄 Verificando integridad... </p>';
     }
 
     try {
@@ -759,7 +800,7 @@ async function verificarIntegridad(event, pagina = 0) {
         const response = await fetch(url, {
             method: 'GET',
             headers: {
-                'Authorization':  `Bearer ${authToken}`
+                'Authorization': `Bearer ${authToken}`
             }
         });
 
@@ -770,34 +811,42 @@ async function verificarIntegridad(event, pagina = 0) {
         if (response.ok) {
             const responseElement = document.getElementById('verificarResponse');
             if (responseElement) {
-                responseElement. style.display = 'none';
+                responseElement.style.display = 'none';
             }
             
             if (data.length === 0 && pagina === 0) {
                 // No hay fichajes en absoluto
                 mostrarRespuesta('verificarResponse', 'ℹ️ No hay fichajes en este departamento', 'success');
                 if (container) {
-                    container.innerHTML = '<p style="text-align: center; color: #666; padding:  20px;">No hay fichajes para verificar</p>';
+                    container.innerHTML = '<p style="text-align: center; color: #666; padding:   20px;">No hay fichajes para verificar</p>';
                 }
                 const controles = document.getElementById('paginacionControlesIntegridad');
                 if (controles) {
-                    controles. style.display = 'none';
+                    controles.style.display = 'none';
                 }
+                hayMasPaginasIntegridad = false;
             } else if (data.length === 0 && pagina > 0) {
                 // ✅ Intentamos ir a una página vacía → volver a la anterior
-                console.warn(`⚠️ Página ${pagina} está vacía.  Volviendo a página ${pagina - 1}`);
+                console.warn(`⚠️ Página ${pagina} está vacía.   Volviendo a página ${pagina - 1}`);
                 verificarIntegridad(null, pagina - 1);
             } else {
-                // ✅ Hay datos: mostrar tabla y controles
+                // ✅ Hay datos: mostrar tabla
                 mostrarTablaIntegridad(data, departamento);
                 
-                // ✅ CRÍTICO:  Pasar data.length para detectar última página
+                // ✅ NUEVO: Si la página está llena, verificar si hay más páginas
+                if (data.length === elementosPorPaginaIntegridad) {
+                    await verificarSiguientePaginaIntegridad(pagina + 1, authToken, departamento);
+                } else {
+                    hayMasPaginasIntegridad = false;
+                }
+                
+                // Actualizar controles
                 actualizarControlesPaginacionIntegridad(data.length, departamento);
             }
         } else {
             mostrarRespuesta('verificarResponse', data.mensaje || data.msg || 'Error al verificar integridad', 'error');
             if (container) {
-                container. innerHTML = '<p style="text-align: center; color: #e74c3c; padding: 20px;">❌ Error al verificar integridad</p>';
+                container.innerHTML = '<p style="text-align: center; color:  #e74c3c; padding: 20px;">❌ Error al verificar integridad</p>';
             }
             if (response.status === 401) {
                 cerrarSesion();
@@ -805,10 +854,40 @@ async function verificarIntegridad(event, pagina = 0) {
         }
     } catch (error) {
         console.error('Error al verificar integridad:', error);
-        mostrarRespuesta('verificarResponse', '❌ Error de conexión:   ' + error.message, 'error');
+        mostrarRespuesta('verificarResponse', '❌ Error de conexión:  ' + error.message, 'error');
         if (container) {
-            container.innerHTML = '<p style="text-align:  center; color: #e74c3c; padding: 20px;">❌ Error de conexión</p>';
+            container.innerHTML = '<p style="text-align: center; color: #e74c3c; padding:  20px;">❌ Error de conexión</p>';
         }
+    }
+}
+
+// ✅ NUEVO: Función para verificar si hay una página siguiente
+async function verificarSiguientePaginaIntegridad(paginaSiguiente, authToken, departamento) {
+    try {
+        const url = `${API_BASE_URL}/verificarIntegridadFichajes?departamento=${encodeURIComponent(departamento)}&pagina=${paginaSiguiente}&elementosPorPagina=${elementosPorPaginaIntegridad}`;
+        
+        console.log('🔍 Verificando si existe página siguiente:', paginaSiguiente);
+        
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+
+        if (response.ok) {
+            const fichajesSiguientes = await response.json();
+            
+            hayMasPaginasIntegridad = fichajesSiguientes. length > 0;
+            
+            console.log(`✅ Página siguiente ${paginaSiguiente}: ${fichajesSiguientes.length} elementos. Hay más páginas: ${hayMasPaginasIntegridad}`);
+            
+            // Actualizar controles
+            actualizarControlesPaginacionIntegridad(elementosPorPaginaIntegridad, departamento);
+        }
+    } catch (error) {
+        console.error('Error al verificar página siguiente:', error);
+        hayMasPaginasIntegridad = true;
     }
 }
 
@@ -2183,20 +2262,21 @@ function actualizarControlesPaginacion(fichajesEnPagina) {
     
     if (!controles) return;
     
-    controles. style.display = 'block';
+    controles.style.display = 'block';
     
-    const hayMasPaginas = fichajesEnPagina === elementosPorPagina;
+    // ✅ CORRECCIÓN: Usar la variable global
+    const hayMasPaginas = hayMasPaginasFichajes;
     const esLaPrimeraPagina = paginaActual === 0;
     
-    const totalPaginasEstimado = hayMasPaginas ?  paginaActual + 2 : paginaActual + 1;
+    const totalPaginasEstimado = hayMasPaginas ? paginaActual + 2 : paginaActual + 1;
     
     let html = `
-        <div style="display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 20px; padding: 12px; background:  #f5f5f5; border-radius: 8px; flex-wrap: nowrap;">
+        <div style="display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 20px; padding: 12px; background:   #f5f5f5; border-radius: 8px; flex-wrap: nowrap;">
             <!-- Primera página -->
             <button 
                 onclick="listarFichajes(0)" 
                 ${esLaPrimeraPagina ? 'disabled' : ''} 
-                style="padding: 6px 12px; border: 1px solid #ddd; background: ${esLaPrimeraPagina ? '#e0e0e0' : 'white'}; border-radius:  4px; cursor: ${esLaPrimeraPagina ? 'not-allowed' :  'pointer'}; font-size: 14px; min-width: 40px;">
+                style="padding: 6px 12px; border:  1px solid #ddd; background:  ${esLaPrimeraPagina ? '#e0e0e0' : 'white'}; border-radius:   4px; cursor: ${esLaPrimeraPagina ? 'not-allowed' :   'pointer'}; font-size: 14px; min-width: 40px;">
                 &lt;&lt;
             </button>
             
@@ -2204,7 +2284,7 @@ function actualizarControlesPaginacion(fichajesEnPagina) {
             <button 
                 onclick="listarFichajes(${paginaActual - 1})" 
                 ${esLaPrimeraPagina ? 'disabled' : ''} 
-                style="padding: 6px 12px; border: 1px solid #ddd; background:  ${esLaPrimeraPagina ? '#e0e0e0' : 'white'}; border-radius: 4px; cursor: ${esLaPrimeraPagina ? 'not-allowed' : 'pointer'}; font-size: 14px; min-width: 40px;">
+                style="padding: 6px 12px; border: 1px solid #ddd; background:   ${esLaPrimeraPagina ? '#e0e0e0' : 'white'}; border-radius: 4px; cursor: ${esLaPrimeraPagina ? 'not-allowed' : 'pointer'}; font-size: 14px; min-width: 40px;">
                 &lt;
             </button>
             
@@ -2226,7 +2306,7 @@ function actualizarControlesPaginacion(fichajesEnPagina) {
             <button 
                 onclick="listarFichajes(${paginaActual + 1})" 
                 ${! hayMasPaginas ? 'disabled' : ''} 
-                style="padding: 6px 12px; border: 1px solid #ddd; background:  ${!hayMasPaginas ? '#e0e0e0' : 'white'}; border-radius: 4px; cursor: ${!hayMasPaginas ? 'not-allowed' : 'pointer'}; font-size: 14px; min-width: 40px;">
+                style="padding: 6px 12px; border: 1px solid #ddd; background:   ${!hayMasPaginas ? '#e0e0e0' : 'white'}; border-radius: 4px; cursor: ${!hayMasPaginas ? 'not-allowed' : 'pointer'}; font-size: 14px; min-width: 40px;">
                 &gt;
             </button>
             
@@ -2234,7 +2314,7 @@ function actualizarControlesPaginacion(fichajesEnPagina) {
             <button 
                 onclick="listarFichajes(${totalPaginasEstimado - 1})" 
                 ${!hayMasPaginas ? 'disabled' : ''} 
-                style="padding: 6px 12px; border:  1px solid #ddd; background: ${!hayMasPaginas ? '#e0e0e0' : 'white'}; border-radius: 4px; cursor: ${!hayMasPaginas ? 'not-allowed' : 'pointer'}; font-size: 14px; min-width: 40px;">
+                style="padding:  6px 12px; border:   1px solid #ddd; background:  ${!hayMasPaginas ? '#e0e0e0' : 'white'}; border-radius: 4px; cursor: ${!hayMasPaginas ? 'not-allowed' : 'pointer'}; font-size: 14px; min-width: 40px;">
                 &gt;&gt;
             </button>
             
@@ -2242,18 +2322,18 @@ function actualizarControlesPaginacion(fichajesEnPagina) {
             <span style="color: #999; margin: 0 8px; font-size: 18px;">|</span>
             
             <!-- Label -->
-            <label for="elementosPorPaginaSelect" style="color: #666; font-size: 14px; white-space: nowrap;">Número de filas:</label>
+            <label for="elementosPorPaginaSelect" style="color: #666; font-size: 14px; white-space: nowrap;">Número de filas: </label>
             
             <!-- Selector de filas -->
             <select 
                 id="elementosPorPaginaSelect" 
                 onchange="cambiarElementosPorPagina(this.value)" 
                 style="padding: 6px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; background: white; cursor: pointer; min-width: 60px;">
-                <option value="5" ${elementosPorPagina === 5 ? 'selected' :  ''}>5</option>
-                <option value="10" ${elementosPorPagina === 10 ? 'selected' : ''}>10</option>
-                <option value="20" ${elementosPorPagina === 20 ? 'selected' : ''}>20</option>
-                <option value="25" ${elementosPorPagina === 25 ? 'selected' : ''}>25</option>
-                <option value="50" ${elementosPorPagina === 50 ? 'selected' : ''}>50</option>
+                <option value="5" ${elementosPorPagina === 5 ? 'selected' :   ''}>5</option>
+                <option value="10" ${elementosPorPagina === 10 ?  'selected' : ''}>10</option>
+                <option value="20" ${elementosPorPagina === 20 ?  'selected' : ''}>20</option>
+                <option value="25" ${elementosPorPagina === 25 ?  'selected' : ''}>25</option>
+                <option value="50" ${elementosPorPagina === 50 ?  'selected' : ''}>50</option>
             </select>
         </div>
     `;
@@ -2349,38 +2429,39 @@ function actualizarControlesPaginacionSolicitudes(solicitudesEnPagina) {
 function actualizarControlesPaginacionIntegridad(fichajesEnPagina, departamento) {
     const controles = document.getElementById('paginacionControlesIntegridad');
     
-    if (! controles) {
+    if (!controles) {
         console.warn('⚠️ No se encontró el elemento paginacionControlesIntegridad');
         return;
     }
     
-    controles.style.display = 'block';
+    controles.style. display = 'block';
     
-    const hayMasPaginas = fichajesEnPagina === elementosPorPaginaIntegridad;
+    // ✅ CORRECCIÓN: Usar la variable global
+    const hayMasPaginas = hayMasPaginasIntegridad;
     const esLaPrimeraPagina = paginaActualIntegridad === 0;
     
-    const totalPaginasEstimado = hayMasPaginas ? paginaActualIntegridad + 2 : paginaActualIntegridad + 1;
+    const totalPaginasEstimado = hayMasPaginas ?  paginaActualIntegridad + 2 : paginaActualIntegridad + 1;
     
     let html = `
         <div style="display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 20px; padding: 12px; background:  #f5f5f5; border-radius: 8px; flex-wrap: nowrap;">
             <button 
                 onclick="verificarIntegridad(null, 0)" 
                 ${esLaPrimeraPagina ? 'disabled' : ''} 
-                style="padding:  6px 12px; border: 1px solid #ddd; background: ${esLaPrimeraPagina ? '#e0e0e0' : 'white'}; border-radius: 4px; cursor: ${esLaPrimeraPagina ? 'not-allowed' : 'pointer'}; font-size: 14px; min-width: 40px;">
+                style="padding:   6px 12px; border: 1px solid #ddd; background: ${esLaPrimeraPagina ? '#e0e0e0' : 'white'}; border-radius: 4px; cursor: ${esLaPrimeraPagina ? 'not-allowed' : 'pointer'}; font-size: 14px; min-width: 40px;">
                 &lt;&lt;
             </button>
             
             <button 
                 onclick="verificarIntegridad(null, ${paginaActualIntegridad - 1})" 
-                ${esLaPrimeraPagina ?  'disabled' : ''} 
-                style="padding: 6px 12px; border: 1px solid #ddd; background: ${esLaPrimeraPagina ? '#e0e0e0' : 'white'}; border-radius: 4px; cursor: ${esLaPrimeraPagina ? 'not-allowed' : 'pointer'}; font-size: 14px; min-width: 40px;">
+                ${esLaPrimeraPagina ?   'disabled' : ''} 
+                style="padding:  6px 12px; border: 1px solid #ddd; background:  ${esLaPrimeraPagina ? '#e0e0e0' : 'white'}; border-radius: 4px; cursor: ${esLaPrimeraPagina ? 'not-allowed' : 'pointer'}; font-size: 14px; min-width: 40px;">
                 &lt;
             </button>
             
             <select 
                 id="selectorPaginaIntegridad" 
                 onchange="verificarIntegridad(null, parseInt(this.value))" 
-                style="padding: 6px 10px; border: 1px solid #ddd; border-radius:  4px; font-size:  14px; background: white; cursor: pointer; min-width: 60px;">
+                style="padding: 6px 10px; border: 1px solid #ddd; border-radius:   4px; font-size:   14px; background: white; cursor: pointer; min-width:  60px;">
     `;
     
     for (let i = 0; i < totalPaginasEstimado; i++) {
@@ -2392,28 +2473,28 @@ function actualizarControlesPaginacionIntegridad(fichajesEnPagina, departamento)
             
             <button 
                 onclick="verificarIntegridad(null, ${paginaActualIntegridad + 1})" 
-                ${! hayMasPaginas ? 'disabled' : ''} 
-                style="padding: 6px 12px; border: 1px solid #ddd; background: ${!hayMasPaginas ?  '#e0e0e0' : 'white'}; border-radius: 4px; cursor:  ${!hayMasPaginas ? 'not-allowed' :  'pointer'}; font-size: 14px; min-width: 40px;">
+                ${!hayMasPaginas ? 'disabled' : ''} 
+                style="padding: 6px 12px; border: 1px solid #ddd; background: ${!hayMasPaginas ?   '#e0e0e0' : 'white'}; border-radius: 4px; cursor:   ${!hayMasPaginas ? 'not-allowed' :   'pointer'}; font-size: 14px; min-width: 40px;">
                 &gt;
             </button>
             
             <button 
                 onclick="verificarIntegridad(null, ${totalPaginasEstimado - 1})" 
-                ${!hayMasPaginas ?  'disabled' : ''} 
+                ${!hayMasPaginas ?   'disabled' : ''} 
                 style="padding: 6px 12px; border: 1px solid #ddd; background: ${!hayMasPaginas ? '#e0e0e0' : 'white'}; border-radius: 4px; cursor: ${!hayMasPaginas ? 'not-allowed' : 'pointer'}; font-size: 14px; min-width: 40px;">
                 &gt;&gt;
             </button>
             
-            <span style="color: #999; margin:  0 8px; font-size: 18px;">|</span>
+            <span style="color: #999; margin:   0 8px; font-size: 18px;">|</span>
             
-            <label for="elementosPorPaginaIntegridadSelect" style="color: #666; font-size: 14px; white-space: nowrap;">Número de filas: </label>
+            <label for="elementosPorPaginaIntegridadSelect" style="color:  #666; font-size: 14px; white-space: nowrap;">Número de filas: </label>
             
             <select 
                 id="elementosPorPaginaIntegridadSelect" 
                 onchange="cambiarElementosPorPaginaIntegridad(this.value)" 
-                style="padding: 6px 10px; border:  1px solid #ddd; border-radius: 4px; font-size: 14px; background: white; cursor: pointer; min-width: 60px;">
-                <option value="5" ${elementosPorPaginaIntegridad === 5 ? 'selected' : ''}>5</option>
-                <option value="10" ${elementosPorPaginaIntegridad === 10 ? 'selected' : ''}>10</option>
+                style="padding:  6px 10px; border:   1px solid #ddd; border-radius: 4px; font-size: 14px; background: white; cursor: pointer; min-width: 60px;">
+                <option value="5" ${elementosPorPaginaIntegridad === 5 ?   'selected' : ''}>5</option>
+                <option value="10" ${elementosPorPaginaIntegridad === 10 ? 'selected' :   ''}>10</option>
                 <option value="20" ${elementosPorPaginaIntegridad === 20 ? 'selected' : ''}>20</option>
                 <option value="25" ${elementosPorPaginaIntegridad === 25 ? 'selected' : ''}>25</option>
                 <option value="50" ${elementosPorPaginaIntegridad === 50 ? 'selected' : ''}>50</option>
