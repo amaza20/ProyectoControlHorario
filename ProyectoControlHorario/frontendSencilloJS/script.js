@@ -700,7 +700,7 @@ async function verificarIntegridad(event, pagina = 0) {
     }
 
     try {
-        const url = `${API_BASE_URL}/verificarIntegridadFichajes? departamento=${encodeURIComponent(departamento)}&pagina=${pagina}&elementosPorPagina=${elementosPorPaginaIntegridad}`;
+        const url = `${API_BASE_URL}/verificarIntegridadFichajes?departamento=${encodeURIComponent(departamento)}&pagina=${pagina}&elementosPorPagina=${elementosPorPaginaIntegridad}`;
         
         console.log('📡 Verificando integridad:', url);
         
