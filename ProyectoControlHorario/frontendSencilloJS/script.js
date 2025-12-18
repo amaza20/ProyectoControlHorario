@@ -665,10 +665,11 @@ function cerrarSesion() {
 }
 
 // ============================================
-// FUNCIÓN:  VERIFICAR INTEGRIDAD (CON PAGINACIÓN)
+// FUNCIÓN:   VERIFICAR INTEGRIDAD (CON PAGINACIÓN)
 // ============================================
 let paginaActualIntegridad = 0;
 let elementosPorPaginaIntegridad = 5;
+let ultimaPaginaValidaIntegridad = 0; // ✅ NUEVO: Guardar última página válida
 
 async function verificarIntegridad(event, pagina = 0) {
     if (event) event.preventDefault();
@@ -695,11 +696,11 @@ async function verificarIntegridad(event, pagina = 0) {
     // Limpiar tabla antes de cargar
     const container = document.getElementById('detallesVerificacion');
     if (container) {
-        container. innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">🔄 Verificando integridad... </p>';
+        container. innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">🔄 Verificando integridad...</p>';
     }
 
     try {
-        const url = `${API_BASE_URL}/verificarIntegridadFichajes?departamento=${encodeURIComponent(departamento)}&pagina=${pagina}&elementosPorPagina=${elementosPorPaginaIntegridad}`;
+        const url = `${API_BASE_URL}/verificarIntegridadFichajes? departamento=${encodeURIComponent(departamento)}&pagina=${pagina}&elementosPorPagina=${elementosPorPaginaIntegridad}`;
         
         console.log('📡 Verificando integridad:', url);
         
@@ -721,25 +722,38 @@ async function verificarIntegridad(event, pagina = 0) {
             }
             
             if (data.length === 0 && pagina === 0) {
+                // ✅ No hay fichajes en absoluto
                 mostrarRespuesta('verificarResponse', 'ℹ️ No hay fichajes en este departamento', 'success');
                 if (container) {
-                    container.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">No hay fichajes para verificar</p>';
+                    container.innerHTML = '<p style="text-align: center; color: #666; padding:  20px;">No hay fichajes para verificar</p>';
                 }
                 const controles = document.getElementById('paginacionControlesIntegridad');
                 if (controles) {
                     controles.style.display = 'none';
                 }
+                ultimaPaginaValidaIntegridad = 0;
             } else if (data.length === 0 && pagina > 0) {
-                // Si estamos en una página mayor que 0 y no hay resultados, volver a la página anterior
-                verificarIntegridad(null, pagina - 1);
+                // ✅ CORRECCIÓN: Intentamos ir a una página que no existe
+                console.warn(`⚠️ Página ${pagina} no tiene datos.  Volviendo a página ${ultimaPaginaValidaIntegridad}`);
+                
+                // Volver a la última página válida
+                paginaActualIntegridad = ultimaPaginaValidaIntegridad;
+                
+                // No recargar, solo mantener la última página
+                mostrarRespuesta('verificarResponse', 'ℹ️ No hay más páginas disponibles', 'success');
+                
+                // Actualizar controles para reflejar que estamos en la última página
+                actualizarControlesPaginacionIntegridad(elementosPorPaginaIntegridad, departamento);
             } else {
+                // ✅ Hay datos:  guardar como última página válida
+                ultimaPaginaValidaIntegridad = pagina;
                 mostrarTablaIntegridad(data, departamento);
                 actualizarControlesPaginacionIntegridad(data.length, departamento);
             }
         } else {
-            mostrarRespuesta('verificarResponse', data. mensaje || data.msg || 'Error al verificar integridad', 'error');
+            mostrarRespuesta('verificarResponse', data.mensaje || data.msg || 'Error al verificar integridad', 'error');
             if (container) {
-                container.innerHTML = '<p style="text-align: center; color: #e74c3c; padding: 20px;">❌ Error al verificar integridad</p>';
+                container. innerHTML = '<p style="text-align: center; color: #e74c3c; padding: 20px;">❌ Error al verificar integridad</p>';
             }
             if (response.status === 401) {
                 cerrarSesion();
@@ -749,7 +763,7 @@ async function verificarIntegridad(event, pagina = 0) {
         console.error('Error al verificar integridad:', error);
         mostrarRespuesta('verificarResponse', '❌ Error de conexión:  ' + error.message, 'error');
         if (container) {
-            container.innerHTML = '<p style="text-align: center; color: #e74c3c; padding:  20px;">❌ Error de conexión</p>';
+            container.innerHTML = '<p style="text-align: center; color: #e74c3c; padding: 20px;">❌ Error de conexión</p>';
         }
     }
 }
@@ -1551,11 +1565,12 @@ async function cambiarPassword(event) {
 // ============================================
 let paginaActualIntegridadEdiciones = 0;
 let elementosPorPaginaIntegridadEdiciones = 5;
+let ultimaPaginaValidaIntegridadEdiciones = 0; // ✅ NUEVO
 
 async function verificarIntegridadEdiciones(event, pagina = 0) {
     if (event) event.preventDefault();
     
-    const authToken = localStorage.getItem('authToken');
+    const authToken = localStorage. getItem('authToken');
     
     if (!authToken) {
         mostrarRespuesta('verificarEdicionesResponse', '⚠️ No estás autenticado', 'error');
@@ -1572,12 +1587,11 @@ async function verificarIntegridadEdiciones(event, pagina = 0) {
 
     paginaActualIntegridadEdiciones = pagina;
 
-    mostrarRespuesta('verificarEdicionesResponse', '🔄 Verificando integridad de ediciones, por favor espera...', 'success');
+    mostrarRespuesta('verificarEdicionesResponse', '🔄 Verificando integridad de ediciones, por favor espera... ', 'success');
 
-    // Limpiar tabla antes de cargar
     const container = document.getElementById('detallesVerificacionEdiciones');
     if (container) {
-        container. innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">🔄 Verificando integridad... </p>';
+        container.innerHTML = '<p style="text-align: center; color:  #666; padding: 20px;">🔄 Verificando integridad... </p>';
     }
 
     try {
@@ -1597,31 +1611,40 @@ async function verificarIntegridadEdiciones(event, pagina = 0) {
         console.log('📦 Respuesta de verificación de ediciones:', data);
         
         if (response.ok) {
-            const responseElement = document.getElementById('verificarEdicionesResponse');
+            const responseElement = document. getElementById('verificarEdicionesResponse');
             if (responseElement) {
-                responseElement.style.display = 'none';
+                responseElement.style. display = 'none';
             }
             
             if (data.length === 0 && pagina === 0) {
                 mostrarRespuesta('verificarEdicionesResponse', 'ℹ️ No hay ediciones en este departamento', 'success');
                 if (container) {
-                    container.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">No hay ediciones para verificar</p>';
+                    container.innerHTML = '<p style="text-align:  center; color: #666; padding: 20px;">No hay ediciones para verificar</p>';
                 }
                 const controles = document.getElementById('paginacionControlesIntegridadEdiciones');
                 if (controles) {
-                    controles.style.display = 'none';
+                    controles.style. display = 'none';
                 }
+                ultimaPaginaValidaIntegridadEdiciones = 0;
             } else if (data.length === 0 && pagina > 0) {
-                // Si estamos en una página mayor que 0 y no hay resultados, volver a la página anterior
-                verificarIntegridadEdiciones(null, pagina - 1);
+                // ✅ CORRECCIÓN:  Volver a última página válida
+                console.warn(`⚠️ Página ${pagina} no tiene datos.  Volviendo a página ${ultimaPaginaValidaIntegridadEdiciones}`);
+                
+                paginaActualIntegridadEdiciones = ultimaPaginaValidaIntegridadEdiciones;
+                
+                mostrarRespuesta('verificarEdicionesResponse', 'ℹ️ No hay más páginas disponibles', 'success');
+                
+                actualizarControlesPaginacionIntegridadEdiciones(elementosPorPaginaIntegridadEdiciones, departamento);
             } else {
+                // ✅ Guardar última página válida
+                ultimaPaginaValidaIntegridadEdiciones = pagina;
                 mostrarTablaIntegridadEdiciones(data, departamento);
                 actualizarControlesPaginacionIntegridadEdiciones(data.length, departamento);
             }
         } else {
-            mostrarRespuesta('verificarEdicionesResponse', data.mensaje || data.msg || 'Error al verificar integridad de ediciones', 'error');
+            mostrarRespuesta('verificarEdicionesResponse', data. mensaje || data.msg || 'Error al verificar integridad de ediciones', 'error');
             if (container) {
-                container.innerHTML = '<p style="text-align: center; color: #e74c3c; padding: 20px;">❌ Error al verificar integridad</p>';
+                container.innerHTML = '<p style="text-align: center; color:  #e74c3c; padding: 20px;">❌ Error al verificar integridad</p>';
             }
             if (response.status === 401) {
                 cerrarSesion();
@@ -1629,7 +1652,7 @@ async function verificarIntegridadEdiciones(event, pagina = 0) {
         }
     } catch (error) {
         console.error('Error al verificar integridad de ediciones:', error);
-        mostrarRespuesta('verificarEdicionesResponse', '❌ Error de conexión:  ' + error.message, 'error');
+        mostrarRespuesta('verificarEdicionesResponse', '❌ Error de conexión: ' + error.message, 'error');
         if (container) {
             container.innerHTML = '<p style="text-align: center; color: #e74c3c; padding: 20px;">❌ Error de conexión</p>';
         }
