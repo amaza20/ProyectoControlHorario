@@ -2249,43 +2249,43 @@ function actualizarControlesPaginacionSolicitudes(solicitudesEnPagina) {
 }
 
 // ============================================
-// FUNCIÓN:  ACTUALIZAR CONTROLES DE PAGINACIÓN INTEGRIDAD
+// FUNCIÓN:   ACTUALIZAR CONTROLES DE PAGINACIÓN INTEGRIDAD
 // ============================================
 function actualizarControlesPaginacionIntegridad(fichajesEnPagina, departamento) {
     const controles = document.getElementById('paginacionControlesIntegridad');
     
-    if (!controles) {
+    if (! controles) {
         console.warn('⚠️ No se encontró el elemento paginacionControlesIntegridad');
         return;
     }
     
-    controles. style.display = 'block';
+    controles.style.display = 'block';
     
     const hayMasPaginas = fichajesEnPagina === elementosPorPaginaIntegridad;
     const esLaPrimeraPagina = paginaActualIntegridad === 0;
     
-    const totalPaginasEstimado = hayMasPaginas ? paginaActualIntegridad + 2 :  paginaActualIntegridad + 1;
+    const totalPaginasEstimado = hayMasPaginas ? paginaActualIntegridad + 2 : paginaActualIntegridad + 1;
     
     let html = `
-        <div style="display: flex; justify-content: center; align-items:  center; gap: 8px; margin-top: 20px; padding: 12px; background:  #f5f5f5; border-radius: 8px; flex-wrap: nowrap;">
+        <div style="display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 20px; padding: 12px; background:  #f5f5f5; border-radius: 8px; flex-wrap: nowrap;">
             <button 
                 onclick="verificarIntegridad(null, 0)" 
                 ${esLaPrimeraPagina ? 'disabled' : ''} 
-                style="padding: 6px 12px; border:  1px solid #ddd; background: ${esLaPrimeraPagina ? '#e0e0e0' : 'white'}; border-radius: 4px; cursor: ${esLaPrimeraPagina ? 'not-allowed' : 'pointer'}; font-size: 14px; min-width: 40px;">
+                style="padding:  6px 12px; border: 1px solid #ddd; background: ${esLaPrimeraPagina ? '#e0e0e0' : 'white'}; border-radius: 4px; cursor: ${esLaPrimeraPagina ? 'not-allowed' : 'pointer'}; font-size: 14px; min-width: 40px;">
                 &lt;&lt;
             </button>
             
             <button 
                 onclick="verificarIntegridad(null, ${paginaActualIntegridad - 1})" 
-                ${esLaPrimeraPagina ? 'disabled' : ''} 
-                style="padding: 6px 12px; border: 1px solid #ddd; background: ${esLaPrimeraPagina ? '#e0e0e0' :  'white'}; border-radius: 4px; cursor: ${esLaPrimeraPagina ? 'not-allowed' :  'pointer'}; font-size: 14px; min-width: 40px;">
+                ${esLaPrimeraPagina ?  'disabled' : ''} 
+                style="padding: 6px 12px; border: 1px solid #ddd; background: ${esLaPrimeraPagina ? '#e0e0e0' : 'white'}; border-radius: 4px; cursor: ${esLaPrimeraPagina ? 'not-allowed' : 'pointer'}; font-size: 14px; min-width: 40px;">
                 &lt;
             </button>
             
             <select 
                 id="selectorPaginaIntegridad" 
                 onchange="verificarIntegridad(null, parseInt(this.value))" 
-                style="padding: 6px 10px; border:  1px solid #ddd; border-radius: 4px; font-size: 14px; background: white; cursor: pointer; min-width: 60px;">
+                style="padding: 6px 10px; border: 1px solid #ddd; border-radius:  4px; font-size:  14px; background: white; cursor: pointer; min-width: 60px;">
     `;
     
     for (let i = 0; i < totalPaginasEstimado; i++) {
@@ -2297,28 +2297,28 @@ function actualizarControlesPaginacionIntegridad(fichajesEnPagina, departamento)
             
             <button 
                 onclick="verificarIntegridad(null, ${paginaActualIntegridad + 1})" 
-                ${!hayMasPaginas ?  'disabled' : ''} 
-                style="padding: 6px 12px; border: 1px solid #ddd; background: ${!hayMasPaginas ? '#e0e0e0' : 'white'}; border-radius: 4px; cursor: ${!hayMasPaginas ? 'not-allowed' : 'pointer'}; font-size: 14px; min-width: 40px;">
+                ${! hayMasPaginas ? 'disabled' : ''} 
+                style="padding: 6px 12px; border: 1px solid #ddd; background: ${!hayMasPaginas ?  '#e0e0e0' : 'white'}; border-radius: 4px; cursor:  ${!hayMasPaginas ? 'not-allowed' :  'pointer'}; font-size: 14px; min-width: 40px;">
                 &gt;
             </button>
             
             <button 
                 onclick="verificarIntegridad(null, ${totalPaginasEstimado - 1})" 
-                ${!hayMasPaginas ? 'disabled' : ''} 
-                style="padding: 6px 12px; border: 1px solid #ddd; background: ${! hayMasPaginas ? '#e0e0e0' :  'white'}; border-radius: 4px; cursor: ${!hayMasPaginas ?  'not-allowed' : 'pointer'}; font-size:  14px; min-width:  40px;">
+                ${!hayMasPaginas ?  'disabled' : ''} 
+                style="padding: 6px 12px; border: 1px solid #ddd; background: ${!hayMasPaginas ? '#e0e0e0' : 'white'}; border-radius: 4px; cursor: ${!hayMasPaginas ? 'not-allowed' : 'pointer'}; font-size: 14px; min-width: 40px;">
                 &gt;&gt;
             </button>
             
-            <span style="color: #999; margin: 0 8px; font-size: 18px;">|</span>
+            <span style="color: #999; margin:  0 8px; font-size: 18px;">|</span>
             
-            <label for="elementosPorPaginaIntegridadSelect" style="color:  #666; font-size: 14px; white-space: nowrap;">Número de filas: </label>
+            <label for="elementosPorPaginaIntegridadSelect" style="color: #666; font-size: 14px; white-space: nowrap;">Número de filas: </label>
             
             <select 
                 id="elementosPorPaginaIntegridadSelect" 
                 onchange="cambiarElementosPorPaginaIntegridad(this.value)" 
                 style="padding: 6px 10px; border:  1px solid #ddd; border-radius: 4px; font-size: 14px; background: white; cursor: pointer; min-width: 60px;">
-                <option value="5" ${elementosPorPaginaIntegridad === 5 ?  'selected' : ''}>5</option>
-                <option value="10" ${elementosPorPaginaIntegridad === 10 ? 'selected' :  ''}>10</option>
+                <option value="5" ${elementosPorPaginaIntegridad === 5 ? 'selected' : ''}>5</option>
+                <option value="10" ${elementosPorPaginaIntegridad === 10 ? 'selected' : ''}>10</option>
                 <option value="20" ${elementosPorPaginaIntegridad === 20 ? 'selected' : ''}>20</option>
                 <option value="25" ${elementosPorPaginaIntegridad === 25 ? 'selected' : ''}>25</option>
                 <option value="50" ${elementosPorPaginaIntegridad === 50 ? 'selected' : ''}>50</option>
@@ -2331,7 +2331,7 @@ function actualizarControlesPaginacionIntegridad(fichajesEnPagina, departamento)
 }
 
 // ============================================
-// FUNCIÓN: ACTUALIZAR CONTROLES DE PAGINACIÓN INTEGRIDAD EDICIONES
+// FUNCIÓN:  ACTUALIZAR CONTROLES DE PAGINACIÓN INTEGRIDAD EDICIONES
 // ============================================
 function actualizarControlesPaginacionIntegridadEdiciones(edicionesEnPagina, departamento) {
     const controles = document.getElementById('paginacionControlesIntegridadEdiciones');
@@ -2353,21 +2353,21 @@ function actualizarControlesPaginacionIntegridadEdiciones(edicionesEnPagina, dep
             <button 
                 onclick="verificarIntegridadEdiciones(null, 0)" 
                 ${esLaPrimeraPagina ? 'disabled' : ''} 
-                style="padding: 6px 12px; border: 1px solid #ddd; background: ${esLaPrimeraPagina ?  '#e0e0e0' : 'white'}; border-radius: 4px; cursor:  ${esLaPrimeraPagina ? 'not-allowed' : 'pointer'}; font-size: 14px; min-width: 40px;">
+                style="padding: 6px 12px; border: 1px solid #ddd; background:  ${esLaPrimeraPagina ? '#e0e0e0' : 'white'}; border-radius: 4px; cursor: ${esLaPrimeraPagina ? 'not-allowed' : 'pointer'}; font-size: 14px; min-width: 40px;">
                 &lt;&lt;
             </button>
             
             <button 
                 onclick="verificarIntegridadEdiciones(null, ${paginaActualIntegridadEdiciones - 1})" 
-                ${esLaPrimeraPagina ? 'disabled' : ''} 
-                style="padding: 6px 12px; border: 1px solid #ddd; background: ${esLaPrimeraPagina ? '#e0e0e0' : 'white'}; border-radius: 4px; cursor: ${esLaPrimeraPagina ? 'not-allowed' : 'pointer'}; font-size: 14px; min-width: 14px; min-width: 40px;">
+                ${esLaPrimeraPagina ?  'disabled' : ''} 
+                style="padding: 6px 12px; border: 1px solid #ddd; background: ${esLaPrimeraPagina ? '#e0e0e0' : 'white'}; border-radius: 4px; cursor: ${esLaPrimeraPagina ? 'not-allowed' : 'pointer'}; font-size: 14px; min-width: 40px;">
                 &lt;
             </button>
             
             <select 
                 id="selectorPaginaIntegridadEdiciones" 
-                onchange="verificarIntegridadEdiciones(null, parseInt(this. value))" 
-                style="padding: 6px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; background: white; cursor: pointer; min-width: 60px;">
+                onchange="verificarIntegridadEdiciones(null, parseInt(this.value))" 
+                style="padding: 6px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; background: white; cursor:  pointer; min-width: 60px;">
     `;
     
     for (let i = 0; i < totalPaginasEstimado; i++) {
@@ -2379,32 +2379,32 @@ function actualizarControlesPaginacionIntegridadEdiciones(edicionesEnPagina, dep
             
             <button 
                 onclick="verificarIntegridadEdiciones(null, ${paginaActualIntegridadEdiciones + 1})" 
-                ${!hayMasPaginas ? 'disabled' : ''} 
-                style="padding: 6px 12px; border: 1px solid #ddd; background: ${!hayMasPaginas ? '#e0e0e0' : 'white'}; border-radius:  4px; cursor: ${! hayMasPaginas ? 'not-allowed' : 'pointer'}; font-size: 14px; min-width: 40px;">
+                ${!hayMasPaginas ? 'disabled' :  ''} 
+                style="padding: 6px 12px; border: 1px solid #ddd; background: ${!hayMasPaginas ? '#e0e0e0' : 'white'}; border-radius: 4px; cursor: ${!hayMasPaginas ? 'not-allowed' : 'pointer'}; font-size: 14px; min-width: 40px;">
                 &gt;
             </button>
             
             <button 
                 onclick="verificarIntegridadEdiciones(null, ${totalPaginasEstimado - 1})" 
-                ${!hayMasPaginas ? 'disabled' : ''} 
-                style="padding: 6px 12px; border: 1px solid #ddd; background: ${!hayMasPaginas ? '#e0e0e0' : 'white'}; border-radius:  4px; cursor: ${! hayMasPaginas ? 'not-allowed' : 'pointer'}; font-size: 14px; min-width: 40px;">
+                ${!hayMasPaginas ? 'disabled' :  ''} 
+                style="padding: 6px 12px; border: 1px solid #ddd; background: ${!hayMasPaginas ? '#e0e0e0' : 'white'}; border-radius: 4px; cursor: ${!hayMasPaginas ? 'not-allowed' : 'pointer'}; font-size: 14px; min-width: 40px;">
                 &gt;&gt;
             </button>
             
-            <span style="color: #999; margin: 0 8px; font-size:  18px;">|</span>
+            <span style="color:  #999; margin: 0 8px; font-size: 18px;">|</span>
             
-            <label for="elementosPorPaginaIntegridadEdicionesSelect" style="color:  #666; font-size: 14px; white-space: nowrap;">Número de filas: </label>
+            <label for="elementosPorPaginaIntegridadEdicionesSelect" style="color: #666; font-size: 14px; white-space: nowrap;">Número de filas:</label>
             
             <select 
                 id="elementosPorPaginaIntegridadEdicionesSelect" 
-                onchange="cambiarElementosPorPaginaIntegridadEdiciones(this.value)" 
-                style="padding: 6px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; background: white; cursor: pointer; min-width: 60px;">
+                onchange="cambiarElementosPorPaginaIntegridadEdiciones(this. value)" 
+                style="padding: 6px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; background: white; cursor:  pointer; min-width: 60px;">
                 <option value="5" ${elementosPorPaginaIntegridadEdiciones === 5 ? 'selected' : ''}>5</option>
-                <option value="10" ${elementosPorPaginaIntegridadEdiciones === 10 ? 'selected' : ''}>10</option>
+                <option value="10" ${elementosPorPaginaIntegridadEdiciones === 10 ? 'selected' :  ''}>10</option>
                 <option value="20" ${elementosPorPaginaIntegridadEdiciones === 20 ? 'selected' : ''}>20</option>
-                <option value="25" ${elementosPorPaginaIntegridadEdiciones === 25 ?  'selected' : ''}>25</option>
+                <option value="25" ${elementosPorPaginaIntegridadEdiciones === 25 ? 'selected' : ''}>25</option>
                 <option value="50" ${elementosPorPaginaIntegridadEdiciones === 50 ? 'selected' : ''}>50</option>
-                <option value="100" ${elementosPorPaginaIntegridadEdiciones === 100 ? 'selected' : ''}>100</option>
+                <option value="100" ${elementosPorPaginaIntegridadEdiciones === 100 ? 'selected' :  ''}>100</option>
             </select>
         </div>
     `;
