@@ -721,6 +721,7 @@ function cerrarSesion() {
 let paginaActualIntegridad = 0;
 let elementosPorPaginaIntegridad = 5;
 let totalPaginasIntegridad = 1;
+let totalFichajesIntegridad = 0; // ✅ NUEVA VARIABLE GLOBAL
 
 async function verificarIntegridad(event, pagina = 0) {
     if (event) event.preventDefault();
@@ -751,7 +752,7 @@ async function verificarIntegridad(event, pagina = 0) {
 
     try {
         // ✅ CORREGIDO:   Primero obtener el total de fichajes
-        const urlTotal = `${API_BASE_URL}/contarFichajesTotales? departamento=${encodeURIComponent(departamento)}`;
+        const urlTotal = `${API_BASE_URL}/contarFichajesTotales?departamento=${encodeURIComponent(departamento)}`;
         const responseTotal = await fetch(urlTotal, {
             method: 'GET',
             headers: {
@@ -761,10 +762,10 @@ async function verificarIntegridad(event, pagina = 0) {
 
         if (responseTotal.ok) {
             const data = await responseTotal.json();
-            const totalFichajes = data.totalFichajesDepartamento || 0; // ✅ EXTRAER DEL OBJETO
-            totalPaginasIntegridad = Math. ceil(totalFichajes / elementosPorPaginaIntegridad);
+            totalFichajesIntegridad = data.totalFichajesDepartamento || 0; // ✅ GUARDAR EN GLOBAL
+            totalPaginasIntegridad = Math.ceil(totalFichajesIntegridad / elementosPorPaginaIntegridad);
             
-            console. log(`📊 Total de fichajes en ${departamento}: ${totalFichajes}, Total de páginas: ${totalPaginasIntegridad}`);
+            console.log(`📊 Total de fichajes en ${departamento}: ${totalFichajesIntegridad}, Total de páginas: ${totalPaginasIntegridad}`);
         }
 
         // Obtener los fichajes de la página actual
@@ -887,7 +888,8 @@ function mostrarTablaIntegridad(fichajes, departamento) {
         }
     });
     
-    const totalFichajes = fichajesOrdenados.length;
+    const totalFichajesPagina = fichajesOrdenados.length; // Fichajes en esta página
+    const totalFichajes = totalFichajesIntegridad; // ✅ Total global
     const integridadOK = corruptos === 0;
     
     let headerHTML = '';
@@ -1634,6 +1636,7 @@ async function cambiarPassword(event) {
 let paginaActualIntegridadEdiciones = 0;
 let elementosPorPaginaIntegridadEdiciones = 5;
 let totalPaginasIntegridadEdiciones = 1;
+let totalEdicionesIntegridad = 0; // ✅ NUEVA VARIABLE GLOBAL
 
 async function verificarIntegridadEdiciones(event, pagina = 0) {
     if (event) event.preventDefault();
@@ -1673,11 +1676,11 @@ async function verificarIntegridadEdiciones(event, pagina = 0) {
         });
 
         if (responseTotal.ok) {
-            const data = await responseTotal.json();
-            const totalEdiciones = data.totalEdiciones || 0; // ✅ EXTRAER DEL OBJETO
-            totalPaginasIntegridadEdiciones = Math.ceil(totalEdiciones / elementosPorPaginaIntegridadEdiciones);
+            const data = await responseTotal. json();
+            totalEdicionesIntegridad = data.totalEdiciones || 0; // ✅ CAMBIAR:  usar variable GLOBAL
+            totalPaginasIntegridadEdiciones = Math. ceil(totalEdicionesIntegridad / elementosPorPaginaIntegridadEdiciones); // ✅ CAMBIAR: usar variable GLOBAL
             
-            console.log(`📊 Total de ediciones en ${departamento}: ${totalEdiciones}, Total de páginas: ${totalPaginasIntegridadEdiciones}`);
+            console.log(`📊 Total de ediciones en ${departamento}: ${totalEdicionesIntegridad}, Total de páginas: ${totalPaginasIntegridadEdiciones}`); // ✅ CAMBIAR: usar variable GLOBAL
         }
 
         // Obtener las ediciones de la página actual
@@ -1775,7 +1778,7 @@ function mostrarTablaIntegridadEdiciones(ediciones, departamento) {
         }
     });
     
-    const total = edicionesOrdenados. length;
+    const total = totalEdicionesIntegridad; // ✅ CAMBIAR: usar variable global en lugar de .length
     const integridadOK = corruptos === 0;
     
     // ✅ Header igual que en Fichajes
