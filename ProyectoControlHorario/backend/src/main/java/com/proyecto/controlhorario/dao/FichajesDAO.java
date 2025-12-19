@@ -258,4 +258,92 @@ public class FichajesDAO {
         Collections.reverse(toret2);
         return toret2;
     }
+
+   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    // Necesito este método para la paginación
+    public int contarFichajesUsuario(String username, String departamento) {
+        String dbPath = dbFolder+"departamento_"+departamento.toLowerCase()+".db";
+        final int[] count = {0};
+
+        try {
+            DatabaseManager.withConnection(dbPath, conn -> {
+                String query = "SELECT COUNT(*) AS total FROM fichajes WHERE username = ?";
+                try (PreparedStatement st = conn.prepareStatement(query)) {
+                    st.setString(1, username);
+                    ResultSet rst = st.executeQuery();
+                    if (rst.next()) {
+                        count[0] = rst.getInt("total");
+                    }
+                }
+            });
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return count[0];
+    }
+
+
+    // Necesito este método para la paginación
+    public int contarFichajesTotales(String departamento) {
+        String dbPath = dbFolder+"departamento_"+departamento.toLowerCase()+".db";
+        final int[] count = {0};
+
+        try {
+            DatabaseManager.withConnection(dbPath, conn -> {
+                String query = "SELECT COUNT(*) AS total FROM fichajes";
+                try (PreparedStatement st = conn.prepareStatement(query)) {
+                    ResultSet rst = st.executeQuery();
+                    if (rst.next()) {
+                        count[0] = rst.getInt("total");
+                    }
+                }
+            });
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return count[0];
+    }
+
+    // Necesito este método para la paginación
+    public int contarEdicionesTotales(String departamento) {
+        String dbPath = dbFolder+"departamento_"+departamento.toLowerCase()+".db";
+        final int[] count = {0};
+
+        try {
+            DatabaseManager.withConnection(dbPath, conn -> {
+                String query = "SELECT COUNT(*) AS total FROM ediciones";
+                try (PreparedStatement st = conn.prepareStatement(query)) {
+                    ResultSet rst = st.executeQuery();
+                    if (rst.next()) {
+                        count[0] = rst.getInt("total");
+                    }
+                }
+            });
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return count[0]; 
+    }
+
+    // Necesito este método para la paginación
+    public int contarSolicitudesTotales(String departamento) {
+        String dbPath = dbFolder+"departamento_"+departamento.toLowerCase()+".db";
+        final int[] count = {0};
+
+        try {
+            DatabaseManager.withConnection(dbPath, conn -> {
+                String query = "SELECT COUNT(*) AS total FROM solicitud_edicion";
+                try (PreparedStatement st = conn.prepareStatement(query)) {
+                    ResultSet rst = st.executeQuery();
+                    if (rst.next()) {
+                        count[0] = rst.getInt("total");
+                    }
+                }
+            });
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return count[0];
+    }
 }

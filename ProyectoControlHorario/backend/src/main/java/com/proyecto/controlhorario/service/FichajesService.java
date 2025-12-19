@@ -73,5 +73,21 @@ public class FichajesService {
     }
 
 
+    public long contarFichajesUsuario(String username, String departamento) {
+        return fichajeDAO.contarFichajesUsuario(username, departamento);
+    }
+
+    public long contarFichajesTotales(String departamento) {
+        return fichajeDAO.contarFichajesTotales(departamento);
+    }
+
+    public long contarEdicionesTotales(String departamento) {
+        return fichajeDAO.contarEdicionesTotales(departamento);
+    }
+
+    public long contarSolicitudesTotales(String departamento) {
+        return fichajeDAO.contarSolicitudesTotales(departamento);
+    }   
+
 
 }

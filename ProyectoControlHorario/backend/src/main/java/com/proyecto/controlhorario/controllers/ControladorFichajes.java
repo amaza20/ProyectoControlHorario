@@ -13,6 +13,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 @RestController
 public class ControladorFichajes {
@@ -155,6 +158,92 @@ public class ControladorFichajes {
             return ResponseEntity
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new IntegridadResponse("Error interno: " + e.getMessage()));
+        }
+    }
+
+
+    // // =========================================================================================
+    // // ✅ ENDPOINTs: para consultar el numero total de contarFichajesUsuario, 
+    //                                                     contarFichajesTotales,
+    //                                                     contarEdicionesTotales
+    //                                                     contarSolicitudesTotales
+    // // =========================================================================================
+    @GetMapping("/contarFichajesUsuario")
+    public ResponseEntity<?> contarFichajesUsuario(@RequestParam String username, @RequestParam String departamento) {
+        try {
+
+            // Llamar al servicio para contar fichajes del usuario
+            long totalFichajes = servicio.contarFichajesUsuario(username,departamento);
+
+            // Devolver el conteo en la respuesta
+            Map<String, Long> response = new HashMap<>();
+            response.put("totalFichajesUsuario", totalFichajes);
+
+            return ResponseEntity
+                    .status(HttpStatus.OK)
+                    .body(response);
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error interno: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/contarFichajesTotales")
+    public ResponseEntity<?> contarFichajesTotales(@RequestParam String departamento) {
+        try {
+            // Llamar al servicio para contar fichajes del usuario
+            long totalFichajes = servicio.contarFichajesTotales(departamento);
+
+            // Devolver el conteo en la respuesta
+            Map<String, Long> response = new HashMap<>();
+            response.put("totalFichajesDepartamento", totalFichajes);
+
+            return ResponseEntity
+                    .status(HttpStatus.OK)
+                    .body(response);
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error interno: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/contarEdicionesTotales")
+    public ResponseEntity<?> contarEdicionesTotales(@RequestParam String departamento) {
+        try {
+            // Llamar al servicio para contar fichajes del usuario
+            long totalEdiciones = servicio.contarEdicionesTotales(departamento);
+
+            // Devolver el conteo en la respuesta
+            Map<String, Long> response = new HashMap<>();
+            response.put("totalEdicionesDepartamento", totalEdiciones);
+            return ResponseEntity
+                    .status(HttpStatus.OK)
+                    .body(response);
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error interno: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("contarSolicitudesTotales")
+    public ResponseEntity<?> contarSolicitudesTotales(@RequestParam String departamento) {
+        try {
+            // Llamar al servicio para contar fichajes del usuario
+            long totalSolicitudes = servicio.contarSolicitudesTotales(departamento);
+
+            // Devolver el conteo en la respuesta
+            Map<String, Long> response = new HashMap<>();
+            response.put("totalSolicitudesDepartamento", totalSolicitudes);
+            return ResponseEntity
+                    .status(HttpStatus.OK)
+                    .body(response);
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error interno: " + e.getMessage());
         }
     }
 
