@@ -343,7 +343,7 @@ async function listarFichajes(pagina = 0) {
         }
         
         // ✅ CORREGIDO:  Enviar username Y departamento como parámetros
-        const urlTotal = `${API_BASE_URL}/contarFichajesUsuario? username=${encodeURIComponent(username)}&departamento=${encodeURIComponent(departamento)}`;
+        const urlTotal = `${API_BASE_URL}/contarFichajesUsuario?username=${encodeURIComponent(username)}&departamento=${encodeURIComponent(departamento)}`;
         const responseTotal = await fetch(urlTotal, {
             method: 'GET',
             headers: {
