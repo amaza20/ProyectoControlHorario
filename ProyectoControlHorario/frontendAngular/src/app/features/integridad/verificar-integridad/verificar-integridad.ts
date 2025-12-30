@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { IntegridadService } from '../../../core/services/integridad.service';
 import { DepartamentoService } from '../../../core/services/departamento.service';
@@ -6,6 +6,8 @@ import { AuthService } from '../../../core/services/auth.service';
 import { Router } from '@angular/router';
 import { convertirACSV, descargarCSV, generarNombreArchivoCSV } from '../../../shared/utils/csv-utils';
 import { formatearFechaLocal } from '../../../shared/utils/date-utils';
+import { Subject } from 'rxjs';
+import { finalize, takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-verificar-integridad',
@@ -13,7 +15,7 @@ import { formatearFechaLocal } from '../../../shared/utils/date-utils';
   templateUrl: './verificar-integridad.html',
   styleUrl: './verificar-integridad.css'
 })
-export class VerificarIntegridad implements OnInit {
+export class VerificarIntegridad implements OnInit, OnDestroy {
   integridadForm: FormGroup;
   departamentos: string[] = [];
   fichajes: any[] = [];
@@ -32,13 +34,15 @@ export class VerificarIntegridad implements OnInit {
   soloSuDepartamento: boolean = false;
   descargandoCSV: boolean = false;
   displayedColumns: string[] = ['id', 'username', 'fechaOriginal', 'fechaEditada', 'tipo', 'huellaGuardada', 'huellaCalculada', 'estado'];
+  private destroy$ = new Subject<void>();
 
   constructor(
     private fb: FormBuilder,
     private integridadService: IntegridadService,
     private departamentoService: DepartamentoService,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {
     this.integridadForm = this.fb.group({
       departamento: ['', Validators.required]
@@ -139,18 +143,24 @@ export class VerificarIntegridad implements OnInit {
     const departamento = this.integridadForm.get('departamento')?.value || this.currentUserDept;
     this.loading = true;
 
-    this.integridadService.verificarIntegridadFichajes(departamento, this.paginaActual, this.elementosPorPagina).subscribe({
-      next: (fichajes) => {
-        this.fichajes = fichajes;
-        this.loading = false;
-        this.verificado = true;
-      },
-      error: (error) => {
-        this.loading = false;
-        const mensaje = error.error?.msg || 'Error al verificar integridad';
-        this.showMessage(`❌ ${mensaje}`, 'error');
-      }
-    });
+    this.integridadService.verificarIntegridadFichajes(departamento, this.paginaActual, this.elementosPorPagina)
+      .pipe(
+        finalize(() => {
+          this.loading = false;
+          this.cdr.detectChanges();
+        }),
+        takeUntil(this.destroy$)
+      )
+      .subscribe({
+        next: (fichajes) => {
+          this.fichajes = fichajes;
+          this.verificado = true;
+        },
+        error: (error) => {
+          const mensaje = error.error?.msg || 'Error al verificar integridad';
+          this.showMessage(`❌ ${mensaje}`, 'error');
+        }
+      });
   }
 
   cambiarPagina(nuevaPagina: number): void {
@@ -193,6 +203,11 @@ export class VerificarIntegridad implements OnInit {
     this.paginaActual = 0;
     this.totalPaginas = Math.ceil(this.totalFichajes / this.elementosPorPagina);
     this.cargarPagina();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   descargarCSV(): void {

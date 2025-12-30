@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FichajeService } from '../../../core/services/fichaje.service';
 import { convertirLocalAUTC, formatearFechaLocal } from '../../../shared/utils/date-utils';
+import { finalize, Subject, takeUntil } from 'rxjs';
 
 // Interfaz para la respuesta del backend de listarFichajesUsuario
 interface FichajeParaEdicion {
@@ -22,7 +23,7 @@ interface FichajeParaEdicion {
   templateUrl: './solicitar-edicion.html',
   styleUrl: './solicitar-edicion.css',
 })
-export class SolicitarEdicion implements OnInit {
+export class SolicitarEdicion implements OnInit, OnDestroy {
   fichajeSeleccionado: FichajeParaEdicion | null = null;
   solicitudForm: FormGroup;
   loading = false;
@@ -30,12 +31,14 @@ export class SolicitarEdicion implements OnInit {
   message = '';
   messageType: 'success' | 'error' | '' = '';
   fichajeId: number | null = null;
+  private destroy$ = new Subject<void>();
 
   constructor(
     private fb: FormBuilder,
     private fichajeService: FichajeService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {
     this.solicitudForm = this.fb.group({
       nuevoFechaHora: ['', Validators.required]
@@ -65,22 +68,28 @@ export class SolicitarEdicion implements OnInit {
     
     this.loadingFichaje = true;
     // Cargar suficientes fichajes para encontrar el seleccionado
-    this.fichajeService.listarFichajesUsuario(0, 100).subscribe({
-      next: (data: FichajeParaEdicion[]) => {
-        this.fichajeSeleccionado = data.find(f => f.id_fichaje === this.fichajeId) || null;
-        this.loadingFichaje = false;
-        
-        if (!this.fichajeSeleccionado) {
-          this.message = '⚠️ No se encontró el fichaje seleccionado';
+    this.fichajeService.listarFichajesUsuario(0, 100)
+      .pipe(
+        finalize(() => {
+          this.loadingFichaje = false;
+          this.cdr.detectChanges();
+        }),
+        takeUntil(this.destroy$)
+      )
+      .subscribe({
+        next: (data: FichajeParaEdicion[]) => {
+          this.fichajeSeleccionado = data.find(f => f.id_fichaje === this.fichajeId) || null;
+
+          if (!this.fichajeSeleccionado) {
+            this.message = '⚠️ No se encontró el fichaje seleccionado';
+            this.messageType = 'error';
+          }
+        },
+        error: (error) => {
+          this.message = 'Error al cargar el fichaje';
           this.messageType = 'error';
         }
-      },
-      error: (error) => {
-        this.message = 'Error al cargar el fichaje';
-        this.messageType = 'error';
-        this.loadingFichaje = false;
-      }
-    });
+      });
   }
 
   // Método auxiliar para obtener el instante actual del fichaje (editado o original)
@@ -122,21 +131,32 @@ export class SolicitarEdicion implements OnInit {
       nuevoInstante: nuevoInstante
     };
 
-    this.fichajeService.solicitarEdicion(payload).subscribe({
-      next: (response) => {
-        this.loading = false;
-        this.messageType = 'success';
-        this.message = response.msg || response.mensaje || '✅ Solicitud enviada correctamente. Redirigiendo...';
-        
-        setTimeout(() => {
-          this.router.navigate(['/fichajes/historial']);
-        }, 2000);
-      },
-      error: (error) => {
-        this.loading = false;
-        this.messageType = 'error';
-        this.message = error.error?.msg || error.error?.mensaje || '❌ Error al enviar solicitud';
-      }
-    });
+    this.fichajeService.solicitarEdicion(payload)
+      .pipe(
+        finalize(() => {
+          this.loading = false;
+          this.cdr.detectChanges();
+        }),
+        takeUntil(this.destroy$)
+      )
+      .subscribe({
+        next: (response) => {
+          this.messageType = 'success';
+          this.message = response.msg || response.mensaje || '✅ Solicitud enviada correctamente. Redirigiendo...';
+
+          setTimeout(() => {
+            this.router.navigate(['/fichajes/historial']);
+          }, 2000);
+        },
+        error: (error) => {
+          this.messageType = 'error';
+          this.message = error.error?.msg || error.error?.mensaje || '❌ Error al enviar solicitud';
+        }
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }

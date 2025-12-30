@@ -1,8 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { FichajeService } from '../../../core/services/fichaje.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { Fichaje } from '../../../core/models/fichaje.model';
+import { Subject } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
+import { finalize, takeUntil } from 'rxjs/operators';
 import { convertirACSV, descargarCSV, generarNombreArchivoCSV } from '../../../shared/utils/csv-utils';
 import { formatearFechaLocal } from '../../../shared/utils/date-utils';
 
@@ -12,7 +15,7 @@ import { formatearFechaLocal } from '../../../shared/utils/date-utils';
   templateUrl: './historial.html',
   styleUrl: './historial.css',
 })
-export class Historial implements OnInit {
+export class Historial implements OnInit, OnDestroy {
   fichajes: any[] = [];
   loading = true;
   errorMessage = '';
@@ -23,12 +26,14 @@ export class Historial implements OnInit {
   elementosPorPagina: number = 5;
   totalPaginas: number = 0;
   totalFichajes: number = 0;
+  private destroy$ = new Subject<void>();
   descargandoCSV: boolean = false;
 
   constructor(
     private fichajeService: FichajeService,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -43,37 +48,37 @@ export class Historial implements OnInit {
     this.loading = true;
     this.errorMessage = '';
     
-    // Primero contar el total de fichajes
-    this.fichajeService.contarFichajesUsuario(this.username, this.departamento).subscribe({
-      next: (data) => {
-        this.totalFichajes = data.totalFichajesUsuario || 0;
-        this.totalPaginas = Math.ceil(this.totalFichajes / this.elementosPorPagina);
-        
-        // Luego cargar los fichajes de la página actual
-        this.fichajeService.listarFichajesUsuario(this.paginaActual, this.elementosPorPagina).subscribe({
-          next: (fichajes) => {
-            this.fichajes = fichajes;
-            this.loading = false;
-            
-            // Si no hay fichajes y estamos en una página > 0, volver a la última página válida
-            if (fichajes.length === 0 && this.paginaActual > 0) {
-              this.paginaActual = this.totalPaginas - 1;
-              this.cargarFichajes();
-            }
-          },
-          error: (error) => {
-            this.errorMessage = 'Error al cargar fichajes';
-            this.loading = false;
-            console.error('Error:', error);
+    // Usar switchMap para encadenar las llamadas correctamente
+    this.fichajeService.contarFichajesUsuario(this.username, this.departamento)
+      .pipe(
+        switchMap((data) => {
+          this.totalFichajes = data.totalFichajesUsuario || 0;
+          this.totalPaginas = Math.ceil(this.totalFichajes / this.elementosPorPagina);
+
+          // Ajustar la página si es necesario
+          if (this.totalFichajes === 0 || (this.paginaActual >= this.totalPaginas && this.totalPaginas > 0)) {
+            this.paginaActual = Math.max(0, this.totalPaginas - 1);
           }
-        });
-      },
-      error: (error) => {
-        this.errorMessage = 'Error al contar fichajes';
-        this.loading = false;
-        console.error('Error:', error);
-      }
-    });
+
+          // Retornar el observable de fichajes
+          return this.fichajeService.listarFichajesUsuario(this.paginaActual, this.elementosPorPagina);
+        }),
+        finalize(() => {
+          // Siempre ocultar el loader cuando termine (éxito o error)
+          this.loading = false;
+          this.cdr.detectChanges();
+        }),
+        takeUntil(this.destroy$)
+      )
+      .subscribe({
+        next: (fichajes) => {
+          this.fichajes = fichajes;
+        },
+        error: (error) => {
+          this.errorMessage = 'Error al cargar fichajes';
+          console.error('Error:', error);
+        }
+      });
   }
 
   getEstadoClass(fichaje: any): string {
@@ -135,6 +140,11 @@ export class Historial implements OnInit {
     this.paginaActual = 0;
     this.totalPaginas = Math.ceil(this.totalFichajes / this.elementosPorPagina);
     this.cargarFichajes();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   descargarCSV(): void {
