@@ -1,9 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { FichajeService } from '../../../core/services/fichaje.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { Router } from '@angular/router';
 import { convertirACSV, descargarCSV, generarNombreArchivoCSV } from '../../../shared/utils/csv-utils';
 import { formatearFechaLocal } from '../../../shared/utils/date-utils';
+import { Subject } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
+import { finalize, takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-aprobar-solicitudes',
@@ -11,7 +14,7 @@ import { formatearFechaLocal } from '../../../shared/utils/date-utils';
   templateUrl: './aprobar-solicitudes.html',
   styleUrl: './aprobar-solicitudes.css'
 })
-export class AprobarSolicitudes implements OnInit {
+export class AprobarSolicitudes implements OnInit, OnDestroy {
   solicitudes: any[] = [];
   totalSolicitudes: number = 0;
   paginaActual: number = 0;
@@ -23,11 +26,13 @@ export class AprobarSolicitudes implements OnInit {
   departamento: string = '';
   nombreUsuario: string = '';
   descargandoCSV: boolean = false;
+  private destroy$ = new Subject<void>();
 
   constructor(
     private fichajeService: FichajeService,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -47,33 +52,36 @@ export class AprobarSolicitudes implements OnInit {
 
     this.loading = true;
 
-    // Primero obtener el total
-    this.fichajeService.contarSolicitudesTotales(this.departamento).subscribe({
-      next: (data) => {
-        this.totalSolicitudes = data.totalSolicitudesDepartamento || 0;
-        this.totalPaginas = Math.ceil(this.totalSolicitudes / this.elementosPorPagina);
+    this.fichajeService.contarSolicitudesTotales(this.departamento)
+      .pipe(
+        switchMap((data) => {
+          this.totalSolicitudes = data.totalSolicitudesDepartamento || 0;
+          this.totalPaginas = Math.ceil(this.totalSolicitudes / this.elementosPorPagina);
 
-        // Luego obtener la página actual
-        this.fichajeService.listarSolicitudesPendientes(this.paginaActual, this.elementosPorPagina).subscribe({
-          next: (solicitudes) => {
-            this.solicitudes = solicitudes;
-            this.loading = false;
-            if (solicitudes.length === 0 && this.paginaActual === 0) {
-              this.showMessage('ℹ️ No hay solicitudes pendientes', 'success');
-            }
-          },
-          error: (error) => {
-            this.loading = false;
-            const mensaje = error.error?.msg || 'Error al cargar solicitudes';
-            this.showMessage(`❌ ${mensaje}`, 'error');
+          if (this.totalSolicitudes === 0 || (this.paginaActual >= this.totalPaginas && this.totalPaginas > 0)) {
+            this.paginaActual = Math.max(0, this.totalPaginas - 1);
           }
-        });
-      },
-      error: (error) => {
-        this.loading = false;
-        this.showMessage('❌ Error al contar solicitudes', 'error');
-      }
-    });
+
+          return this.fichajeService.listarSolicitudesPendientes(this.paginaActual, this.elementosPorPagina);
+        }),
+        finalize(() => {
+          this.loading = false;
+          this.cdr.detectChanges();
+        }),
+        takeUntil(this.destroy$)
+      )
+      .subscribe({
+        next: (solicitudes) => {
+          this.solicitudes = solicitudes;
+          if (solicitudes.length === 0 && this.paginaActual === 0) {
+            this.showMessage('ℹ️ No hay solicitudes pendientes', 'success');
+          }
+        },
+        error: (error) => {
+          const mensaje = error.error?.msg || 'Error al cargar solicitudes';
+          this.showMessage(`❌ ${mensaje}`, 'error');
+        }
+      });
   }
 
   aprobarSolicitud(solicitudId: number): void {
@@ -146,6 +154,11 @@ export class AprobarSolicitudes implements OnInit {
   cambiarElementosPorPagina(): void {
     this.paginaActual = 0;
     this.cargarSolicitudes();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   descargarCSV(): void {
