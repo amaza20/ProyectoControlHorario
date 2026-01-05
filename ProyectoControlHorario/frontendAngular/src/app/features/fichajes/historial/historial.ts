@@ -92,7 +92,8 @@ export class Historial implements OnInit, OnDestroy {
     if (estadoUpper === 'PENDIENTE') {
       return 'pendiente';
     } else if (estadoUpper === 'RECHAZADO') {
-      return 'rechazado';
+      // Si fue rechazado, el fichaje sigue siendo original
+      return 'original';
     } else if (estadoUpper === 'APROBADO') {
       return 'editado';
     }
@@ -108,7 +109,8 @@ export class Historial implements OnInit, OnDestroy {
     if (estadoUpper === 'PENDIENTE') {
       return '⏳ Pendiente';
     } else if (estadoUpper === 'RECHAZADO') {
-      return '❌ Rechazado';
+      // Si fue rechazado, el fichaje sigue siendo original
+      return '📋 Original';
     } else if (estadoUpper === 'APROBADO') {
       return '✏️ Editado';
     }
@@ -182,31 +184,44 @@ export class Historial implements OnInit, OnDestroy {
         }
         
         // Definir columnas para el CSV
-        // Solo exportar las tres columnas que se muestran en la UI: Fecha y Hora, Tipo y Estado
+        // Solo mostrar los valores efectivos actuales (no incluir solicitudes pendientes)
         const columnas = [
           { header: 'Fecha y Hora', key: 'instanteAnterior', transform: (v: string, item: any) => {
             const aprobado = item?.aprobadoEdicion;
             if (!aprobado) {
+              // Original: mostrar fecha original
               return formatearFechaLocal(v);
             }
             const estado = String(aprobado).toUpperCase().trim();
-            if (estado === 'PENDIENTE') {
-              return formatearFechaLocal(item?.solicitudInstante || item?.solicitud_instante || v);
-            }
             if (estado === 'APROBADO') {
+              // Aprobado: mostrar fecha editada
               return formatearFechaLocal(item?.nuevoInstante || item?.nuevo_instante || v);
+            }
+            // Pendiente o Rechazado: mostrar lo que esté efectivo actualmente
+            // Si hay nuevoInstante (edición aprobada previa), mostrar esa; sino, la original
+            if (item?.nuevoInstante || item?.nuevo_instante) {
+              return formatearFechaLocal(item.nuevoInstante || item.nuevo_instante);
             }
             return formatearFechaLocal(v);
           }},
-          { header: 'Tipo', key: 'tipoAnterior' },
-          { header: 'Estado', key: 'aprobadoEdicion', transform: (v: any) => {
-            if (!v) return 'Original';
-            const estado = String(v).toUpperCase().trim();
-            if (estado === 'PENDIENTE') return 'Pendiente';
-            if (estado === 'RECHAZADO') return 'Rechazado';
-            if (estado === 'APROBADO') return 'Editado';
-            return 'Original';
-          }},
+          { header: 'Tipo', key: 'tipoAnterior', transform: (v: string, item: any) => {
+            const aprobado = item?.aprobadoEdicion;
+            if (!aprobado) {
+              // Original: mostrar tipo original
+              return v;
+            }
+            const estado = String(aprobado).toUpperCase().trim();
+            if (estado === 'APROBADO') {
+              // Aprobado: mostrar tipo editado
+              return item?.nuevoTipo || item?.nuevo_tipo || v;
+            }
+            // Pendiente o Rechazado: mostrar lo que esté efectivo actualmente
+            // Si hay nuevoTipo (edición aprobada previa), mostrar ese; sino, el original
+            if (item?.nuevoTipo || item?.nuevo_tipo) {
+              return item.nuevoTipo || item.nuevo_tipo;
+            }
+            return v;
+          }}
         ];
         
         // Convertir a CSV

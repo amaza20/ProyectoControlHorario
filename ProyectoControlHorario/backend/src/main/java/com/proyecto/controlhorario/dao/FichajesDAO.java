@@ -188,31 +188,56 @@ public class FichajesDAO {
                         nuevoTipo = rst.getString("edicion_tipo");
                         fichajesList.add(new ListarFichajeUsuarioResponse(idFichaje, instante, tipo, nuevoInstante, nuevoTipo));
 
-                        // Quiero saber si el id_fichaje aparece en la tabla solicitudes_edicion.
-                        // Me quedare con el id_fichaje mas alto(mas reciente) y vere si tiene el campo 'aprobado' en VERDADERO o FALSO
+                        // ✅ Determinar el estado real del fichaje buscando la solicitud más reciente:
                         String aprobado = null;
                         String solicitudInstante = null;
                         String solicitudTipo = null;
+                        boolean tieneEdicionAplicada = (nuevoInstante != null && !nuevoInstante.isEmpty());
+                        
                         String query2 = """ 
                                     SELECT 
                                      aprobado,nuevo_instante,tipo
                                     FROM solicitud_edicion 
                                     WHERE fichaje_id = ?
-                                    ORDER BY id DESC;
+                                    ORDER BY id DESC
+                                    LIMIT 1;
                                 """;
                         try (PreparedStatement st2 = conn.prepareStatement(query2)) {
                             st2.setInt(1, idFichaje);
                             ResultSet rst2 = st2.executeQuery();
                             if (rst2.next()) {
-                                aprobado = rst2.getString("aprobado");
+                                String estadoSolicitud = rst2.getString("aprobado");
                                 solicitudInstante = rst2.getString("nuevo_instante");
                                 solicitudTipo = rst2.getString("tipo");
-                                // Aqui aprobado puede ser "VERDADERO", "FALSO" o null (si no existe solicitud de edicion)  
-                                fichajesList.get(fichajesList.size()-1).setAprobadoEdicion(aprobado); 
-                                fichajesList.get(fichajesList.size()-1).setSolicitudInstante(solicitudInstante);
-                                fichajesList.get(fichajesList.size()-1).setSolicitudTipo(solicitudTipo);                         
-                            }                           
-                        }                  
+                                
+                                // ✅ Lógica de prioridad:
+                                // 1. Si la última solicitud es PENDIENTE → mostrar PENDIENTE (prioridad máxima)
+                                // 2. Si la última solicitud es APROBADA y hay edición aplicada → mostrar APROBADO
+                                // 3. Si la última solicitud es RECHAZADA pero hay edición aplicada → mostrar APROBADO (ignorar rechazo)
+                                // 4. Si la última solicitud es RECHAZADA y NO hay edición → no mostrar (será Original)
+                                
+                                if ("PENDIENTE".equalsIgnoreCase(estadoSolicitud)) {
+                                    aprobado = "PENDIENTE";
+                                } else if ("APROBADO".equalsIgnoreCase(estadoSolicitud) && tieneEdicionAplicada) {
+                                    aprobado = "APROBADO";
+                                } else if ("RECHAZADO".equalsIgnoreCase(estadoSolicitud) && tieneEdicionAplicada) {
+                                    // Hay una edición aprobada anterior, ignorar el rechazo más reciente
+                                    aprobado = "APROBADO";
+                                    solicitudInstante = nuevoInstante;
+                                    solicitudTipo = nuevoTipo;
+                                }
+                                // Si es RECHAZADO sin edición aplicada, aprobado queda null (se muestra como Original)
+                            } else if (tieneEdicionAplicada) {
+                                // No hay solicitudes pero sí hay edición aplicada (caso raro, pero posible)
+                                aprobado = "APROBADO";
+                                solicitudInstante = nuevoInstante;
+                                solicitudTipo = nuevoTipo;
+                            }
+                        }
+                        
+                        fichajesList.get(fichajesList.size()-1).setAprobadoEdicion(aprobado); 
+                        fichajesList.get(fichajesList.size()-1).setSolicitudInstante(solicitudInstante);
+                        fichajesList.get(fichajesList.size()-1).setSolicitudTipo(solicitudTipo);                  
                     }
                 }     
             });

@@ -82,10 +82,8 @@
                   <span style="color: #856404; font-weight: 600; font-size: 0.95em;">{{ fichaje.solicitudInstante | fechaLocal }}</span>
                 </div>
               </div>
-              <div *ngIf="fichaje.aprobadoEdicion === 'RECHAZADO'">
-                {{ (fichaje.nuevoInstante || fichaje.instanteAnterior) | fechaLocal }}
-              </div>
-              <div *ngIf="!fichaje.aprobadoEdicion">
+              <!-- Si fue rechazado, mostrar solo el fichaje original (sin indicar que hubo rechazo) -->
+              <div *ngIf="fichaje.aprobadoEdicion === 'RECHAZADO' || !fichaje.aprobadoEdicion">
                 {{ fichaje.instanteAnterior | fechaLocal }}
               </div>
             </td>
