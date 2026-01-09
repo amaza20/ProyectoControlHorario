@@ -5,6 +5,7 @@ import com.proyecto.controlhorario.dao.entity.Fichaje;
 public class FichajeResponse {
      // Response DTO (lo que devuelves al frontend)
 
+    private Integer idFichaje;
     private String instante;
     private String tipo;
     private String username;
@@ -73,5 +74,13 @@ public class FichajeResponse {
     }
     public void setDepartamento(String departamento) {
         this.departamento = departamento;
+    }
+
+    public Integer getIdFichaje() {
+        return idFichaje;
+    }
+
+    public void setIdFichaje(Integer idFichaje) {
+        this.idFichaje = idFichaje;
     }
 }

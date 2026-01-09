@@ -226,7 +226,49 @@ export class Fichar implements OnInit, OnDestroy {
   }
 
   corregirSalidaPendiente(): void {
-    // Redirigir al formulario de solicitar edición
-    this.router.navigate(['/fichajes/solicitar-edicion']);
+    // Fichar automáticamente la salida y redirigir
+    this.ficharSalidaAutomatica(this.ultimoFichaje!.instante);
+  }
+
+  ficharSalidaAutomatica(instanteEntrada: string): void {
+    this.loading = true;
+    
+    this.fichajeService.fichar().subscribe({
+      next: (response) => {
+        // Obtener el ID del fichaje directamente desde la respuesta
+        const fichajeId = response.idFichaje;
+
+        if (!fichajeId) {
+          this.message = 'Error: No se pudo obtener el ID del fichaje';
+          this.messageType = 'error';
+          this.loading = false;
+          return;
+        }
+
+        // Calcular solo la fecha sugerida con hora 00:00 (el usuario la cambiará)
+        const fechaEntrada = new Date(instanteEntrada.replace(' ', 'T') + 'Z');
+        
+        // Formatear fecha con hora 00:00 (YYYY-MM-DDTHH:mm) para que el usuario solo cambie la hora
+        const year = fechaEntrada.getFullYear();
+        const month = String(fechaEntrada.getMonth() + 1).padStart(2, '0');
+        const day = String(fechaEntrada.getDate()).padStart(2, '0');
+        const fechaPrerellenada = `${year}-${month}-${day}T00:00`;
+
+        // Navegar a solicitar-edición con parámetros
+        this.router.navigate(['/fichajes/solicitar-edicion'], {
+          queryParams: {
+            fichajeId: fichajeId,
+            autoCorrection: 'true',
+            fechaSugerida: fechaPrerellenada
+          }
+        });
+      },
+      error: (error) => {
+        this.message = 'Error al fichar automáticamente la salida';
+        this.messageType = 'error';
+        this.loading = false;
+        this.cdr.detectChanges();
+      }
+    });
   }
 }

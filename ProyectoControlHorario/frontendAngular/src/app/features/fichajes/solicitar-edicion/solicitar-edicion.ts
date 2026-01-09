@@ -49,9 +49,25 @@ export class SolicitarEdicion implements OnInit, OnDestroy {
     // Obtener el fichajeId de los queryParams
     this.route.queryParams.subscribe(params => {
       const id = params['fichajeId'];
+      const autoCorrection = params['autoCorrection'];
+      const fechaSugerida = params['fechaSugerida'];
+      
       if (id) {
         this.fichajeId = parseInt(id);
         this.cargarFichaje();
+
+        // Si viene de una corrección automática, pre-rellenar el formulario
+        if (autoCorrection === 'true' && fechaSugerida) {
+          // Esperar a que el formulario esté listo
+          setTimeout(() => {
+            this.solicitudForm.patchValue({
+              nuevoFechaHora: fechaSugerida
+            });
+            this.message = 'ℹ️ Fichaje automático creado. Por favor, ajusta la hora de salida correcta.';
+            this.messageType = 'success';
+            this.cdr.detectChanges();
+          }, 100);
+        }
       } else {
         // Si no hay fichaje seleccionado, redirigir al historial
         this.message = '⚠️ No has seleccionado ningún fichaje. Redirigiendo...';

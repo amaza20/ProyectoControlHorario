@@ -33,10 +33,11 @@ public class FichajesService {
         fichaje.setTipo(fichajeDAO.obtenerTipoFichajeSig(username,departamento)); // "ENTRA" o "SALE"
 
         // Si llamara a un metodo obtenerUltimaHuella() y luego insertara por separado tendria un problema de concurrencia.
-        fichajeDAO.ficharUsuario(fichaje,departamento);
+        int idGenerado = fichajeDAO.ficharUsuario(fichaje,departamento);
 
         FichajeResponse response= new FichajeResponse(fichaje); 
         response.setDepartamento(departamento);
+        response.setIdFichaje(idGenerado);
 
         return response;
     }

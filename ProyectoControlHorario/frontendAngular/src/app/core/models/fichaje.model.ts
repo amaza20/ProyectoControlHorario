@@ -12,6 +12,7 @@ export interface Fichaje {
 }
 
 export interface FichajeResponse {
+  idFichaje?: number;
   instante: string;
   tipo: string;
   username: string;

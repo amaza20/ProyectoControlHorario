@@ -27,8 +27,9 @@ public class FichajesDAO {
     private String dbFolder;
 
     // Todo dentro del mismo withConnection(): Obtención de ultima huella + cálculo + inserción en un solo bloque atómico
-    public void ficharUsuario(Fichaje fichaje, String departamento) {
+    public int ficharUsuario(Fichaje fichaje, String departamento) {
         String dbPath = dbFolder+"departamento_"+departamento.toLowerCase()+".db";
+        final int[] idGenerado = {-1};
 
         try {
             DatabaseManager.withConnection(dbPath, conn -> {           
@@ -53,20 +54,29 @@ public class FichajesDAO {
                 String nuevaHuella = generarHash(base);
                 fichaje.setHuella(nuevaHuella);
 
-                //  Insertar el nuevo fichaje con su huella
+                //  Insertar el nuevo fichaje con su huella y obtener el ID generado
                 String sql = "INSERT INTO fichajes (username, tipo, instante, huella) VALUES (?, ?, ?, ?)";
-                try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                try (PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
                     stmt.setString(1, fichaje.getUsername());
                     stmt.setString(2, fichaje.getTipo());
                     stmt.setString(3, fichaje.getInstante());
                     stmt.setString(4, fichaje.getHuella());
                     stmt.executeUpdate();
+                    
+                    // Obtener el ID generado
+                    try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
+                        if (generatedKeys.next()) {
+                            idGenerado[0] = generatedKeys.getInt(1);
+                        }
+                    }
                 }
             });
-            System.out.println("✅ Fichaje registrado correctamente en " + departamento);
+            System.out.println("✅ Fichaje registrado correctamente en " + departamento + " con ID: " + idGenerado[0]);
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        
+        return idGenerado[0];
     }
 
     /**
