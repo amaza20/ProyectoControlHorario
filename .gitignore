@@ -10,9 +10,6 @@ NotasGit.txt
 .vscode
 Modelo de Datos.xlsx
 
-Ignorar TODOS los archivos .p12 en el proyecto (Recomendado)
-#**/*.p12
-
 .env
 
 **/target/
