@@ -88,4 +88,9 @@ export class FichajeService {
       .set('departamento', departamento);
     return this.http.get<{ totalFichajesUsuario: number }>(`${this.apiUrl}/contarFichajesUsuario`, { params });
   }
+
+  // Obtener el último fichaje del usuario
+  obtenerUltimoFichaje(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/ultimoFichaje`);
+  }
 }

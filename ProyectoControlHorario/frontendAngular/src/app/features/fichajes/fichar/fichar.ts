@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy, NgZone, ChangeDetectorRef } from '@angula
 import { FichajeService } from '../../../core/services/fichaje.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { UsuarioToken } from '../../../core/models/usuario.model';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-fichar',
@@ -21,17 +22,28 @@ export class Fichar implements OnInit, OnDestroy {
   fichajeExitoso: any = null; // Datos del fichaje exitoso
   private intervalId: any;
 
+  // Nuevas propiedades para estado del último fichaje
+  ultimoFichaje: any = null;
+  cargandoUltimoFichaje = true;
+  textoBoton = '✓ Fichar Ahora';
+  botonDeshabilitado = false;
+  mostrarBotonCorreccion = false;
+  mensajeEstado = '';
+  tipoMensaje: 'info' | 'warning' | '' = '';
+
   constructor(
     private fichajeService: FichajeService,
     private authService: AuthService,
     private ngZone: NgZone,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
     this.currentUser = this.authService.getUserData();
     this.updateClock();
     this.startClock();
+    this.cargarUltimoFichaje();
   }
 
   ngOnDestroy(): void {
@@ -73,9 +85,89 @@ export class Fichar implements OnInit, OnDestroy {
     });
   }
 
+  cargarUltimoFichaje(): void {
+    this.cargandoUltimoFichaje = true;
+    
+    this.fichajeService.obtenerUltimoFichaje().subscribe({
+      next: (response) => {
+        console.log('Último fichaje:', response);
+        
+        if (response.mensaje) {
+          // No hay fichajes previos
+          this.ultimoFichaje = null;
+          this.textoBoton = '✓ Fichar Entrada';
+          this.mensajeEstado = 'Este será tu primer fichaje';
+          this.tipoMensaje = 'info';
+        } else {
+          this.ultimoFichaje = response;
+          this.determinarEstadoBoton();
+        }
+        
+        this.cargandoUltimoFichaje = false;
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('Error al obtener último fichaje:', error);
+        this.cargandoUltimoFichaje = false;
+        this.textoBoton = '✓ Fichar Ahora';
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  determinarEstadoBoton(): void {
+    if (!this.ultimoFichaje) return;
+
+    const instanteUTC = this.ultimoFichaje.instante.replace(' ', 'T') + 'Z';
+    const fechaUltimoFichaje = new Date(instanteUTC);
+    const hoy = new Date();
+    
+    // Comparar solo fechas (sin horas)
+    const fechaUltimoSolo = new Date(fechaUltimoFichaje.getFullYear(), fechaUltimoFichaje.getMonth(), fechaUltimoFichaje.getDate());
+    const hoySolo = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
+    
+    const esHoy = fechaUltimoSolo.getTime() === hoySolo.getTime();
+    const tipo = this.ultimoFichaje.tipo;
+
+    if (esHoy) {
+      // El último fichaje es de hoy
+      if (tipo === 'ENTRA') {
+        this.textoBoton = '✓ Fichar Salida';
+        this.mensajeEstado = `Tu último fichaje fue una ENTRADA hoy a las ${fechaUltimoFichaje.toLocaleTimeString('es-ES')}`;
+        this.tipoMensaje = 'info';
+        this.botonDeshabilitado = false;
+        this.mostrarBotonCorreccion = false;
+      } else {
+        // SALE
+        this.textoBoton = '✓ Fichar Entrada';
+        this.mensajeEstado = `Ya tienes un ciclo completo de entrada y salida hoy. Puedes iniciar uno nuevo.`;
+        this.tipoMensaje = 'info';
+        this.botonDeshabilitado = false;
+        this.mostrarBotonCorreccion = false;
+      }
+    } else {
+      // El último fichaje es de un día anterior
+      if (tipo === 'ENTRA') {
+        // Entrada sin salida - Mostrar botón de corrección
+        this.textoBoton = '✓ Fichar';
+        this.botonDeshabilitado = true;
+        this.mostrarBotonCorreccion = true;
+        this.mensajeEstado = `⚠️ Tienes pendiente fichar la salida del ${fechaUltimoFichaje.toLocaleDateString('es-ES')}`;
+        this.tipoMensaje = 'warning';
+      } else {
+        // SALE - Normal, puede fichar entrada
+        this.textoBoton = '✓ Fichar Entrada';
+        this.mensajeEstado = `Tu último fichaje fue una SALIDA el ${fechaUltimoFichaje.toLocaleDateString('es-ES')}`;
+        this.tipoMensaje = 'info';
+        this.botonDeshabilitado = false;
+        this.mostrarBotonCorreccion = false;
+      }
+    }
+  }
+
   fichar(): void {
-    if (this.fichajeReciente) {
-      return; // Evitar fichajes duplicados
+    if (this.fichajeReciente || this.botonDeshabilitado) {
+      return; // Evitar fichajes duplicados o cuando está deshabilitado
     }
 
     this.loading = true;
@@ -112,6 +204,9 @@ export class Fichar implements OnInit, OnDestroy {
         // Forzar detección de cambios
         this.cdr.detectChanges();
         
+        // Recargar estado del último fichaje
+        this.cargarUltimoFichaje();
+        
         // Deshabilitar botón y ocultar resultado después de 5 segundos
         this.fichajeReciente = true;
         setTimeout(() => {
@@ -128,5 +223,10 @@ export class Fichar implements OnInit, OnDestroy {
         this.cdr.detectChanges();
       }
     });
+  }
+
+  corregirSalidaPendiente(): void {
+    // Redirigir al formulario de solicitar edición
+    this.router.navigate(['/fichajes/solicitar-edicion']);
   }
 }

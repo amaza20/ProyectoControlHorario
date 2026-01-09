@@ -1,5 +1,6 @@
 package com.proyecto.controlhorario.service;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
@@ -89,5 +90,9 @@ public class FichajesService {
         return fichajeDAO.contarSolicitudesTotales(departamento);
     }   
 
+    // Nuevo método para obtener el último fichaje del usuario
+    public Map<String, Object> obtenerUltimoFichaje(String username, String departamento) {
+        return fichajeDAO.obtenerUltimoFichaje(username, departamento);
+    }
 
 }

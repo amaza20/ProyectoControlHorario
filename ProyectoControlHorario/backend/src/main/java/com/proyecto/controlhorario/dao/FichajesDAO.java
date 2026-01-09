@@ -3,6 +3,7 @@ package com.proyecto.controlhorario.dao;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Value;
 
@@ -420,4 +421,37 @@ public class FichajesDAO {
         }
         return count[0];
     }
-}
+    // Método para obtener el último fichaje del usuario
+    public Map<String, Object> obtenerUltimoFichaje(String username, String departamento) {
+        String dbPath = dbFolder+"departamento_"+departamento.toLowerCase()+".db";
+        @SuppressWarnings("unchecked")
+        final Map<String, Object>[] resultado = new Map[1];
+
+        try {
+            DatabaseManager.withConnection(dbPath, conn -> {
+                String query = """ 
+                    SELECT instante, tipo
+                    FROM fichajes
+                    WHERE username = ?
+                    ORDER BY instante DESC
+                    LIMIT 1
+                """;
+                
+                try (PreparedStatement st = conn.prepareStatement(query)) {
+                    st.setString(1, username);
+                    ResultSet rs = st.executeQuery();
+                    
+                    if (rs.next()) {
+                        Map<String, Object> fichaje = new java.util.HashMap<>();
+                        fichaje.put("instante", rs.getString("instante"));
+                        fichaje.put("tipo", rs.getString("tipo"));
+                        resultado[0] = fichaje;
+                    }
+                }
+            });
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        
+        return resultado[0];
+    }}

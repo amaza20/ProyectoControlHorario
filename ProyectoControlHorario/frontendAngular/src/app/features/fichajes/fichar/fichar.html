@@ -22,12 +22,37 @@
         <p *ngIf="currentUser.departamento"><strong>Departamento:</strong> {{ currentUser.departamento }}</p>
       </div>
 
-      <button *ngIf="!mostrarResultado" mat-raised-button color="primary" class="fichar-button" 
-              (click)="fichar()" [disabled]="loading || fichajeReciente">
-        <mat-spinner *ngIf="loading" diameter="24"></mat-spinner>
-        <mat-icon *ngIf="!loading && !fichajeReciente">check_circle</mat-icon>
-        <mat-icon *ngIf="!loading && fichajeReciente">done_all</mat-icon>
-        {{ loading ? 'Fichando...' : (fichajeReciente ? '✅ Fichado correctamente' : '✓ Fichar Ahora') }}
+      <!-- Mensaje informativo del estado del último fichaje -->
+      <mat-card *ngIf="!cargandoUltimoFichaje && mensajeEstado && !mostrarResultado" 
+                class="estado-card" 
+                [class.info]="tipoMensaje === 'info'" 
+                [class.warning]="tipoMensaje === 'warning'">
+        <mat-card-content class="estado-content">
+          <mat-icon class="estado-icon">{{ tipoMensaje === 'warning' ? 'warning' : 'info' }}</mat-icon>
+          <span class="estado-mensaje">{{ mensajeEstado }}</span>
+        </mat-card-content>
+      </mat-card>
+
+      <button *ngIf="!mostrarResultado && !mostrarBotonCorreccion" 
+              mat-raised-button 
+              color="primary" 
+              class="fichar-button" 
+              (click)="fichar()" 
+              [disabled]="loading || fichajeReciente || botonDeshabilitado || cargandoUltimoFichaje">
+        <mat-spinner *ngIf="loading || cargandoUltimoFichaje" diameter="24"></mat-spinner>
+        <mat-icon *ngIf="!loading && !fichajeReciente && !cargandoUltimoFichaje">check_circle</mat-icon>
+        <mat-icon *ngIf="!loading && fichajeReciente && !cargandoUltimoFichaje">done_all</mat-icon>
+        {{ loading ? 'Fichando...' : (cargandoUltimoFichaje ? 'Cargando...' : (fichajeReciente ? '✅ Fichado correctamente' : textoBoton)) }}
+      </button>
+
+      <!-- Botón especial para corregir salida pendiente -->
+      <button *ngIf="!mostrarResultado && mostrarBotonCorreccion" 
+              mat-raised-button 
+              color="warn" 
+              class="corregir-button" 
+              (click)="corregirSalidaPendiente()">
+        <mat-icon>edit</mat-icon>
+        Corregir Salida Pendiente
       </button>
 
       <!-- Mostrar resultado del fichaje -->

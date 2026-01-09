@@ -53,6 +53,66 @@
   margin-right: 8px;
 }
 
+/* Estilos para el card de estado del último fichaje */
+.estado-card {
+  margin: 15px 0;
+  padding: 0;
+  border-left: 4px solid;
+}
+
+.estado-card.info {
+  background-color: #e3f2fd;
+  border-left-color: #2196F3;
+}
+
+.estado-card.warning {
+  background-color: #fff3e0;
+  border-left-color: #ff9800;
+}
+
+.estado-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px !important;
+}
+
+.estado-icon {
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.estado-card.info .estado-icon {
+  color: #2196F3;
+}
+
+.estado-card.warning .estado-icon {
+  color: #ff9800;
+}
+
+.estado-mensaje {
+  font-size: 0.95em;
+  color: #333;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+/* Botón especial de corrección */
+.corregir-button {
+  font-size: 1.1em !important;
+  padding: 15px 30px !important;
+  height: auto !important;
+  margin: 15px 0;
+  width: 100%;
+  max-width: 400px;
+}
+
+.corregir-button mat-icon {
+  margin-right: 8px;
+}
+
 .message {
   margin-top: 20px;
   padding: 15px;
@@ -235,6 +295,32 @@
     margin-right: 10px;
   }
 
+  .estado-content {
+    gap: 14px;
+    padding: 14px !important;
+  }
+
+  .estado-icon {
+    font-size: 26px;
+    width: 26px;
+    height: 26px;
+  }
+
+  .estado-mensaje {
+    font-size: 1em;
+  }
+
+  .corregir-button {
+    font-size: 1.2em !important;
+    padding: 18px 35px !important;
+    margin: 18px 0;
+    width: auto;
+  }
+
+  .corregir-button mat-icon {
+    margin-right: 10px;
+  }
+
   .resultado-card {
     margin: 30px 0;
   }
@@ -300,8 +386,29 @@
     margin-bottom: 30px;
   }
 
+  .estado-content {
+    gap: 16px;
+    padding: 16px !important;
+  }
+
+  .estado-icon {
+    font-size: 28px;
+    width: 28px;
+    height: 28px;
+  }
+
+  .estado-mensaje {
+    font-size: 1.05em;
+  }
+
   .fichar-button {
     font-size: 1.5em !important;
+    padding: 20px 40px !important;
+    margin: 20px 0;
+  }
+
+  .corregir-button {
+    font-size: 1.3em !important;
     padding: 20px 40px !important;
     margin: 20px 0;
   }
@@ -327,8 +434,33 @@
     margin: 12px 0;
   }
 
+  .estado-card {
+    margin: 10px 0;
+  }
+
+  .estado-content {
+    gap: 10px;
+    padding: 10px !important;
+  }
+
+  .estado-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+
+  .estado-mensaje {
+    font-size: 0.85em;
+  }
+
   .fichar-button {
     padding: 12px 25px !important;
     margin: 12px 0;
+  }
+
+  .corregir-button {
+    padding: 12px 25px !important;
+    margin: 12px 0;
+    font-size: 1em !important;
   }
 }

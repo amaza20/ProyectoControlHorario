@@ -254,6 +254,45 @@ public class ControladorFichajes {
         }
     }
 
+    // ======================================
+    // ✅ ENDPOINT: OBTENER ÚLTIMO FICHAJE DEL USUARIO
+    // ======================================
+    @GetMapping("/ultimoFichaje")
+    public ResponseEntity<?> obtenerUltimoFichaje(@RequestHeader("Authorization") String authHeader) {
+        try {
+            // 1️⃣ Extraer el token (sin "Bearer ")
+            String token = authHeader.replace("Bearer ", "");
+
+            // 2️⃣ Validar token y obtener claims
+            Map<String, Object> claims = JwtUtil.validateToken(token);
+            String username = (String) claims.get("username");
+            String departamento = (String) claims.get("departamento");
+
+            // 3️⃣ Llamar al servicio para obtener último fichaje
+            Map<String, Object> ultimoFichaje = servicio.obtenerUltimoFichaje(username, departamento);
+
+            if (ultimoFichaje == null) {
+                // No hay fichajes previos
+                return ResponseEntity
+                        .status(HttpStatus.OK)
+                        .body(Map.of("mensaje", "No hay fichajes previos"));
+            }
+
+            return ResponseEntity
+                    .status(HttpStatus.OK)
+                    .body(ultimoFichaje);
+
+        } catch (JwtException e) {
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("mensaje", "Error: " + e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("mensaje", "Error interno: " + e.getMessage()));
+        }
+    }
+
 
 
 }
