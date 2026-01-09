@@ -4,7 +4,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: 15px;
 }
 
 .login-card {
@@ -13,51 +13,54 @@
 }
 
 .back-link {
-  margin-bottom: 15px;
+  margin-bottom: 12px;
 }
 
 h1 {
   text-align: center;
-  margin: 10px 0;
+  margin: 8px 0;
   color: #333;
+  font-size: 1.6em;
 }
 
 .subtitle {
   text-align: center;
   color: #666;
-  margin-bottom: 30px;
+  margin-bottom: 20px;
+  font-size: 0.95em;
 }
 
 .full-width {
   width: 100%;
-  margin-bottom: 15px;
+  margin-bottom: 12px;
 }
 
 .recaptcha-container {
   display: flex;
   justify-content: center;
-  margin: 20px 0;
+  margin: 15px 0;
 }
 
 button[type="submit"] {
   margin-top: 10px;
-  height: 48px;
+  height: 44px;
 }
 
 button mat-icon {
-  margin-right: 8px;
+  margin-right: 6px;
 }
 
 button mat-spinner {
   display: inline-block;
-  margin-right: 8px;
+  margin-right: 6px;
 }
 
 .message {
-  margin-top: 20px;
-  padding: 12px;
+  margin-top: 15px;
+  padding: 10px;
   border-radius: 4px;
   text-align: center;
+  font-size: 0.9em;
 }
 
 .error-message {
@@ -74,7 +77,55 @@ button mat-spinner {
 
 .form-footer {
   text-align: center;
-  margin-top: 20px;
+  margin-top: 15px;
   color: #666;
-  font-size: 0.9em;
+  font-size: 0.85em;
+}
+
+/* Media queries para tablets y desktop */
+@media (min-width: 600px) {
+  .login-container {
+    padding: 20px;
+  }
+
+  h1 {
+    font-size: 2em;
+    margin: 10px 0;
+  }
+
+  .subtitle {
+    font-size: 1em;
+    margin-bottom: 30px;
+  }
+
+  .full-width {
+    margin-bottom: 15px;
+  }
+
+  .recaptcha-container {
+    margin: 20px 0;
+  }
+
+  button[type="submit"] {
+    height: 48px;
+  }
+
+  button mat-icon {
+    margin-right: 8px;
+  }
+
+  button mat-spinner {
+    margin-right: 8px;
+  }
+
+  .message {
+    margin-top: 20px;
+    padding: 12px;
+    font-size: 1em;
+  }
+
+  .form-footer {
+    margin-top: 20px;
+    font-size: 0.9em;
+  }
 }

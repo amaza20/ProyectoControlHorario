@@ -22,13 +22,51 @@
         <p *ngIf="currentUser.departamento"><strong>Departamento:</strong> {{ currentUser.departamento }}</p>
       </div>
 
-      <button mat-raised-button color="primary" class="fichar-button" 
+      <button *ngIf="!mostrarResultado" mat-raised-button color="primary" class="fichar-button" 
               (click)="fichar()" [disabled]="loading || fichajeReciente">
         <mat-spinner *ngIf="loading" diameter="24"></mat-spinner>
         <mat-icon *ngIf="!loading && !fichajeReciente">check_circle</mat-icon>
         <mat-icon *ngIf="!loading && fichajeReciente">done_all</mat-icon>
         {{ loading ? 'Fichando...' : (fichajeReciente ? '✅ Fichado correctamente' : '✓ Fichar Ahora') }}
       </button>
+
+      <!-- Mostrar resultado del fichaje -->
+      <mat-card *ngIf="mostrarResultado" class="resultado-card">
+        <mat-card-header>
+          <mat-icon class="success-icon">check_circle</mat-icon>
+          <mat-card-title>🎉 FICHAJE REGISTRADO</mat-card-title>
+        </mat-card-header>
+        <mat-card-content *ngIf="fichajeExitoso">
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">Usuario:</span>
+              <span class="info-value">{{ fichajeExitoso.usuario }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Departamento:</span>
+              <span class="info-value">{{ fichajeExitoso.departamento }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Fecha:</span>
+              <span class="info-value">{{ fichajeExitoso.fecha }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Hora:</span>
+              <span class="info-value">{{ fichajeExitoso.hora }}</span>
+            </div>
+            <div class="info-item tipo-highlight">
+              <span class="info-label">Tipo:</span>
+              <span class="info-value tipo-badge" [class.entrada]="fichajeExitoso.tipo === 'ENTRADA'" [class.salida]="fichajeExitoso.tipo === 'SALIDA'">
+                {{ fichajeExitoso.tipo }}
+              </span>
+            </div>
+            <div class="info-item status-highlight">
+              <span class="info-label">Estado:</span>
+              <span class="info-value">Guardado en blockchain ✓</span>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
 
       <div *ngIf="message" class="message" [class.success]="messageType === 'success'" [class.error]="messageType === 'error'">
         {{ message }}

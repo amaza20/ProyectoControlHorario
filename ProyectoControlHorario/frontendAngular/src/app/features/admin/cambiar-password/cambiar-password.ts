@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { UsuarioService } from '../../../core/services/usuario.service';
 import { AuthService } from '../../../core/services/auth.service';
@@ -22,7 +22,8 @@ export class CambiarPassword implements OnInit {
     private fb: FormBuilder,
     private usuarioService: UsuarioService,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {
     this.passwordForm = this.fb.group({
       username: ['', [Validators.required, Validators.minLength(3)]],
@@ -42,9 +43,12 @@ export class CambiarPassword implements OnInit {
     this.usuarioService.listarUsuarios().subscribe({
       next: (usuarios) => {
         this.usuariosExistentes = usuarios;
+        console.log('Usuarios cargados:', usuarios);
+        this.cdr.detectChanges();
       },
       error: (error) => {
         console.error('Error al cargar usuarios:', error);
+        this.showMessage('❌ Error al cargar la lista de usuarios', 'error');
       }
     });
   }

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { DepartamentoService } from '../../../core/services/departamento.service';
 import { AuthService } from '../../../core/services/auth.service';
@@ -25,7 +25,8 @@ export class CrearDepartamento implements OnInit {
     private departamentoService: DepartamentoService,
     private authService: AuthService,
     private router: Router,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private cdr: ChangeDetectorRef
   ) {
     this.departamentoForm = this.fb.group({
       nombreDepartamento: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50), Validators.pattern(/^[A-Za-zÀ-ÿ0-9\s]+$/)]]
@@ -44,9 +45,12 @@ export class CrearDepartamento implements OnInit {
     this.departamentoService.listarDepartamentos().subscribe({
       next: (depts) => {
         this.departamentosExistentes = depts;
+        console.log('Departamentos cargados:', depts);
+        this.cdr.detectChanges();
       },
       error: (error) => {
         console.error('Error al cargar departamentos:', error);
+        this.showMessage('❌ Error al cargar la lista de departamentos', 'error');
       }
     });
   }

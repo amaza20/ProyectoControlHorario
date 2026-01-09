@@ -12,6 +12,9 @@ export interface Fichaje {
 }
 
 export interface FichajeResponse {
+  instante: string;
+  tipo: string;
+  username: string;
+  departamento: string;
   mensaje: string;
-  tipo?: string;
 }

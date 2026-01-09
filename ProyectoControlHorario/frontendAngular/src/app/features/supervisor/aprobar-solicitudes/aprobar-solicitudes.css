@@ -6,21 +6,23 @@
 
 .navbar {
   background: white;
-  padding: 15px 30px;
+  padding: 10px 15px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .nav-brand {
-  font-size: 1.5em;
+  font-size: 1.2em;
   font-weight: bold;
   color: #667eea;
 }
 
 .nav-user {
-  font-size: 0.9em;
+  font-size: 0.8em;
   color: #666;
 }
 
@@ -28,9 +30,9 @@
   background: transparent;
   border: none;
   color: #667eea;
-  font-size: 1em;
+  font-size: 0.9em;
   cursor: pointer;
-  padding: 8px 16px;
+  padding: 6px 12px;
   border-radius: 4px;
   transition: background 0.3s;
 }
@@ -41,27 +43,27 @@
 
 .container {
   max-width: 1200px;
-  margin: 30px auto;
-  padding: 20px;
+  margin: 15px auto;
+  padding: 10px;
 }
 
 .card {
   background: white;
-  border-radius: 15px;
-  padding: 30px;
+  border-radius: 12px;
+  padding: 20px 15px;
   box-shadow: 0 10px 50px rgba(0, 0, 0, 0.2);
 }
 
 h1 {
   color: #333;
-  margin: 0 0 10px 0;
-  font-size: 2em;
+  margin: 0 0 8px 0;
+  font-size: 1.5em;
 }
 
 .subtitle {
   color: #666;
-  margin: 0 0 20px 0;
-  font-size: 1.1em;
+  margin: 0 0 15px 0;
+  font-size: 0.95em;
 }
 
 .btn {
@@ -147,18 +149,26 @@ h1 {
   background: #e7f3ff;
   border: 2px solid #2196F3;
   border-radius: 8px;
-  padding: 15px;
-  margin-bottom: 20px;
+  padding: 12px;
+  margin-bottom: 15px;
   text-align: center;
-  font-size: 1.1em;
+  font-size: 0.95em;
   color: #1976D2;
   font-weight: 600;
 }
 
+/* Wrapper para scroll horizontal en móviles */
+.table-wrapper {
+  overflow-x: auto;
+  margin: 15px -15px;
+  -webkit-overflow-scrolling: touch;
+}
+
 .solicitudes-table {
   width: 100%;
+  min-width: 900px;
   border-collapse: collapse;
-  margin-top: 20px;
+  margin-top: 10px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
@@ -168,15 +178,18 @@ h1 {
 }
 
 .solicitudes-table th {
-  padding: 12px;
+  padding: 10px 8px;
   text-align: left;
   border: 1px solid #ddd;
   font-weight: 600;
+  font-size: 0.85em;
+  white-space: nowrap;
 }
 
 .solicitudes-table td {
-  padding: 10px;
+  padding: 8px 6px;
   border: 1px solid #ddd;
+  font-size: 0.85em;
 }
 
 .solicitudes-table tbody tr {
@@ -228,13 +241,14 @@ h1 {
 
 .acciones {
   display: flex;
-  gap: 8px;
+  gap: 5px;
   flex-wrap: wrap;
 }
 
 .acciones button {
   flex: 1;
-  min-width: 80px;
+  min-width: 70px;
+  font-size: 0.8em;
 }
 
 .estado-texto {
@@ -253,22 +267,22 @@ h1 {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 8px;
-  margin-top: 20px;
-  padding: 12px;
+  gap: 5px;
+  margin-top: 15px;
+  padding: 10px 5px;
   background: #f5f5f5;
   border-radius: 8px;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
 }
 
 .page-btn {
-  padding: 6px 12px;
+  padding: 6px 10px;
   border: 1px solid #ddd;
   background: white;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 14px;
-  min-width: 40px;
+  font-size: 12px;
+  min-width: 35px;
   transition: background 0.2s;
 }
 
@@ -283,26 +297,119 @@ h1 {
 }
 
 .page-selector, .rows-selector {
-  padding: 6px 10px;
+  padding: 6px 8px;
   border: 1px solid #ddd;
   border-radius: 4px;
-  font-size: 14px;
+  font-size: 12px;
   background: white;
   cursor: pointer;
-  min-width: 60px;
+  min-width: 50px;
 }
 
 .separator {
   color: #999;
-  margin: 0 8px;
-  font-size: 18px;
+  margin: 0 4px;
+  font-size: 16px;
 }
 
 .pagination-controls label {
   color: #666;
-  font-size: 14px;
+  font-size: 12px;
   white-space: nowrap;
   margin: 0;
+}
+
+/* Media queries para tablets y desktop */
+@media (min-width: 600px) {
+  .navbar {
+    padding: 15px 30px;
+    flex-wrap: nowrap;
+  }
+
+  .nav-brand {
+    font-size: 1.5em;
+  }
+
+  .nav-user {
+    font-size: 0.9em;
+  }
+
+  .btn-volver {
+    font-size: 1em;
+    padding: 8px 16px;
+  }
+
+  .container {
+    margin: 30px auto;
+    padding: 20px;
+  }
+
+  .card {
+    padding: 30px;
+    border-radius: 15px;
+  }
+
+  h1 {
+    font-size: 2em;
+    margin-bottom: 10px;
+  }
+
+  .subtitle {
+    font-size: 1.1em;
+    margin-bottom: 20px;
+  }
+
+  .info-banner {
+    padding: 15px;
+    font-size: 1.1em;
+    margin-bottom: 20px;
+  }
+
+  .table-wrapper {
+    margin: 20px 0;
+  }
+
+  .solicitudes-table th {
+    padding: 12px;
+    font-size: 1em;
+  }
+
+  .solicitudes-table td {
+    padding: 10px;
+    font-size: 1em;
+  }
+
+  .acciones button {
+    min-width: 80px;
+    font-size: 0.9em;
+  }
+
+  .pagination-controls {
+    gap: 8px;
+    padding: 12px;
+    flex-wrap: nowrap;
+  }
+
+  .page-btn {
+    padding: 6px 12px;
+    font-size: 14px;
+    min-width: 40px;
+  }
+
+  .page-selector, .rows-selector {
+    padding: 6px 10px;
+    font-size: 14px;
+    min-width: 60px;
+  }
+
+  .separator {
+    margin: 0 8px;
+    font-size: 18px;
+  }
+
+  .pagination-controls label {
+    font-size: 14px;
+  }
 }
 
 .info-box {
